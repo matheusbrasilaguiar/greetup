@@ -1,0 +1,21 @@
+# Sprint 1 - Backend
+
+## Scope
+- Auth with RBAC (role enum)
+- Product management (ADMIN only)
+
+## Endpoints
+- POST /auth/register
+- POST /auth/login
+- POST /products (ADMIN)
+- GET /products (default: active only)
+
+## Setup
+1. Copy backend/.env.example to backend/.env
+2. Start database services: docker-compose up -d
+3. Install backend dependencies: npm install
+4. Run Prisma migration: npm run prisma:migrate
+5. Start API: npm run dev
+
+## Notes
+- GET /products supports includeInactive=true for ADMIN
