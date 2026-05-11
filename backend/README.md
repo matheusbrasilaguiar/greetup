@@ -24,7 +24,11 @@
 - POST /auth/login
 - POST /products (ADMIN)
 - GET /products (default: active only)
+- POST /tables (GERENTE, ADMIN)
+- GET /tables (GERENTE, ADMIN)
+- PATCH /tables/:id/status (GERENTE, ADMIN)
 
 ## RBAC
 - Role is stored in User (enum)
 - Products endpoints require ADMIN
+- Tables endpoints require GERENTE or ADMIN
