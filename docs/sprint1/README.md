@@ -3,12 +3,16 @@
 ## Scope
 - Auth with RBAC (role enum)
 - Product management (ADMIN only)
+- Table management (GERENTE and ADMIN)
 
 ## Endpoints
 - POST /auth/register
 - POST /auth/login
 - POST /products (ADMIN)
 - GET /products (default: active only)
+- POST /tables (GERENTE, ADMIN)
+- GET /tables (GERENTE, ADMIN)
+- PATCH /tables/:id/status (GERENTE, ADMIN)
 
 ## Setup
 1. Copy backend/.env.example to backend/.env

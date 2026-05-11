@@ -1,0 +1,60 @@
+@startuml greetup_db_schema
+
+!theme plain
+skinparam backgroundColor white
+skinparam shadowing false
+skinparam roundCorner 8
+skinparam defaultFontName Arial
+
+entity "User" as user {
+  * id : string <<PK>>
+  --
+  name : string
+  email : string <<unique>>
+  passwordHash : string
+  role : Role
+  createdAt : datetime
+}
+
+entity "Product" as product {
+  * id : string <<PK>>
+  --
+  name : string
+  description : string
+  category : ProductCategory
+  active : boolean
+  createdAt : datetime
+  updatedAt : datetime
+}
+
+entity "Table" as table {
+  * id : string <<PK>>
+  --
+  code : string <<unique>>
+  status : TableStatus
+  createdAt : datetime
+  updatedAt : datetime
+}
+
+enum Role {
+  ADMIN
+  GERENTE
+  OPERADOR
+}
+
+enum ProductCategory {
+  COMIDA
+  BEBIDA
+}
+
+enum TableStatus {
+  OPEN
+  OCCUPIED
+  CLOSED
+}
+
+user ..> Role
+product ..> ProductCategory
+table ..> TableStatus
+
+@enduml

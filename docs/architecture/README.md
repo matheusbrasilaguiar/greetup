@@ -69,6 +69,11 @@ O diagrama abaixo representa a visão macro da arquitetura do sistema, incluindo
 
 ---
 
+## Diagrama 4 — Schema do Banco (Sprint 1)
+[docs/architecture/diagrams/greetup-db-schema.puml](/docs/architecture/diagrams/greetup-db-schema.puml)
+
+---
+
 ## Considerações Arquiteturais
 
 A arquitetura proposta atende aos requisitos, contemplando:
