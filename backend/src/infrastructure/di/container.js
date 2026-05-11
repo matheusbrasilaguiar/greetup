@@ -14,6 +14,13 @@ function buildAuthDeps() {
   return { userRepository, hashService, tokenService };
 }
 
+function buildUserDeps() {
+  if (!(userRepository instanceof UserRepositoryPort)) {
+    throw new Error("UserRepository does not implement port");
+  }
+  return { userRepository, hashService };
+}
+
 function buildProductDeps() {
   if (!(productRepository instanceof ProductRepositoryPort)) {
     throw new Error("ProductRepository does not implement port");
@@ -30,6 +37,7 @@ function buildTableDeps() {
 
 module.exports = {
   buildAuthDeps,
+  buildUserDeps,
   buildProductDeps,
   buildTableDeps
 };

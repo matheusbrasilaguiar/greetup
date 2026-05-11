@@ -11,8 +11,19 @@ class User {
   }
 
   static createAdmin({ name, email, passwordHash }) {
+    return User.createWithRole({ name, email, passwordHash, role: Roles.ADMIN });
+  }
+
+  static createWithRole({ name, email, passwordHash, role }) {
     if (!name || !email || !passwordHash) {
       const error = new Error("Name, email and password are required");
+      error.status = 400;
+      throw error;
+    }
+
+    const roles = Object.values(Roles);
+    if (!roles.includes(role)) {
+      const error = new Error("Invalid role");
       error.status = 400;
       throw error;
     }
@@ -21,7 +32,7 @@ class User {
       name,
       email,
       passwordHash,
-      role: Roles.ADMIN
+      role
     });
   }
 }
