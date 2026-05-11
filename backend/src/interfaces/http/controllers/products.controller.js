@@ -1,5 +1,6 @@
 const createProduct = require("../../../application/usecases/createProduct");
 const listProducts = require("../../../application/usecases/listProducts");
+const updateProduct = require("../../../application/usecases/updateProduct");
 const { buildProductDeps } = require("../../../infrastructure/di/container");
 
 async function create(req, res, next) {
@@ -21,7 +22,20 @@ async function list(req, res, next) {
   }
 }
 
+async function update(req, res, next) {
+  try {
+    const product = await updateProduct(
+      { id: req.params.id, ...req.body },
+      buildProductDeps()
+    );
+    return res.json(product);
+  } catch (err) {
+    return next(err);
+  }
+}
+
 module.exports = {
   create,
-  list
+  list,
+  update
 };

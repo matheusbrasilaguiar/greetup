@@ -32,6 +32,30 @@ class Product {
       active: active !== undefined ? Boolean(active) : true
     });
   }
+
+  static update({ name, description, category, active }) {
+    if (category) {
+      const categories = Object.values(ProductCategories);
+      if (!categories.includes(category)) {
+        const error = new Error("Invalid category");
+        error.status = 400;
+        throw error;
+      }
+    }
+
+    if (active !== undefined && typeof active !== "boolean") {
+      const error = new Error("Active must be boolean");
+      error.status = 400;
+      throw error;
+    }
+
+    return new Product({
+      name,
+      description,
+      category,
+      active
+    });
+  }
 }
 
 module.exports = Product;

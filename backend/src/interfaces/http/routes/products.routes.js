@@ -10,5 +10,6 @@ router.use(authMiddleware);
 
 router.post("/", requireRole(["ADMIN"]), productsController.create);
 router.get("/", productsController.list);
+router.patch("/:id", requireRole(["ADMIN"]), productsController.update);
 
 module.exports = router;

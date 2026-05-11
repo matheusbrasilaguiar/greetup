@@ -16,6 +16,13 @@ class ProductRepository extends ProductRepositoryPort {
       orderBy: { createdAt: "desc" }
     });
   }
+
+  async updateProduct(id, data) {
+    return prisma.product.update({
+      where: { id },
+      data
+    });
+  }
 }
 
 module.exports = new ProductRepository();
