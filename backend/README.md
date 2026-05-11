@@ -22,8 +22,10 @@
 ## Endpoints
 - POST /auth/register
 - POST /auth/login
+- POST /users (ADMIN)
 - POST /products (ADMIN)
 - GET /products (default: active only)
+- PATCH /products/:id (ADMIN)
 - POST /tables (GERENTE, ADMIN)
 - GET /tables (GERENTE, ADMIN)
 - PATCH /tables/:id/status (GERENTE, ADMIN)
@@ -32,3 +34,4 @@
 - Role is stored in User (enum)
 - Products endpoints require ADMIN
 - Tables endpoints require GERENTE or ADMIN
+- Users creation requires ADMIN
