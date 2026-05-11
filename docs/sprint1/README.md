@@ -8,8 +8,10 @@
 ## Endpoints
 - POST /auth/register
 - POST /auth/login
+- POST /users (ADMIN)
 - POST /products (ADMIN)
 - GET /products (default: active only)
+- PATCH /products/:id (ADMIN)
 - POST /tables (GERENTE, ADMIN)
 - GET /tables (GERENTE, ADMIN)
 - PATCH /tables/:id/status (GERENTE, ADMIN)
