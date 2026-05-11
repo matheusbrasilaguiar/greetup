@@ -1,0 +1,38 @@
+@startuml greetup_event_flow
+
+title Greetup - Fluxo Principal de Eventos
+
+skinparam backgroundColor white
+skinparam shadowing false
+skinparam roundCorner 8
+skinparam defaultFontName Arial
+
+actor "Gerente" as GE
+participant "App Cliente" as AC
+participant "API REST" as API
+database "PostgreSQL" as PG
+participant "Event Publisher" as PUB
+queue "Redis Pub/Sub" as REDIS
+participant "Event Subscriber" as SUB
+participant "WebSocket Gateway" as WSG
+participant "App Prestador" as AP
+
+== Criação do pedido ==
+
+GE -> AC : cria pedido
+AC -> API : POST /orders
+API -> PG : persiste pedido
+PG --> API : pedido criado
+
+API -> PUB : publish(order:created)
+PUB -> REDIS : order:created
+
+API --> AC : HTTP 201
+
+== Entrega assíncrona ==
+
+REDIS -> SUB : evento order:created
+SUB -> WSG : encaminha evento
+WSG -> AP : novo pedido em tempo real
+
+@enduml

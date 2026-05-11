@@ -1,0 +1,178 @@
+@startuml greetup_macro_clean
+
+!theme plain
+
+skinparam backgroundColor white
+skinparam shadowing false
+skinparam roundCorner 12
+skinparam defaultFontName Arial
+skinparam linetype ortho
+
+' Aumentamos o espaçamento para dar respiro às notas
+skinparam nodesep 110
+skinparam ranksep 130
+
+top to bottom direction
+
+' =====================================================
+' ESTILO DAS NOTAS (Para não sujar o visual clean)
+' =====================================================
+skinparam NoteBackgroundColor #FFFFFF
+skinparam NoteBorderColor #94A3B8
+skinparam NoteFontColor #0F172A
+skinparam NoteFontSize 11
+
+' =====================================================
+' ESTILO
+' =====================================================
+
+skinparam actor {
+  BorderColor #4F46E5
+  FontColor #1e1b4b
+}
+
+skinparam component {
+  BackgroundColor #EFF6FF
+  BorderColor #2563EB
+  FontColor #1e3a8a
+}
+
+skinparam package {
+  BackgroundColor #FAFAFA
+  BorderColor #94A3B8
+}
+
+skinparam database {
+  BackgroundColor #F0FDF4
+  BorderColor #16A34A
+}
+
+skinparam queue {
+  BackgroundColor #FFF7ED
+  BorderColor #EA580C
+}
+
+' =====================================================
+' ATORES
+' =====================================================
+
+actor "Administrador" as ADMIN
+actor "Gerente de Evento" as GERENTE
+actor "Operador de Serviço" as OPERADOR
+
+ADMIN -[hidden]right-> GERENTE
+GERENTE -[hidden]right-> OPERADOR
+
+' =====================================================
+' APPS
+' =====================================================
+
+package "Aplicativos Mobile\nFlutter / Dart" as MOBILE {
+
+  component "App Cliente" as APP_CLIENTE
+  component "App Prestador" as APP_PRESTADOR
+
+  APP_CLIENTE -[hidden]right-> APP_PRESTADOR
+}
+
+' =====================================================
+' BACKEND
+' =====================================================
+
+package "Backend\nNode.js + Express" as BACKEND {
+
+  component "API REST" as API
+  component "WebSocket Gateway" as WSG
+
+  API -[hidden]right-> WSG
+}
+
+' =====================================================
+' MOM & DATABASE
+' =====================================================
+
+package "Middleware Orientado a Mensagens (MOM)" as MOM {
+  queue "Redis Pub/Sub" as REDIS
+}
+
+database "PostgreSQL" as PG
+
+' =====================================================
+' ALINHAMENTO VERTICAL E HORIZONTAL
+' =====================================================
+
+MOBILE -[hidden]down-> BACKEND
+BACKEND -[hidden]down-> MOM
+BACKEND -[hidden]down-> PG
+
+' Força o banco de dados a ficar na mesma linha do MOM
+PG -[hidden]right-> MOM
+
+' =====================================================
+' ATORES -> APPS / BACKEND
+' =====================================================
+
+GERENTE -down-> APP_CLIENTE : usa
+OPERADOR -down-> APP_PRESTADOR : usa
+
+ADMIN -down-> API
+note right on link
+  Postman / cURL
+end note
+
+' =====================================================
+' APPS -> BACKEND
+' =====================================================
+
+APP_CLIENTE -down-> API
+APP_PRESTADOR -down-> API
+
+' Usamos notas ancoradas nos componentes para evitar
+' colisão nas linhas cruzadas da arquitetura
+note bottom of APP_CLIENTE
+  HTTPS / REST / JWT
+end note
+
+note bottom of APP_PRESTADOR
+  HTTPS / REST / JWT
+end note
+
+APP_CLIENTE .down.> WSG
+APP_PRESTADOR .down.> WSG
+
+note top of WSG
+  WSS / WebSocket
+end note
+
+' =====================================================
+' BACKEND -> INFRA
+' =====================================================
+
+API -down-> PG
+note left on link
+  Prisma ORM / TCP
+end note
+
+API .down.> REDIS
+note right on link
+  Redis Pub/Sub
+  publish event
+end note
+
+' Atenção aqui: o fluxo do Pub/Sub para o Gateway sobe (.up.>)
+REDIS .up.> WSG
+note right on link
+  Redis Pub/Sub
+  subscribe event
+end note
+
+' =====================================================
+' LEGENDA
+' =====================================================
+
+legend right
+| Sólida | comunicação síncrona |
+| Pontilhada | comunicação assíncrona |
+endlegend
+
+@enduml

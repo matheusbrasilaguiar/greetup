@@ -1,0 +1,128 @@
+@startuml greetup_backend_internal
+
+!theme plain
+skinparam backgroundColor white
+skinparam shadowing false
+skinparam roundCorner 12
+skinparam defaultFontName Arial
+skinparam linetype ortho
+
+' =====================================================
+' ESPAÇAMENTO DE RESPIRO
+' =====================================================
+skinparam nodesep 90
+skinparam ranksep 100
+
+top to bottom direction
+
+' =====================================================
+' ESTILO VISUAL (Padrão Macro Clean)
+' =====================================================
+skinparam NoteBackgroundColor #FFFFFF
+skinparam NoteBorderColor #94A3B8
+skinparam NoteFontColor #0F172A
+skinparam NoteFontSize 11
+
+skinparam component {
+  BackgroundColor #EFF6FF
+  BorderColor #2563EB
+  FontColor #1e3a8a
+}
+
+skinparam package {
+  BackgroundColor #FAFAFA
+  BorderColor #94A3B8
+  FontColor #0F172A
+  FontStyle bold
+}
+
+skinparam database {
+  BackgroundColor #F0FDF4
+  BorderColor #16A34A
+}
+
+skinparam queue {
+  BackgroundColor #FFF7ED
+  BorderColor #EA580C
+}
+
+skinparam ArrowColor #374151
+skinparam ArrowFontColor #374151
+
+' =====================================================
+' CAMADAS (CLEAN ARCHITECTURE)
+' =====================================================
+
+package "Presentation Layer" as PRES {
+  component "REST Controllers" as REST
+  component "WebSocket Gateway" as WSG
+  
+  ' Força os componentes a ficarem lado a lado
+  REST -[hidden]right-> WSG
+}
+
+package "Application Layer" as APP {
+  component "Use Cases" as UC
+}
+
+package "Domain Layer" as DOM {
+  component "Entities" as ENT
+  component "Repository Interfaces" as IFACE
+  
+  ENT -[hidden]right-> IFACE
+}
+
+package "Infrastructure Layer" as INFRA {
+  component "Prisma Repositories" as REPO
+  component "Redis Publisher / Subscriber" as EVT
+  component "JWT Service" as JWT
+  
+  REPO -[hidden]right-> EVT
+  EVT -[hidden]right-> JWT
+}
+
+' =====================================================
+' INFRAESTRUTURA EXTERNA
+' =====================================================
+database "PostgreSQL" as PG
+queue "Redis Pub/Sub" as REDIS
+
+PG -[hidden]right-> REDIS
+
+' =====================================================
+' ALINHAMENTO VERTICAL (A Pilha das Camadas)
+' =====================================================
+PRES -[hidden]down-> APP
+APP -[hidden]down-> DOM
+DOM -[hidden]down-> INFRA
+INFRA -[hidden]down-> PG
+
+' =====================================================
+' FLUXO DE DEPENDÊNCIAS
+' =====================================================
+
+' Presentation -> Application
+REST -down-> UC
+WSG -down-> UC
+
+' Application -> Domain
+UC -down-> ENT
+UC -down-> IFACE
+
+' Infrastructure -> Domain (Inversão de Dependência)
+' As setas sobem para representar a implementação das interfaces do Domínio
+REPO .up.> IFACE
+note left on link
+  <<implements>>
+end note
+
+EVT .up.> IFACE
+note right on link
+  <<implements>>
+end note
+
+' Infrastructure -> Ferramentas Externas
+REPO -down-> PG
+EVT .down.> REDIS
+
+@enduml
