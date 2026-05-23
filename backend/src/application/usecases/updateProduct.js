@@ -1,6 +1,6 @@
 const Product = require("../../domain/entities/Product");
 
-async function updateProduct({ id, name, description, category, active }, { productRepository }) {
+async function updateProduct({ id, name, description, category, active, companyId }, { productRepository }) {
   if (!id) {
     const error = new Error("Id is required");
     error.status = 400;
@@ -27,7 +27,7 @@ async function updateProduct({ id, name, description, category, active }, { prod
   if (productEntity.category !== undefined) data.category = productEntity.category;
   if (productEntity.active !== undefined) data.active = productEntity.active;
 
-  return productRepository.updateProduct(id, data);
+  return productRepository.updateProduct(id, data, companyId);
 }
 
 module.exports = updateProduct;

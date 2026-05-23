@@ -1,7 +1,7 @@
 const User = require("../../domain/entities/User");
 
-async function createUser({ name, email, password, role }, { userRepository, hashService }) {
-  const existing = await userRepository.getByEmail(email);
+async function createUser({ name, email, password, role, companyId }, { userRepository, hashService }) {
+  const existing = await userRepository.getByEmail(email, companyId);
   if (existing) {
     const error = new Error("Email already in use");
     error.status = 409;
@@ -15,7 +15,8 @@ async function createUser({ name, email, password, role }, { userRepository, has
     name: userEntity.name,
     email: userEntity.email,
     passwordHash: userEntity.passwordHash,
-    role: userEntity.role
+    role: userEntity.role,
+    companyId
   });
 }
 

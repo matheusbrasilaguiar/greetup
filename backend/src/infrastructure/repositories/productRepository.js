@@ -6,22 +6,21 @@ class ProductRepository extends ProductRepositoryPort {
     return prisma.product.create({ data });
   }
 
-  async listProducts(includeInactive) {
-    if (includeInactive) {
-      return prisma.product.findMany({ orderBy: { createdAt: "desc" } });
-    }
-
-    return prisma.product.findMany({
-      where: { active: true },
-      orderBy: { createdAt: "desc" }
-    });
+  async getProductById(id, companyId) {
+    return prisma.product.findFirst({ where: { id, companyId } });
   }
 
-  async updateProduct(id, data) {
-    return prisma.product.update({
-      where: { id },
+  async listProducts(includeInactive, companyId) {
+    const where = { companyId };
+    if (!includeInactive) where.active = true;
+    return prisma.product.findMany({ where, orderBy: { createdAt: "desc" } });
+  }
+
+  async updateProduct(id, data, companyId) {
+    return prisma.product.updateMany({
+      where: { id, companyId },
       data
-    });
+    }).then(() => prisma.product.findFirst({ where: { id, companyId } }));
   }
 }
 

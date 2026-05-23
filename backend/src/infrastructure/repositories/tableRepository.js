@@ -6,15 +6,19 @@ class TableRepository extends TableRepositoryPort {
     return prisma.table.create({ data });
   }
 
-  async listTables() {
-    return prisma.table.findMany({ orderBy: { createdAt: "desc" } });
+  async getTableById(id, companyId) {
+    return prisma.table.findFirst({ where: { id, companyId } });
   }
 
-  async updateStatus(id, status) {
-    return prisma.table.update({
-      where: { id },
+  async listTables(companyId) {
+    return prisma.table.findMany({ where: { companyId }, orderBy: { createdAt: "desc" } });
+  }
+
+  async updateStatus(id, status, companyId) {
+    return prisma.table.updateMany({
+      where: { id, companyId },
       data: { status }
-    });
+    }).then(() => prisma.table.findFirst({ where: { id, companyId } }));
   }
 }
 
