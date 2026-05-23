@@ -16,7 +16,7 @@ const orderRepository = require("../repositories/orderRepository");
 const companyRepository = require("../repositories/companyRepository");
 const hashService = require("../security/hashService");
 const tokenService = require("../security/tokenService");
-const eventPublisher = require("../messaging/nullEventPublisher");
+const eventPublisher = require("../messaging/redisEventPublisher");
 
 const bindings = [
   [userRepository, UserRepositoryPort, "UserRepository"],
