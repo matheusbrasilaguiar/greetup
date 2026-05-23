@@ -1,0 +1,61 @@
+const OrderRepositoryPort = require("../../application/ports/OrderRepository");
+const prisma = require("../database/prisma");
+
+const ORDER_INCLUDE = {
+  table: true,
+  customer: true,
+  items: {
+    include: { product: true },
+    orderBy: { createdAt: "asc" }
+  }
+};
+
+class OrderRepository extends OrderRepositoryPort {
+  async createOrder(orderData, itemsData) {
+    return prisma.order.create({
+      data: {
+        ...orderData,
+        items: { create: itemsData }
+      },
+      include: ORDER_INCLUDE
+    });
+  }
+
+  async getOrderById(id, companyId) {
+    return prisma.order.findFirst({
+      where: { id, companyId },
+      include: ORDER_INCLUDE
+    });
+  }
+
+  async listOrders(filters = {}) {
+    const where = {};
+    if (filters.companyId) where.companyId = filters.companyId;
+    if (filters.tableId) where.tableId = filters.tableId;
+    if (filters.status) where.status = filters.status;
+
+    return prisma.order.findMany({
+      where,
+      include: ORDER_INCLUDE,
+      orderBy: { createdAt: "desc" }
+    });
+  }
+
+  async updateItemStatus(itemId, status, companyId) {
+    return prisma.orderItem.update({
+      where: { id: itemId },
+      data: { status },
+      include: { product: true }
+    });
+  }
+
+  async updateOrderStatus(id, status) {
+    return prisma.order.update({
+      where: { id },
+      data: { status },
+      include: ORDER_INCLUDE
+    });
+  }
+}
+
+module.exports = new OrderRepository();
