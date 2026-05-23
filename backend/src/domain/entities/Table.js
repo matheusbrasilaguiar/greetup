@@ -1,3 +1,5 @@
+const { TableStatus } = require("../constants/tableStatus");
+
 class Table {
   constructor({ id, code, status, createdAt, updatedAt }) {
     this.id = id;
@@ -14,11 +16,11 @@ class Table {
       throw error;
     }
 
-    return new Table({ code, status: "OPEN" });
+    return new Table({ code, status: TableStatus.OPEN });
   }
 
   static validateStatus(status) {
-    const allowed = ["OPEN", "OCCUPIED", "CLOSED"];
+    const allowed = Object.values(TableStatus);
     if (!allowed.includes(status)) {
       const error = new Error("Invalid status");
       error.status = 400;

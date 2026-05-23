@@ -1,14 +1,18 @@
 const express = require("express");
-
 const usersController = require("../controllers/users.controller");
-const authMiddleware = require("../middleware/auth");
 const requireRole = require("../middleware/requireRole");
 
-const router = express.Router();
+function createUsersRouter(authMiddleware) {
+  const router = express.Router();
 
-router.use(authMiddleware);
-router.use(requireRole(["ADMIN"]));
+  router.use(authMiddleware);
+  router.use(requireRole(["ADMIN"]));
 
-router.post("/", usersController.create);
+  router.post("/", usersController.create);
+  router.get("/", usersController.list);
+  router.get("/:id", usersController.getById);
 
-module.exports = router;
+  return router;
+}
+
+module.exports = createUsersRouter;
