@@ -6,34 +6,81 @@ skinparam shadowing false
 skinparam roundCorner 8
 skinparam defaultFontName Arial
 
+entity "Company" as company {
+  * id : string <<PK>>
+  --
+  name : string
+  createdAt : datetime
+}
+
 entity "User" as user {
   * id : string <<PK>>
   --
   name : string
-  email : string <<unique>>
+  email : string
   passwordHash : string
   role : Role
   createdAt : datetime
+  companyId : string <<FK>>
+  <<unique(email, companyId)>>
 }
 
 entity "Product" as product {
   * id : string <<PK>>
   --
   name : string
-  description : string
+  description : string?
   category : ProductCategory
   active : boolean
   createdAt : datetime
   updatedAt : datetime
+  companyId : string <<FK>>
 }
 
 entity "Table" as table {
   * id : string <<PK>>
   --
-  code : string <<unique>>
+  code : string
   status : TableStatus
   createdAt : datetime
   updatedAt : datetime
+  companyId : string <<FK>>
+  <<unique(code, companyId)>>
+}
+
+entity "Customer" as customer {
+  * id : string <<PK>>
+  --
+  name : string
+  email : string?
+  phone : string?
+  employer : string?
+  createdAt : datetime
+  updatedAt : datetime
+  companyId : string <<FK>>
+}
+
+entity "Order" as order {
+  * id : string <<PK>>
+  --
+  status : OrderStatus
+  createdAt : datetime
+  updatedAt : datetime
+  tableId : string <<FK>>
+  customerId : string? <<FK>>
+  companyId : string <<FK>>
+}
+
+entity "OrderItem" as orderItem {
+  * id : string <<PK>>
+  --
+  quantity : int
+  notes : string?
+  status : ItemStatus
+  createdAt : datetime
+  updatedAt : datetime
+  orderId : string <<FK>>
+  productId : string <<FK>>
 }
 
 enum Role {
@@ -53,8 +100,33 @@ enum TableStatus {
   CLOSED
 }
 
+enum OrderStatus {
+  OPEN
+  CLOSED
+}
+
+enum ItemStatus {
+  PENDENTE
+  EM_PREPARO
+  PRONTO
+  ENTREGUE
+}
+
+company ||--o{ user
+company ||--o{ product
+company ||--o{ table
+company ||--o{ customer
+company ||--o{ order
+
+table ||--o{ order
+customer |o--o{ order
+order ||--o{ orderItem
+product ||--o{ orderItem
+
 user ..> Role
 product ..> ProductCategory
 table ..> TableStatus
+order ..> OrderStatus
+orderItem ..> ItemStatus
 
 @enduml

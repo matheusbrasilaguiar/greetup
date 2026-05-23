@@ -10,7 +10,8 @@ async function register(req, res, next) {
       id: user.id,
       name: user.name,
       email: user.email,
-      role: user.role
+      role: user.role,
+      companyId: user.companyId
     });
   } catch (err) {
     return next(err);
@@ -27,7 +28,8 @@ async function loginHandler(req, res, next) {
         id: user.id,
         name: user.name,
         email: user.email,
-        role: user.role
+        role: user.role,
+        companyId: user.companyId
       }
     });
   } catch (err) {

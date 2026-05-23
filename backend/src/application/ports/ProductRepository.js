@@ -3,11 +3,15 @@ class ProductRepository {
     throw new Error("ProductRepository#createProduct not implemented");
   }
 
-  async listProducts(includeInactive) {
+  async getProductById(id, companyId) {
+    throw new Error("ProductRepository#getProductById not implemented");
+  }
+
+  async listProducts(includeInactive, companyId) {
     throw new Error("ProductRepository#listProducts not implemented");
   }
 
-  async updateProduct(id, data) {
+  async updateProduct(id, data, companyId) {
     throw new Error("ProductRepository#updateProduct not implemented");
   }
 }

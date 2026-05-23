@@ -69,7 +69,7 @@ O diagrama abaixo representa a visão macro da arquitetura do sistema, incluindo
 
 ---
 
-## Diagrama 4 — Schema do Banco (Sprint 1)
+## Diagrama 4 — Schema do Banco (Sprint 1+2 — atualizado)
 [docs/architecture/diagrams/greetup-db-schema.puml](/docs/architecture/diagrams/greetup-db-schema.puml)
 
 ---
@@ -86,3 +86,31 @@ A arquitetura proposta atende aos requisitos, contemplando:
 - Atualizações em tempo real
 - Persistência relacional
 - Organização baseada em Clean Architecture
+
+---
+
+## Multi-Tenancy
+
+O Greetup é uma plataforma SaaS multi-tenant. Cada empresa contratante opera em isolamento total das demais — nenhuma empresa acessa dados de outra.
+
+### Modelo de Isolamento
+
+O isolamento é implementado por **row-level tenancy**: todos os modelos de dados (User, Product, Table, Customer, Order) possuem um campo `companyId` como chave estrangeira para o modelo `Company`. Todas as queries do banco incluem `WHERE companyId = ?`.
+
+### Fluxo de Registro e Identificação do Tenant
+
+1. `POST /auth/register` recebe `companyName` e cria atomicamente uma `Company` e o primeiro `User` (ADMIN) vinculado a ela.
+2. No login, o `companyId` é embutido no payload do JWT — zero round-trips extras por requisição.
+3. O middleware de autenticação extrai `companyId` do JWT e injeta em `req.user.companyId`.
+4. Cada controller passa `req.user.companyId` para o use case, que repassa ao repositório.
+
+### Constraints de Unicidade Intra-Tenant
+
+| Modelo | Constraint |
+|--------|-----------|
+| User   | `(email, companyId)` — dois usuários de empresas diferentes podem ter o mesmo e-mail |
+| Table  | `(code, companyId)` — duas empresas podem ter "MESA-01" |
+
+### Campo `employer` no Customer
+
+O modelo `Customer` representa visitantes/clientes atendidos no estande. O campo que armazena a empresa empregadora do visitante é `employer` (anteriormente `company`). A renomeação evita conflito com o campo de relação `company` que aponta para o tenant proprietário do registro.

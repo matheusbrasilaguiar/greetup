@@ -3,11 +3,15 @@ class TableRepository {
     throw new Error("TableRepository#createTable not implemented");
   }
 
-  async listTables() {
+  async getTableById(id, companyId) {
+    throw new Error("TableRepository#getTableById not implemented");
+  }
+
+  async listTables(companyId) {
     throw new Error("TableRepository#listTables not implemented");
   }
 
-  async updateStatus(id, status) {
+  async updateStatus(id, status, companyId) {
     throw new Error("TableRepository#updateStatus not implemented");
   }
 }
