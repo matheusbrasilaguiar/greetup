@@ -9,7 +9,6 @@ async function closeOrder({ id, companyId }, { orderRepository, eventPublisher }
   }
 
   const order = await orderRepository.getOrderById(id, companyId);
-
   if (!order) {
     const error = new Error("Order not found");
     error.status = 404;
@@ -24,8 +23,10 @@ async function closeOrder({ id, companyId }, { orderRepository, eventPublisher }
 
   await eventPublisher.publish(Events.ORDER_CLOSED, {
     orderId: closedOrder.id,
-    tableId: closedOrder.tableId,
-    tableCode: closedOrder.table.code,
+    sessionId: closedOrder.sessionId,
+    tableId: closedOrder.session.tableId,
+    tableCode: closedOrder.session.table.code,
+    companyId: closedOrder.companyId,
     status: closedOrder.status,
     closedAt: closedOrder.updatedAt
   });

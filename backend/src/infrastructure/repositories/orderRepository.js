@@ -1,9 +1,20 @@
 const OrderRepositoryPort = require("../../application/ports/OrderRepository");
 const prisma = require("../database/prisma");
 
+const SESSION_CONTEXT = {
+  select: {
+    id: true,
+    tableId: true,
+    customerId: true,
+    companyId: true,
+    table: { select: { id: true, code: true } },
+    customer: { select: { id: true, name: true } },
+    attendant: { select: { id: true, name: true } }
+  }
+};
+
 const ORDER_INCLUDE = {
-  table: true,
-  customer: true,
+  session: SESSION_CONTEXT,
   items: {
     include: { product: true },
     orderBy: { createdAt: "asc" }
@@ -31,7 +42,7 @@ class OrderRepository extends OrderRepositoryPort {
   async listOrders(filters = {}) {
     const where = {};
     if (filters.companyId) where.companyId = filters.companyId;
-    if (filters.tableId) where.tableId = filters.tableId;
+    if (filters.sessionId) where.sessionId = filters.sessionId;
     if (filters.status) where.status = filters.status;
 
     return prisma.order.findMany({
@@ -45,7 +56,10 @@ class OrderRepository extends OrderRepositoryPort {
     return prisma.orderItem.update({
       where: { id: itemId },
       data: { status },
-      include: { product: true }
+      include: {
+        product: true,
+        order: { select: { id: true, sessionId: true, companyId: true } }
+      }
     });
   }
 

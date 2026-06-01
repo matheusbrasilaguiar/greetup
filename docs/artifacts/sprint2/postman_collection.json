@@ -1,11 +1,18 @@
 {
   "info": {
-    "name": "Greetup API — Sprint 2",
+    "name": "Greetup API — Sprint 2+",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "variable": [
     { "key": "base_url", "value": "http://localhost:3000" },
-    { "key": "token", "value": "" }
+    { "key": "token", "value": "" },
+    { "key": "companyId", "value": "" },
+    { "key": "tableId", "value": "" },
+    { "key": "sessionId", "value": "" },
+    { "key": "productId", "value": "" },
+    { "key": "customerId", "value": "" },
+    { "key": "orderId", "value": "" },
+    { "key": "attendantId", "value": "" }
   ],
   "item": [
     {
@@ -13,6 +20,17 @@
       "item": [
         {
           "name": "Register (cria empresa + ADMIN)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var json = pm.response.json();",
+                  "pm.collectionVariables.set('companyId', json.companyId);"
+                ]
+              }
+            }
+          ],
           "request": {
             "method": "POST",
             "header": [{ "key": "Content-Type", "value": "application/json" }],
@@ -31,7 +49,8 @@
               "script": {
                 "exec": [
                   "var json = pm.response.json();",
-                  "pm.collectionVariables.set('token', json.token);"
+                  "pm.collectionVariables.set('token', json.token);",
+                  "pm.collectionVariables.set('companyId', json.user.companyId);"
                 ]
               }
             }
@@ -52,7 +71,18 @@
       "name": "Users",
       "item": [
         {
-          "name": "Criar usuário",
+          "name": "Criar GERENTE",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var json = pm.response.json();",
+                  "pm.collectionVariables.set('attendantId', json.id);"
+                ]
+              }
+            }
+          ],
           "request": {
             "method": "POST",
             "header": [
@@ -67,19 +97,26 @@
           }
         },
         {
+          "name": "Criar OPERADOR",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": "{{base_url}}/users",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Pedro Operador\",\n  \"email\": \"operador@empresa.com\",\n  \"password\": \"senha123\",\n  \"role\": \"OPERADOR\"\n}"
+            }
+          }
+        },
+        {
           "name": "Listar usuários",
           "request": {
             "method": "GET",
             "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
             "url": "{{base_url}}/users"
-          }
-        },
-        {
-          "name": "Buscar usuário por ID",
-          "request": {
-            "method": "GET",
-            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
-            "url": "{{base_url}}/users/:id"
           }
         }
       ]
@@ -89,6 +126,17 @@
       "item": [
         {
           "name": "Criar produto",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var json = pm.response.json();",
+                  "pm.collectionVariables.set('productId', json.id);"
+                ]
+              }
+            }
+          ],
           "request": {
             "method": "POST",
             "header": [
@@ -109,29 +157,6 @@
             "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
             "url": "{{base_url}}/products"
           }
-        },
-        {
-          "name": "Buscar produto por ID",
-          "request": {
-            "method": "GET",
-            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
-            "url": "{{base_url}}/products/:id"
-          }
-        },
-        {
-          "name": "Atualizar produto",
-          "request": {
-            "method": "PATCH",
-            "header": [
-              { "key": "Content-Type", "value": "application/json" },
-              { "key": "Authorization", "value": "Bearer {{token}}" }
-            ],
-            "url": "{{base_url}}/products/:id",
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"name\": \"Coca-Cola Zero\",\n  \"active\": true\n}"
-            }
-          }
         }
       ]
     },
@@ -140,6 +165,17 @@
       "item": [
         {
           "name": "Criar mesa",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var json = pm.response.json();",
+                  "pm.collectionVariables.set('tableId', json.id);"
+                ]
+              }
+            }
+          ],
           "request": {
             "method": "POST",
             "header": [
@@ -166,22 +202,88 @@
           "request": {
             "method": "GET",
             "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
-            "url": "{{base_url}}/tables/:id"
+            "url": "{{base_url}}/tables/{{tableId}}"
           }
         },
         {
-          "name": "Atualizar status da mesa",
+          "name": "Atualizar status da mesa (manual)",
           "request": {
             "method": "PATCH",
             "header": [
               { "key": "Content-Type", "value": "application/json" },
               { "key": "Authorization", "value": "Bearer {{token}}" }
             ],
-            "url": "{{base_url}}/tables/:id/status",
+            "url": "{{base_url}}/tables/{{tableId}}/status",
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"status\": \"OCCUPIED\"\n}"
+              "raw": "{\n  \"status\": \"CLOSED\"\n}"
             }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Sessions",
+      "item": [
+        {
+          "name": "Abrir sessão na mesa",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var json = pm.response.json();",
+                  "pm.collectionVariables.set('sessionId', json.id);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": "{{base_url}}/tables/{{tableId}}/sessions",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"attendantId\": \"{{attendantId}}\",\n  \"customerId\": \"{{customerId}}\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Buscar sessão ativa da mesa",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": "{{base_url}}/tables/{{tableId}}/sessions/active"
+          }
+        },
+        {
+          "name": "Listar sessões da mesa",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": {
+              "raw": "{{base_url}}/tables/{{tableId}}/sessions?onlyActive=false",
+              "query": [{ "key": "onlyActive", "value": "false" }]
+            }
+          }
+        },
+        {
+          "name": "Buscar sessão por ID",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": "{{base_url}}/tables/{{tableId}}/sessions/{{sessionId}}"
+          }
+        },
+        {
+          "name": "Fechar sessão",
+          "request": {
+            "method": "PATCH",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": "{{base_url}}/tables/{{tableId}}/sessions/{{sessionId}}/close"
           }
         }
       ]
@@ -191,6 +293,17 @@
       "item": [
         {
           "name": "Criar visitante",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var json = pm.response.json();",
+                  "pm.collectionVariables.set('customerId', json.id);"
+                ]
+              }
+            }
+          ],
           "request": {
             "method": "POST",
             "header": [
@@ -211,29 +324,6 @@
             "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
             "url": "{{base_url}}/customers"
           }
-        },
-        {
-          "name": "Buscar visitante por ID",
-          "request": {
-            "method": "GET",
-            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
-            "url": "{{base_url}}/customers/:id"
-          }
-        },
-        {
-          "name": "Atualizar visitante",
-          "request": {
-            "method": "PATCH",
-            "header": [
-              { "key": "Content-Type", "value": "application/json" },
-              { "key": "Authorization", "value": "Bearer {{token}}" }
-            ],
-            "url": "{{base_url}}/customers/:id",
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"phone\": \"31988880000\"\n}"
-            }
-          }
         }
       ]
     },
@@ -241,7 +331,18 @@
       "name": "Orders",
       "item": [
         {
-          "name": "Criar pedido (publica order:created)",
+          "name": "Criar pedido (publica order.created)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var json = pm.response.json();",
+                  "pm.collectionVariables.set('orderId', json.id);"
+                ]
+              }
+            }
+          ],
           "request": {
             "method": "POST",
             "header": [
@@ -251,7 +352,7 @@
             "url": "{{base_url}}/orders",
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"tableId\": \"<id_da_mesa>\",\n  \"customerId\": \"<id_do_visitante>\",\n  \"items\": [\n    {\n      \"productId\": \"<id_do_produto>\",\n      \"quantity\": 2,\n      \"notes\": \"sem gelo\"\n    }\n  ]\n}"
+              "raw": "{\n  \"sessionId\": \"{{sessionId}}\",\n  \"items\": [\n    {\n      \"productId\": \"{{productId}}\",\n      \"quantity\": 2,\n      \"notes\": \"sem gelo\"\n    }\n  ]\n}"
             }
           }
         },
@@ -264,30 +365,41 @@
           }
         },
         {
+          "name": "Listar pedidos da sessão",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": {
+              "raw": "{{base_url}}/orders?sessionId={{sessionId}}",
+              "query": [{ "key": "sessionId", "value": "{{sessionId}}" }]
+            }
+          }
+        },
+        {
           "name": "Buscar pedido por ID",
           "request": {
             "method": "GET",
             "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
-            "url": "{{base_url}}/orders/:id"
+            "url": "{{base_url}}/orders/{{orderId}}"
           }
         },
         {
-          "name": "Fechar pedido (publica order:closed)",
+          "name": "Fechar pedido (publica order.closed)",
           "request": {
             "method": "PATCH",
             "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
-            "url": "{{base_url}}/orders/:id/close"
+            "url": "{{base_url}}/orders/{{orderId}}/close"
           }
         },
         {
-          "name": "Atualizar status de item (publica order.item:status_changed)",
+          "name": "Atualizar status de item (publica order.item.status_changed)",
           "request": {
             "method": "PATCH",
             "header": [
               { "key": "Content-Type", "value": "application/json" },
               { "key": "Authorization", "value": "Bearer {{token}}" }
             ],
-            "url": "{{base_url}}/orders/:orderId/items/:itemId/status",
+            "url": "{{base_url}}/orders/{{orderId}}/items/:itemId/status",
             "body": {
               "mode": "raw",
               "raw": "{\n  \"status\": \"EM_PREPARO\"\n}"

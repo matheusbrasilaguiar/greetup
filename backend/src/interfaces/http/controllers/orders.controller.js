@@ -31,9 +31,9 @@ async function getById(req, res, next) {
 
 async function list(req, res, next) {
   try {
-    const { tableId, status } = req.query;
+    const { sessionId, status } = req.query;
     const orders = await listOrders(
-      { tableId, status, companyId: req.user.companyId },
+      { sessionId, status, companyId: req.user.companyId },
       buildOrderDeps()
     );
     return res.json(orders);

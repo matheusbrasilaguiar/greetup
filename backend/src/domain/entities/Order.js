@@ -1,19 +1,18 @@
 const { OrderStatus } = require("../constants/orderStatus");
 
 class Order {
-  constructor({ id, tableId, customerId, status, items, createdAt, updatedAt }) {
+  constructor({ id, sessionId, status, items, createdAt, updatedAt }) {
     this.id = id;
-    this.tableId = tableId;
-    this.customerId = customerId;
+    this.sessionId = sessionId;
     this.status = status;
     this.items = items;
     this.createdAt = createdAt;
     this.updatedAt = updatedAt;
   }
 
-  static create({ tableId, customerId, items }) {
-    if (!tableId) {
-      const error = new Error("tableId is required");
+  static create({ sessionId, items }) {
+    if (!sessionId) {
+      const error = new Error("sessionId is required");
       error.status = 400;
       throw error;
     }
@@ -25,8 +24,7 @@ class Order {
     }
 
     return new Order({
-      tableId,
-      customerId: customerId || null,
+      sessionId,
       status: OrderStatus.OPEN,
       items
     });
