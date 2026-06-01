@@ -1,8 +1,9 @@
-const createOrder = require("../../../application/usecases/createOrder");
-const getOrderById = require("../../../application/usecases/getOrderById");
-const listOrders = require("../../../application/usecases/listOrders");
+const createOrder      = require("../../../application/usecases/createOrder");
+const getOrderById     = require("../../../application/usecases/getOrderById");
+const listOrders       = require("../../../application/usecases/listOrders");
+const listOrderItems   = require("../../../application/usecases/listOrderItems");
 const updateItemStatus = require("../../../application/usecases/updateItemStatus");
-const closeOrder = require("../../../application/usecases/closeOrder");
+const closeOrder       = require("../../../application/usecases/closeOrder");
 const { buildOrderDeps } = require("../../../infrastructure/di/container");
 
 async function create(req, res, next) {
@@ -71,10 +72,24 @@ async function close(req, res, next) {
   }
 }
 
+async function listItems(req, res, next) {
+  try {
+    const { status } = req.query;
+    const items = await listOrderItems(
+      { companyId: req.user.companyId, status },
+      buildOrderDeps()
+    );
+    return res.json(items);
+  } catch (err) {
+    return next(err);
+  }
+}
+
 module.exports = {
   create,
   getById,
   list,
+  listItems,
   patchItemStatus,
   close
 };

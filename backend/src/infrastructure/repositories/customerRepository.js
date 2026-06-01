@@ -10,8 +10,15 @@ class CustomerRepository extends CustomerRepositoryPort {
     return prisma.customer.findFirst({ where: { id, companyId } });
   }
 
-  async listCustomers(companyId) {
-    return prisma.customer.findMany({ where: { companyId }, orderBy: { createdAt: "desc" } });
+  async listCustomers(companyId, q) {
+    const where = { companyId };
+    if (q) {
+      where.OR = [
+        { name:  { contains: q, mode: "insensitive" } },
+        { email: { contains: q, mode: "insensitive" } }
+      ];
+    }
+    return prisma.customer.findMany({ where, orderBy: { name: "asc" } });
   }
 
   async updateCustomer(id, data, companyId) {

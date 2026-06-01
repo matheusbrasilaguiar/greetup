@@ -4,7 +4,14 @@ const listUsers = require("../../../application/usecases/listUsers");
 const { buildUserDeps } = require("../../../infrastructure/di/container");
 
 function sanitize(user) {
-  return { id: user.id, name: user.name, email: user.email, role: user.role, createdAt: user.createdAt };
+  return {
+    id: user.id,
+    name: user.name,
+    email: user.email,
+    role: user.role,
+    operatorFunction: user.operatorFunction || null,
+    createdAt: user.createdAt
+  };
 }
 
 async function create(req, res, next) {

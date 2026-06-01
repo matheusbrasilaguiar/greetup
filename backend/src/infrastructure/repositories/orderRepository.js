@@ -70,6 +70,31 @@ class OrderRepository extends OrderRepositoryPort {
       include: ORDER_INCLUDE
     });
   }
+
+  async listItems({ companyId, status }) {
+    const where = {
+      order: { companyId, status: "OPEN" }
+    };
+    if (status) where.status = status;
+
+    return prisma.orderItem.findMany({
+      where,
+      include: {
+        product: true,
+        order: {
+          include: {
+            session: {
+              include: {
+                table:    { select: { id: true, code: true } },
+                customer: { select: { name: true } }
+              }
+            }
+          }
+        }
+      },
+      orderBy: { createdAt: "asc" }
+    });
+  }
 }
 
 module.exports = new OrderRepository();

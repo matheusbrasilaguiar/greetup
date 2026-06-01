@@ -30,7 +30,8 @@ async function getById(req, res, next) {
 
 async function list(req, res, next) {
   try {
-    const customers = await listCustomers({ companyId: req.user.companyId }, buildCustomerDeps());
+    const { q } = req.query;
+    const customers = await listCustomers({ companyId: req.user.companyId, q }, buildCustomerDeps());
     return res.json(customers);
   } catch (err) {
     return next(err);
