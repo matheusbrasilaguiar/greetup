@@ -13,11 +13,18 @@ services:
     volumes:
       - greetup_postgres_data:/var/lib/postgresql/data
 
-  redis:
-    image: redis:7
-    container_name: greetup-redis
+  rabbitmq:
+    image: rabbitmq:3-management
+    container_name: greetup-rabbitmq
     ports:
-      - "6379:6379"
+      - "5672:5672"
+      - "15672:15672"
+    environment:
+      RABBITMQ_DEFAULT_USER: guest
+      RABBITMQ_DEFAULT_PASS: guest
+    volumes:
+      - greetup_rabbitmq_data:/var/lib/rabbitmq
 
 volumes:
   greetup_postgres_data:
+  greetup_rabbitmq_data:
