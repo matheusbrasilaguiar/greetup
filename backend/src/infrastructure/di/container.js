@@ -1,33 +1,36 @@
-const UserRepositoryPort = require("../../application/ports/UserRepository");
-const ProductRepositoryPort = require("../../application/ports/ProductRepository");
-const TableRepositoryPort = require("../../application/ports/TableRepository");
-const CustomerRepositoryPort = require("../../application/ports/CustomerRepository");
-const OrderRepositoryPort = require("../../application/ports/OrderRepository");
-const CompanyRepositoryPort = require("../../application/ports/CompanyRepository");
-const HashServicePort = require("../../application/ports/HashService");
-const TokenServicePort = require("../../application/ports/TokenService");
-const EventPublisherPort = require("../../application/ports/EventPublisher");
+const UserRepositoryPort         = require("../../application/ports/UserRepository");
+const ProductRepositoryPort      = require("../../application/ports/ProductRepository");
+const TableRepositoryPort        = require("../../application/ports/TableRepository");
+const TableSessionRepositoryPort = require("../../application/ports/TableSessionRepository");
+const CustomerRepositoryPort     = require("../../application/ports/CustomerRepository");
+const OrderRepositoryPort        = require("../../application/ports/OrderRepository");
+const CompanyRepositoryPort      = require("../../application/ports/CompanyRepository");
+const HashServicePort            = require("../../application/ports/HashService");
+const TokenServicePort           = require("../../application/ports/TokenService");
+const EventPublisherPort         = require("../../application/ports/EventPublisher");
 
-const userRepository = require("../repositories/userRepository");
-const productRepository = require("../repositories/productRepository");
-const tableRepository = require("../repositories/tableRepository");
-const customerRepository = require("../repositories/customerRepository");
-const orderRepository = require("../repositories/orderRepository");
-const companyRepository = require("../repositories/companyRepository");
-const hashService = require("../security/hashService");
-const tokenService = require("../security/tokenService");
-const eventPublisher = require("../messaging/rabbitmqEventPublisher");
+const userRepository         = require("../repositories/userRepository");
+const productRepository      = require("../repositories/productRepository");
+const tableRepository        = require("../repositories/tableRepository");
+const tableSessionRepository = require("../repositories/tableSessionRepository");
+const customerRepository     = require("../repositories/customerRepository");
+const orderRepository        = require("../repositories/orderRepository");
+const companyRepository      = require("../repositories/companyRepository");
+const hashService            = require("../security/hashService");
+const tokenService           = require("../security/tokenService");
+const eventPublisher         = require("../messaging/rabbitmqEventPublisher");
 
 const bindings = [
-  [userRepository, UserRepositoryPort, "UserRepository"],
-  [productRepository, ProductRepositoryPort, "ProductRepository"],
-  [tableRepository, TableRepositoryPort, "TableRepository"],
-  [customerRepository, CustomerRepositoryPort, "CustomerRepository"],
-  [orderRepository, OrderRepositoryPort, "OrderRepository"],
-  [companyRepository, CompanyRepositoryPort, "CompanyRepository"],
-  [hashService, HashServicePort, "HashService"],
-  [tokenService, TokenServicePort, "TokenService"],
-  [eventPublisher, EventPublisherPort, "EventPublisher"]
+  [userRepository,         UserRepositoryPort,         "UserRepository"],
+  [productRepository,      ProductRepositoryPort,       "ProductRepository"],
+  [tableRepository,        TableRepositoryPort,         "TableRepository"],
+  [tableSessionRepository, TableSessionRepositoryPort,  "TableSessionRepository"],
+  [customerRepository,     CustomerRepositoryPort,      "CustomerRepository"],
+  [orderRepository,        OrderRepositoryPort,         "OrderRepository"],
+  [companyRepository,      CompanyRepositoryPort,       "CompanyRepository"],
+  [hashService,            HashServicePort,             "HashService"],
+  [tokenService,           TokenServicePort,            "TokenService"],
+  [eventPublisher,         EventPublisherPort,          "EventPublisher"]
 ];
 
 bindings.forEach(([impl, Port, name]) => {
@@ -52,12 +55,22 @@ function buildTableDeps() {
   return { tableRepository };
 }
 
+function buildTableSessionDeps() {
+  return {
+    tableSessionRepository,
+    tableRepository,
+    userRepository,
+    customerRepository,
+    eventPublisher
+  };
+}
+
 function buildCustomerDeps() {
   return { customerRepository };
 }
 
 function buildOrderDeps() {
-  return { orderRepository, eventPublisher };
+  return { orderRepository, tableSessionRepository, eventPublisher };
 }
 
 module.exports = {
@@ -65,6 +78,7 @@ module.exports = {
   buildUserDeps,
   buildProductDeps,
   buildTableDeps,
+  buildTableSessionDeps,
   buildCustomerDeps,
   buildOrderDeps,
   tokenService
