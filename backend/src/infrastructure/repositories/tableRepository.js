@@ -11,7 +11,21 @@ class TableRepository extends TableRepositoryPort {
   }
 
   async listTables(companyId) {
-    return prisma.table.findMany({ where: { companyId }, orderBy: { createdAt: "desc" } });
+    return prisma.table.findMany({
+      where: { companyId },
+      include: {
+        sessions: {
+          where: { closedAt: null },
+          include: {
+            customer:  { select: { id: true, name: true } },
+            attendant: { select: { id: true, name: true } },
+            orders:    { select: { id: true, status: true } }
+          },
+          take: 1
+        }
+      },
+      orderBy: { code: "asc" }
+    });
   }
 
   async updateStatus(id, status, companyId) {

@@ -7,10 +7,11 @@ function createOrdersRouter(authMiddleware) {
 
   router.use(authMiddleware);
 
-  router.post("/", requireRole(["GERENTE"]), ordersController.create);
-  router.get("/", requireRole(["GERENTE", "OPERADOR", "ADMIN"]), ordersController.list);
-  router.get("/:id", requireRole(["GERENTE", "OPERADOR", "ADMIN"]), ordersController.getById);
-  router.patch("/:id/close", requireRole(["GERENTE", "ADMIN"]), ordersController.close);
+  router.post("/",    requireRole(["GERENTE"]),                        ordersController.create);
+  router.get("/",     requireRole(["GERENTE", "OPERADOR", "ADMIN"]),   ordersController.list);
+  router.get("/items",requireRole(["GERENTE", "OPERADOR", "ADMIN"]),   ordersController.listItems);
+  router.get("/:id",  requireRole(["GERENTE", "OPERADOR", "ADMIN"]),   ordersController.getById);
+  router.patch("/:id/close", requireRole(["GERENTE", "ADMIN"]),        ordersController.close);
   router.patch(
     "/:orderId/items/:itemId/status",
     requireRole(["OPERADOR"]),

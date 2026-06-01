@@ -15,6 +15,12 @@ enum Role {
   OPERADOR
 }
 
+enum OperatorFunction {
+  COZINHA
+  GARCOM
+  DISPLAY
+}
+
 enum ProductCategory {
   COMIDA
   BEBIDA
@@ -57,11 +63,12 @@ model User {
   name         String
   email        String
   passwordHash String
-  role         Role           @default(ADMIN)
-  createdAt    DateTime       @default(now())
-  companyId    String
-  company      Company        @relation(fields: [companyId], references: [id])
-  sessions     TableSession[] @relation("SessionAttendant")
+  role             Role              @default(ADMIN)
+  operatorFunction OperatorFunction?
+  createdAt        DateTime          @default(now())
+  companyId        String
+  company          Company           @relation(fields: [companyId], references: [id])
+  sessions         TableSession[]    @relation("SessionAttendant")
 
   @@unique([email, companyId])
 }

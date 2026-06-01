@@ -18,6 +18,10 @@ class OrderRepository {
   async updateOrderStatus(id, status) {
     throw new Error("OrderRepository#updateOrderStatus not implemented");
   }
+
+  async listItems(filters) {
+    throw new Error("OrderRepository#listItems not implemented");
+  }
 }
 
 module.exports = OrderRepository;

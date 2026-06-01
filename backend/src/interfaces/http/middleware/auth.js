@@ -13,7 +13,8 @@ function createAuthMiddleware(tokenService) {
         id: payload.sub,
         role: payload.role,
         email: payload.email,
-        companyId: payload.companyId
+        companyId: payload.companyId,
+        operatorFunction: payload.operatorFunction || null
       };
       return next();
     } catch (err) {

@@ -29,6 +29,7 @@ async function loginHandler(req, res, next) {
         name: user.name,
         email: user.email,
         role: user.role,
+        operatorFunction: user.operatorFunction || null,
         companyId: user.companyId
       }
     });
