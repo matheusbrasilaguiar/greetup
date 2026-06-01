@@ -25,6 +25,18 @@ services:
     volumes:
       - greetup_rabbitmq_data:/var/lib/rabbitmq
 
+  gateway:
+    build: ./gateway
+    container_name: greetup-gateway
+    ports:
+      - "3001:3001"
+    environment:
+      PORT: 3001
+      RABBITMQ_URL: amqp://guest:guest@rabbitmq:5672
+      JWT_SECRET: ${JWT_SECRET:-change-me}
+    depends_on:
+      - rabbitmq
+
 volumes:
   greetup_postgres_data:
   greetup_rabbitmq_data:
