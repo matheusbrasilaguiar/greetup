@@ -1,0 +1,27 @@
+{
+  "$schema": "https://schemas.greetup.com/brand/palette.v1.json",
+  "name": "GreetUp Brand Palette",
+  "version": "1.0.0",
+  "ratio": { "cream": 0.80, "ink": 0.18, "bordeaux": 0.02 },
+  "tokens": {
+    "bordeaux": {
+      "900": { "hex": "#2E1116", "oklch": "0.22 0.07 15",  "role": "deepest" },
+      "800": { "hex": "#4A1A24", "oklch": "0.30 0.09 18",  "role": "depth" },
+      "700": { "hex": "#6B2331", "oklch": "0.38 0.11 20",  "role": "primary" },
+      "500": { "hex": "#92465A", "oklch": "0.52 0.10 22",  "role": "secondary" },
+      "300": { "hex": "#D6A8B0", "oklch": "0.78 0.05 22",  "role": "soft" }
+    },
+    "champagne": { "hex": "#D9B58A", "oklch": "0.82 0.05 75", "role": "accent" },
+    "cream": {
+      "50":  { "hex": "#FBF7EF", "oklch": "0.985 0.012 85", "role": "page" },
+      "100": { "hex": "#F5EEDE", "oklch": "0.965 0.018 82", "role": "card" },
+      "200": { "hex": "#ECE2CC", "oklch": "0.93 0.022 80",  "role": "rule" }
+    },
+    "ink": {
+      "900": { "hex": "#1F1A18", "oklch": "0.18 0.012 30", "role": "text" },
+      "700": { "hex": "#4A423E", "oklch": "0.32 0.010 30", "role": "subdued" },
+      "500": { "hex": "#7A736E", "oklch": "0.52 0.008 30", "role": "caption" },
+      "300": { "hex": "#B0AAA5", "oklch": "0.72 0.006 30", "role": "rule-soft" }
+    }
+  }
+}

@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 280" width="360" height="280">
+  <defs>
+    
+  </defs>
+  <title>GreetUp — Vertical Lockup (Inverse)</title>
+  <rect width="360" height="280" fill="#2E1116"></rect>
+  <g transform="translate(125,32)">
+    <path d="M0 88 V44 a55 55 0 0 1 110 0 V88" fill="none" stroke="#F5EEDE" stroke-width="3.6" stroke-linecap="round"></path>
+    <circle cx="55" cy="55" r="6.5" fill="#D9B58A"></circle>
+  </g>
+  <line x1="70" y1="156" x2="290" y2="156" stroke="#F5EEDE" stroke-opacity="0.28" stroke-width="1"></line>
+  <text x="180" y="214" text-anchor="middle" font-family="Sora, system-ui, sans-serif" font-size="52" font-weight="500" fill="#F5EEDE" letter-spacing="-2.2">GreetUp</text>
+  <text x="180" y="244" text-anchor="middle" font-family="JetBrains Mono, ui-monospace, monospace" font-size="10" fill="#D9B58A" letter-spacing="3.4">CORPORATE HOSPITALITY</text>
+</svg>
