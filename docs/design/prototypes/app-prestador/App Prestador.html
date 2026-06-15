@@ -1,0 +1,1140 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<title>GreetUp — App Prestador · Cozinha & Garçom</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700&family=Cormorant+Garamond:ital,wght@0,400;1,400&family=JetBrains+Mono:wght@400;500&display=swap">
+
+<style>
+:root{
+  --gu-bordeaux-900:#2E1116; --gu-bordeaux-800:#4A1A24; --gu-bordeaux-700:#6B2331;
+  --gu-bordeaux-500:#92465A; --gu-bordeaux-300:#D6A8B0;
+  --gu-champagne:#D9B58A;
+  --gu-cream-50:#FBF7EF; --gu-cream-100:#F5EEDE; --gu-cream-200:#ECE2CC;
+  --gu-ink-900:#1F1A18; --gu-ink-700:#4A423E; --gu-ink-500:#7A736E; --gu-ink-300:#B0AAA5;
+  --gu-pending-bg:#FFF8E7; --gu-pending-tx:#92610A; --gu-pending-br:#D9B58A;
+  --gu-preparing-bg:#EEF2FF; --gu-preparing-tx:#3730A3; --gu-preparing-br:#6366F1;
+  --gu-ready-bg:#F0FDF4; --gu-ready-tx:#15803D; --gu-ready-br:#22C55E;
+  --gu-delivered-bg:#F5EEDE; --gu-delivered-tx:#4A423E; --gu-delivered-br:#B0AAA5;
+  --gu-canceled-bg:#FEF2F2; --gu-canceled-tx:#B91C1C; --gu-canceled-br:#EF4444;
+  --f-display:"Sora",system-ui,sans-serif;
+  --f-text:"Sora",system-ui,sans-serif;
+  --f-editorial:"Cormorant Garamond",Georgia,serif;
+  --f-mono:"JetBrains Mono",ui-monospace,monospace;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{background:#E8DEC9;font-family:var(--f-text);color:var(--gu-ink-900);-webkit-font-smoothing:antialiased;font-feature-settings:"ss01","cv11"}
+body{padding:60px 40px 100px;min-height:100vh}
+
+.canvas-head{max-width:1600px;margin:0 auto 56px;display:flex;justify-content:space-between;align-items:end;gap:32px}
+.canvas-head h1{font-size:48px;letter-spacing:-.03em;font-weight:600;line-height:.98}
+.canvas-head h1 em{font-family:var(--f-editorial);font-style:italic;font-weight:400;color:var(--gu-bordeaux-700)}
+.canvas-head p{font-size:15px;color:var(--gu-ink-700);max-width:46ch;line-height:1.55}
+.canvas-eyebrow{font-family:var(--f-mono);font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--gu-bordeaux-700);display:flex;align-items:center;gap:12px;margin-bottom:14px}
+.canvas-eyebrow::before{content:"";width:32px;height:1px;background:var(--gu-bordeaux-700)}
+.canvas-meta{font-family:var(--f-mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--gu-ink-500);text-align:right;line-height:1.7}
+.canvas-meta strong{color:var(--gu-ink-900);font-weight:500;font-size:13px;text-transform:none;letter-spacing:-.005em;font-family:var(--f-text)}
+
+.section-band{
+  font-family:var(--f-mono);font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:var(--gu-ink-500);
+  display:flex;align-items:center;gap:14px;
+  max-width:1600px;margin:0 auto 24px;
+}
+.section-band::before{content:"";width:48px;height:1px;background:var(--gu-bordeaux-700)}
+.section-band strong{color:var(--gu-ink-900);font-family:var(--f-text);text-transform:none;letter-spacing:-.005em;font-size:14px;font-weight:500}
+
+/* phone row */
+.phone-row{max-width:1600px;margin:0 auto 64px;display:grid;grid-template-columns:repeat(4,1fr);gap:36px;justify-items:center}
+.phone-cell{display:flex;flex-direction:column;align-items:center;gap:14px;width:100%}
+.phone-label{font-family:var(--f-mono);font-size:10.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--gu-ink-700);text-align:center;line-height:1.5}
+.phone-label .num{color:var(--gu-bordeaux-700);margin-right:6px}
+.phone-label .sub{display:block;color:var(--gu-ink-500);margin-top:4px;font-size:9.5px}
+
+/* phone frame */
+.phone{
+  width:316px;height:684px;
+  background:var(--gu-ink-900);border-radius:42px;padding:9px;
+  box-shadow:0 40px 70px -30px rgba(46,17,22,.4), 0 14px 30px -10px rgba(46,17,22,.2);
+}
+.screen{
+  width:100%;height:100%;background:var(--gu-cream-50);
+  border-radius:34px;overflow:hidden;position:relative;
+  display:flex;flex-direction:column;
+}
+.screen.dark{background:var(--gu-bordeaux-900);color:var(--gu-cream-100)}
+.notch{position:absolute;top:0;left:50%;transform:translateX(-50%);width:100px;height:24px;background:var(--gu-ink-900);border-radius:0 0 14px 14px;z-index:5}
+.status-bar{height:38px;display:flex;align-items:center;justify-content:space-between;padding:8px 24px 0;font-family:var(--f-mono);font-size:11px;font-weight:500;color:var(--gu-ink-900);flex-shrink:0}
+.status-bar.light{color:var(--gu-cream-100)}
+.status-bar.light .signal span{background:var(--gu-cream-100)}
+.status-bar.light .batt{border-color:var(--gu-cream-100)}
+.status-bar.light .batt::after{background:var(--gu-cream-100)}
+.status-bar.light .batt span{background:var(--gu-cream-100)}
+.status-bar .right{display:flex;align-items:center;gap:6px}
+.status-bar .signal{display:flex;gap:2px;align-items:flex-end}
+.status-bar .signal span{width:3px;background:var(--gu-ink-900);border-radius:1px}
+.status-bar .signal span:nth-child(1){height:4px}.status-bar .signal span:nth-child(2){height:6px}.status-bar .signal span:nth-child(3){height:8px}.status-bar .signal span:nth-child(4){height:10px}
+.status-bar .batt{width:22px;height:11px;border:1px solid var(--gu-ink-900);border-radius:3px;position:relative;padding:1px}
+.status-bar .batt::after{content:"";position:absolute;right:-3px;top:3px;width:2px;height:5px;background:var(--gu-ink-900);border-radius:0 1px 1px 0}
+.status-bar .batt span{display:block;width:80%;height:100%;background:var(--gu-ink-900);border-radius:1px}
+
+.body{flex:1;overflow:hidden;padding:14px 18px 8px;display:flex;flex-direction:column;gap:14px}
+
+/* atoms */
+.eyebrow{font-family:var(--f-mono);font-size:9.5px;letter-spacing:.18em;text-transform:uppercase;color:var(--gu-bordeaux-700);line-height:1.4}
+.eyebrow.gold{color:var(--gu-champagne)}
+.h1{font-size:22px;font-weight:600;letter-spacing:-.022em;line-height:1.05}
+.h2{font-size:17px;font-weight:600;letter-spacing:-.018em}
+.h3{font-size:14px;font-weight:500}
+.cap{font-family:var(--f-mono);font-size:9.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--gu-ink-500)}
+.cap.gold{color:var(--gu-champagne)}
+.btn{font-family:var(--f-text);font-size:14px;font-weight:500;letter-spacing:-.003em;padding:14px 22px;border-radius:8px;display:inline-flex;align-items:center;justify-content:center;gap:8px;border:1.5px solid transparent;cursor:pointer}
+.btn-primary{background:var(--gu-bordeaux-700);color:#fff}
+.btn-secondary{background:transparent;border-color:var(--gu-bordeaux-700);color:var(--gu-bordeaux-700)}
+.btn-on-dark{background:transparent;border-color:var(--gu-champagne);color:var(--gu-champagne)}
+.btn-ghost{background:transparent;color:var(--gu-ink-700)}
+.btn-sm{padding:9px 14px;font-size:12.5px}
+.btn-full{width:100%;justify-content:center}
+
+.field{display:flex;flex-direction:column;gap:6px;margin-bottom:14px}
+.field label{font-size:11px;font-weight:500;color:var(--gu-ink-700)}
+.input{background:var(--gu-cream-50);border:1.5px solid var(--gu-cream-200);border-radius:8px;padding:12px 14px;font-size:13px;color:var(--gu-ink-900);font-family:inherit;width:100%;outline:none}
+.input.focus{border-color:var(--gu-bordeaux-700);background:#fff}
+
+.badge{font-family:var(--f-mono);font-size:10px;letter-spacing:.14em;text-transform:uppercase;padding:4px 10px;border-radius:99px;border:1px solid;display:inline-flex;align-items:center;gap:6px}
+.badge .dot{width:6px;height:6px;border-radius:50%}
+.b-pending{background:var(--gu-pending-bg);color:var(--gu-pending-tx);border-color:var(--gu-pending-br)} .b-pending .dot{background:var(--gu-pending-br)}
+.b-preparing{background:var(--gu-preparing-bg);color:var(--gu-preparing-tx);border-color:var(--gu-preparing-br)} .b-preparing .dot{background:var(--gu-preparing-br)}
+.b-ready{background:var(--gu-ready-bg);color:var(--gu-ready-tx);border-color:var(--gu-ready-br)} .b-ready .dot{background:var(--gu-ready-br)}
+.b-delivered{background:var(--gu-delivered-bg);color:var(--gu-delivered-tx);border-color:var(--gu-delivered-br)} .b-delivered .dot{background:var(--gu-delivered-br)}
+.b-canceled{background:var(--gu-canceled-bg);color:var(--gu-canceled-tx);border-color:var(--gu-canceled-br)} .b-canceled .dot{background:var(--gu-canceled-br)}
+.b-late{background:#FEF2F2;color:#B91C1C;border-color:#EF4444} .b-late .dot{background:#EF4444}
+
+/* ==================== LOGIN ==================== */
+.login-screen{padding:54px 26px 22px;flex:1;display:flex;flex-direction:column}
+.login-logo{display:flex;flex-direction:column;align-items:center;margin-top:60px}
+.login-logo svg{width:38px;height:38px;margin-bottom:14px}
+.login-logo .wm{font-size:34px;font-weight:500;letter-spacing:-1.6px;color:var(--gu-ink-900)}
+.login-logo .tag{font-family:var(--f-mono);font-size:9px;letter-spacing:.28em;text-transform:uppercase;color:var(--gu-bordeaux-700);margin-top:8px}
+.login-form{margin-top:auto;margin-bottom:10px}
+.login-foot{font-family:var(--f-mono);font-size:8.5px;letter-spacing:.22em;text-transform:uppercase;color:var(--gu-ink-500);text-align:center;padding-top:14px}
+
+/* ==================== MODE SELECTION ==================== */
+.mode-screen{padding:18px 18px 16px;flex:1;display:flex;flex-direction:column;gap:12px}
+.mode-card{
+  background:#fff;border:1.5px solid var(--gu-cream-200);border-radius:12px;
+  padding:18px 18px;display:flex;align-items:center;gap:14px;cursor:pointer;
+  transition:border-color .15s, background .15s;
+}
+.mode-card.selected{border-color:var(--gu-bordeaux-700);background:var(--gu-cream-100);box-shadow:0 0 0 4px rgba(107,35,49,.08)}
+.mode-card .ico{
+  width:48px;height:48px;border-radius:10px;background:var(--gu-cream-100);
+  display:flex;align-items:center;justify-content:center;flex-shrink:0;
+}
+.mode-card.selected .ico{background:var(--gu-bordeaux-700);color:var(--gu-cream-50)}
+.mode-card .ico svg{width:24px;height:24px;stroke:var(--gu-ink-900);fill:none;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}
+.mode-card.selected .ico svg{stroke:var(--gu-cream-50)}
+.mode-card .meta{flex:1;display:flex;flex-direction:column;gap:2px}
+.mode-card .meta .t{font-size:15px;font-weight:600;letter-spacing:-.012em}
+.mode-card .meta .s{font-family:var(--f-mono);font-size:9.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--gu-ink-500)}
+.mode-card.selected .meta .s{color:var(--gu-bordeaux-700)}
+.mode-card .chev{width:18px;height:18px;color:var(--gu-ink-300)}
+.mode-card.selected .chev{color:var(--gu-bordeaux-700)}
+
+/* ==================== GARÇOM ==================== */
+.garcom-header{padding:16px 18px 14px;background:var(--gu-bordeaux-900);color:var(--gu-cream-100);display:flex;flex-direction:column;gap:6px;border-radius:0 0 18px 18px}
+.garcom-header .eyebrow{color:var(--gu-champagne)}
+.garcom-header .h1{color:var(--gu-cream-50)}
+.garcom-list{flex:1;overflow-y:auto;padding:14px 18px 14px;display:flex;flex-direction:column;gap:12px}
+.garcom-group{background:#fff;border:1px solid var(--gu-cream-200);border-radius:12px;overflow:hidden}
+.garcom-group .hd{background:var(--gu-cream-100);padding:10px 14px;border-bottom:1px solid var(--gu-cream-200);display:flex;justify-content:space-between;align-items:center}
+.garcom-group .hd .l{display:flex;flex-direction:column;gap:1px}
+.garcom-group .hd .l .t{font-size:13px;font-weight:600;letter-spacing:-.01em}
+.garcom-group .hd .l .s{font-family:var(--f-mono);font-size:9.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--gu-ink-500)}
+.garcom-group .hd .badge{background:var(--gu-bordeaux-700);color:#fff;border-color:var(--gu-bordeaux-700)}
+.garcom-group .it{padding:10px 14px;display:flex;justify-content:space-between;align-items:center;border-top:1px solid var(--gu-cream-200);font-size:13px}
+.garcom-group .it:first-of-type{border-top:none}
+.garcom-group .it .qx{font-family:var(--f-mono);font-size:11px;color:var(--gu-bordeaux-700);letter-spacing:.04em;margin-right:4px}
+.garcom-group .it .nm{flex:1}
+.garcom-group .it .ck{width:24px;height:24px;border-radius:6px;border:1.5px solid var(--gu-ink-300);background:#fff;flex-shrink:0;display:flex;align-items:center;justify-content:center}
+.garcom-group .it .ck.done{background:var(--gu-bordeaux-700);border-color:var(--gu-bordeaux-700)}
+.garcom-group .it .ck svg{width:12px;height:12px;stroke:#fff;fill:none;stroke-width:2.5;stroke-linecap:round}
+.garcom-group .ft{padding:10px 14px;border-top:1px solid var(--gu-cream-200)}
+
+.empty-state{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;padding:24px;text-align:center}
+.empty-state .ico{width:80px;height:80px;border-radius:50%;background:var(--gu-cream-100);display:flex;align-items:center;justify-content:center;color:var(--gu-bordeaux-700)}
+.empty-state .ico svg{width:36px;height:36px;stroke:currentColor;fill:none;stroke-width:1.4;stroke-linecap:round}
+.empty-state h4{font-size:16px;font-weight:600;letter-spacing:-.015em}
+.empty-state p{font-size:12px;color:var(--gu-ink-500);max-width:24ch;line-height:1.5}
+
+/* ==================== SHIFT START (pre-assigned role) ==================== */
+.shift-screen{padding:54px 22px 24px;flex:1;display:flex;flex-direction:column}
+.shift-greet{display:flex;flex-direction:column;gap:6px}
+.shift-greet .h1{font-size:24px;font-weight:600;letter-spacing:-.022em;line-height:1.05}
+.shift-greet .h1 em{font-family:var(--f-editorial);font-style:italic;font-weight:400;color:var(--gu-bordeaux-700)}
+.shift-greet .meta{font-family:var(--f-mono);font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:var(--gu-ink-500);margin-top:4px}
+
+.role-block{
+  margin-top:22px;
+  background:var(--gu-bordeaux-900);color:var(--gu-cream-100);
+  border-radius:14px;padding:18px 18px 16px;
+  display:flex;flex-direction:column;gap:14px;position:relative;overflow:hidden;
+}
+.role-block::before{
+  content:"";position:absolute;right:-30px;bottom:-30px;width:120px;height:120px;
+  background:radial-gradient(circle,rgba(217,181,138,.18) 0%,transparent 60%);
+}
+.role-block .lbl{font-family:var(--f-mono);font-size:9.5px;letter-spacing:.22em;text-transform:uppercase;color:var(--gu-champagne)}
+.role-block .role-row{display:flex;align-items:center;gap:14px}
+.role-block .role-ico{width:48px;height:48px;border-radius:10px;background:var(--gu-bordeaux-700);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.role-block .role-ico svg{width:24px;height:24px;stroke:var(--gu-cream-50);fill:none;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}
+.role-block .role-meta{display:flex;flex-direction:column;gap:3px}
+.role-block .role-meta .name{font-size:18px;font-weight:600;letter-spacing:-.018em;color:var(--gu-cream-50)}
+.role-block .role-meta .sub{font-family:var(--f-mono);font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--gu-bordeaux-300)}
+.role-block .role-locked{display:flex;align-items:center;gap:6px;font-family:var(--f-mono);font-size:9px;letter-spacing:.18em;text-transform:uppercase;color:var(--gu-champagne);padding-top:10px;border-top:1px solid var(--gu-bordeaux-800)}
+.role-block .role-locked svg{width:11px;height:11px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round}
+
+.shift-info{margin-top:18px;display:flex;flex-direction:column;gap:10px}
+.shift-info .row{display:flex;justify-content:space-between;align-items:center;padding:10px 14px;background:#fff;border:1px solid var(--gu-cream-200);border-radius:8px;font-size:13px}
+.shift-info .row .k{font-family:var(--f-mono);font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--gu-ink-500)}
+.shift-info .row .v{font-weight:500;color:var(--gu-ink-900);letter-spacing:-.005em}
+
+.shift-foot{margin-top:auto;display:flex;flex-direction:column;gap:8px}
+.shift-help{font-family:var(--f-mono);font-size:9px;letter-spacing:.16em;text-transform:uppercase;color:var(--gu-ink-500);text-align:center;line-height:1.6}
+.shift-help a{color:var(--gu-bordeaux-700);text-decoration:none}
+
+/* ==================== PHONE PUSH NOTIFICATION (system) ==================== */
+.lock-screen{flex:1;background:linear-gradient(180deg,#2E1116 0%,#4A1A24 100%);color:var(--gu-cream-100);display:flex;flex-direction:column;position:relative;overflow:hidden}
+.lock-screen::before{content:"";position:absolute;inset:0;background:radial-gradient(ellipse at top right,rgba(217,181,138,.12) 0%,transparent 50%),radial-gradient(ellipse at bottom left,rgba(146,70,90,.18) 0%,transparent 60%);pointer-events:none}
+.lock-clock{padding:90px 0 0;text-align:center;position:relative;z-index:1}
+.lock-clock .time{font-size:64px;font-weight:300;letter-spacing:-.04em;line-height:1;color:var(--gu-cream-50);font-feature-settings:"tnum"}
+.lock-clock .date{font-family:var(--f-mono);font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--gu-bordeaux-300);margin-top:10px}
+.lock-foot{position:absolute;bottom:18px;left:0;right:0;text-align:center;z-index:1}
+.lock-foot .swipe{display:inline-flex;align-items:center;gap:8px;font-family:var(--f-mono);font-size:9.5px;letter-spacing:.18em;text-transform:uppercase;color:var(--gu-bordeaux-300);opacity:.7}
+.lock-foot .grip{display:block;width:120px;height:4px;background:var(--gu-cream-100);opacity:.4;border-radius:99px;margin:0 auto 12px}
+
+/* push banner — compact iOS-style */
+.push-banner{
+  position:absolute;top:46px;left:12px;right:12px;
+  background:rgba(251,247,239,.92);
+  backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);
+  border-radius:18px;padding:12px 14px;
+  box-shadow:0 12px 30px -10px rgba(0,0,0,.4),0 4px 10px -4px rgba(0,0,0,.2);
+  z-index:10;color:var(--gu-ink-900);
+}
+.push-banner .head{display:flex;align-items:center;gap:8px;margin-bottom:6px}
+.push-banner .app-ico{width:22px;height:22px;border-radius:6px;background:var(--gu-bordeaux-700);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.push-banner .app-ico svg{width:14px;height:14px}
+.push-banner .app-nm{font-family:var(--f-mono);font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--gu-ink-700);font-weight:500;flex:1}
+.push-banner .ts{font-family:var(--f-mono);font-size:10px;letter-spacing:.06em;color:var(--gu-ink-500)}
+.push-banner .title{font-size:14px;font-weight:600;letter-spacing:-.012em;color:var(--gu-ink-900);line-height:1.25}
+.push-banner .body{font-size:13px;color:var(--gu-ink-700);line-height:1.35;margin-top:2px;letter-spacing:-.005em;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.push-banner .pulse{width:6px;height:6px;border-radius:50%;background:var(--gu-bordeaux-700);box-shadow:0 0 0 4px rgba(107,35,49,.15);animation:pulse 1.4s ease-in-out infinite;flex-shrink:0;margin-right:2px}
+@keyframes pulse{0%,100%{opacity:1;box-shadow:0 0 0 4px rgba(107,35,49,.15)}50%{opacity:.5;box-shadow:0 0 0 7px rgba(107,35,49,.06)}}
+
+
+/* ==================== KITCHEN PANEL (TABLET) ==================== */
+.tablet-wrap{max-width:1600px;margin:0 auto 80px}
+.tablet-frame{
+  background:var(--gu-ink-900);border-radius:34px;padding:18px;
+  box-shadow:0 60px 100px -40px rgba(46,17,22,.45), 0 20px 40px -16px rgba(46,17,22,.25);
+  position:relative;
+}
+.tablet-frame::before{content:"";position:absolute;left:50%;top:14px;transform:translateX(-50%);width:8px;height:8px;border-radius:50%;background:#0f0a08}
+.tablet-screen{background:var(--gu-bordeaux-900);border-radius:18px;overflow:hidden;color:var(--gu-cream-100);min-height:760px;display:flex;flex-direction:column}
+
+.kt-topbar{background:var(--gu-bordeaux-900);padding:18px 28px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--gu-bordeaux-800)}
+.kt-topbar .brand{display:flex;align-items:center;gap:12px}
+.kt-topbar .brand svg{width:26px;height:26px}
+.kt-topbar .brand .nm{font-size:17px;font-weight:600;color:var(--gu-cream-50);letter-spacing:-.01em}
+.kt-topbar .brand .div{width:1px;height:24px;background:var(--gu-bordeaux-700);margin:0 6px}
+.kt-topbar .brand .mode{font-family:var(--f-mono);font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--gu-champagne)}
+.kt-topbar .right{display:flex;align-items:center;gap:18px;font-family:var(--f-mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--gu-bordeaux-300)}
+.kt-topbar .right .clock{color:var(--gu-cream-50);font-size:14px;letter-spacing:.04em;font-weight:500}
+.kt-topbar .right .avatar{width:32px;height:32px;border-radius:50%;background:var(--gu-bordeaux-700);color:var(--gu-cream-50);display:flex;align-items:center;justify-content:center;font-family:var(--f-text);font-size:12px;font-weight:500;letter-spacing:-.005em}
+
+.kt-statbar{background:var(--gu-bordeaux-800);padding:14px 28px;display:flex;align-items:center;gap:28px;border-bottom:1px solid var(--gu-bordeaux-800)}
+.kt-statbar .stat{display:flex;flex-direction:column;gap:2px}
+.kt-statbar .stat .lbl{font-family:var(--f-mono);font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--gu-bordeaux-300)}
+.kt-statbar .stat .val{font-size:22px;font-weight:600;letter-spacing:-.02em;color:var(--gu-cream-50);font-feature-settings:"tnum"}
+.kt-statbar .stat .val.alert{color:#FCA5A5}
+.kt-statbar .divv{width:1px;align-self:stretch;background:var(--gu-bordeaux-700)}
+.kt-statbar .filter{margin-left:auto;display:flex;gap:8px;align-items:center}
+.kt-statbar .chip{font-family:var(--f-mono);font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;padding:6px 12px;border-radius:99px;border:1px solid var(--gu-bordeaux-700);color:var(--gu-bordeaux-300);cursor:pointer}
+.kt-statbar .chip.on{background:var(--gu-champagne);color:var(--gu-bordeaux-900);border-color:var(--gu-champagne);font-weight:500}
+
+.kt-board{padding:18px 24px;flex:1;display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
+.kt-col{display:flex;flex-direction:column;gap:10px;min-height:580px}
+.kt-col .hd{display:flex;justify-content:space-between;align-items:center;padding:0 4px 6px;border-bottom:1px solid var(--gu-bordeaux-800)}
+.kt-col .hd .t{font-family:var(--f-mono);font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:var(--gu-cream-100);display:flex;align-items:center;gap:8px}
+.kt-col .hd .t .dot{width:7px;height:7px;border-radius:50%}
+.kt-col.pending .hd .t .dot{background:var(--gu-pending-br)}
+.kt-col.preparing .hd .t .dot{background:var(--gu-preparing-br)}
+.kt-col.ready .hd .t .dot{background:var(--gu-ready-br)}
+.kt-col.delivered .hd .t .dot{background:var(--gu-delivered-br)}
+.kt-col .hd .ct{font-family:var(--f-mono);font-size:11px;letter-spacing:.1em;color:var(--gu-cream-100);background:var(--gu-bordeaux-800);padding:2px 9px;border-radius:99px}
+
+.kt-card{
+  background:var(--gu-cream-50);color:var(--gu-ink-900);
+  border-radius:10px;padding:14px;display:flex;flex-direction:column;gap:10px;
+  border-left:4px solid transparent;
+}
+.kt-card.pending{border-left-color:var(--gu-pending-br)}
+.kt-card.preparing{border-left-color:var(--gu-preparing-br)}
+.kt-card.ready{border-left-color:var(--gu-ready-br)}
+.kt-card.delivered{border-left-color:var(--gu-delivered-br);opacity:.7}
+.kt-card .top{display:flex;justify-content:space-between;align-items:flex-start}
+.kt-card .mesa{font-family:var(--f-display);font-size:24px;font-weight:700;letter-spacing:-.025em;line-height:1;color:var(--gu-ink-900)}
+.kt-card .mesa span{font-size:11px;font-weight:400;color:var(--gu-ink-500);letter-spacing:0;margin-left:4px;font-family:var(--f-mono);text-transform:uppercase}
+.kt-card .num{font-family:var(--f-mono);font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--gu-ink-500)}
+.kt-card .item{display:flex;justify-content:space-between;align-items:flex-start;gap:8px;font-size:14px;line-height:1.3}
+.kt-card .item .qx{font-family:var(--f-mono);font-size:12px;color:var(--gu-bordeaux-700);font-weight:500;letter-spacing:.04em;flex-shrink:0;min-width:28px}
+.kt-card .item .nm{flex:1;font-weight:500;letter-spacing:-.008em}
+.kt-card .obs{font-family:var(--f-text);font-size:13.5px;font-weight:600;color:#7C2D12;background:#FEF3C7;border-left:4px solid #D97706;padding:8px 10px 8px 12px;border-radius:0 6px 6px 0;line-height:1.3;letter-spacing:-.005em;display:flex;align-items:flex-start;gap:8px}
+.kt-card .obs::before{content:"OBS";font-family:var(--f-mono);font-size:10px;font-weight:500;letter-spacing:.14em;background:#D97706;color:#fff;padding:2px 6px;border-radius:3px;flex-shrink:0;margin-top:1px}
+.kt-card .bot{display:flex;justify-content:space-between;align-items:center;padding-top:8px;border-top:1px solid var(--gu-cream-200)}
+.kt-card .timer{font-family:var(--f-mono);font-size:11px;letter-spacing:.06em;color:var(--gu-ink-700);display:flex;align-items:center;gap:5px}
+.kt-card .timer.late{color:#B91C1C;font-weight:500}
+.kt-card .timer svg{width:11px;height:11px;stroke:currentColor;fill:none;stroke-width:1.7}
+.kt-card .act{font-family:var(--f-text);font-size:12px;font-weight:500;padding:6px 12px;border-radius:6px;border:1.5px solid var(--gu-bordeaux-700);color:var(--gu-bordeaux-700);background:#fff}
+.kt-card .act.primary{background:var(--gu-bordeaux-700);color:#fff}
+.kt-card .gerente{font-family:var(--f-mono);font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--gu-ink-500)}
+
+/* In-route state for the waiter display */
+.kt-col.in-route .hd .t .dot{background:var(--gu-champagne)}
+.kt-card.in-route{border-left-color:var(--gu-champagne)}
+.kt-card.in-route .bot{align-items:center}
+
+/* Waiter pill — shows who picked up a delivery */
+.kt-card .picker{display:inline-flex;align-items:center;gap:6px;background:var(--gu-bordeaux-900);color:var(--gu-cream-50);font-family:var(--f-mono);font-size:10px;letter-spacing:.1em;text-transform:uppercase;padding:3px 9px 3px 3px;border-radius:99px;font-weight:500}
+.kt-card .picker .av{width:18px;height:18px;border-radius:50%;background:var(--gu-champagne);color:var(--gu-bordeaux-900);display:flex;align-items:center;justify-content:center;font-family:var(--f-text);font-size:9px;font-weight:600;letter-spacing:0}
+.kt-card .src{font-family:var(--f-mono);font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--gu-ink-500);display:inline-flex;align-items:center;gap:5px}
+.kt-card .src::before{content:"";width:6px;height:6px;border-radius:50%;background:var(--gu-bordeaux-700)}
+.kt-card .src.bar::before{background:var(--gu-champagne)}
+
+/* ==================== ITEM DETAIL (tablet, narrower) ==================== */
+.detail-wrap{max-width:1600px;margin:0 auto 60px;display:grid;grid-template-columns:1.4fr 1fr;gap:36px}
+.detail-frame{background:var(--gu-ink-900);border-radius:24px;padding:14px;box-shadow:0 40px 70px -30px rgba(46,17,22,.45)}
+.detail-screen{background:var(--gu-cream-50);border-radius:14px;overflow:hidden;display:flex;flex-direction:column;min-height:580px}
+.detail-top{background:var(--gu-bordeaux-900);color:var(--gu-cream-100);padding:18px 28px;display:flex;justify-content:space-between;align-items:center}
+.detail-top .l{display:flex;align-items:center;gap:14px}
+.detail-top .back-btn{width:36px;height:36px;border-radius:8px;background:var(--gu-bordeaux-800);display:flex;align-items:center;justify-content:center;color:var(--gu-cream-50);cursor:pointer}
+.detail-top .back-btn svg{width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round}
+.detail-top .eyebrow{color:var(--gu-champagne)}
+.detail-top .h1{color:var(--gu-cream-50)}
+
+.detail-body{padding:24px 28px;display:grid;grid-template-columns:1.4fr 1fr;gap:32px;flex:1}
+.detail-main{display:flex;flex-direction:column;gap:18px}
+.detail-mesa{
+  background:#fff;border:1px solid var(--gu-cream-200);border-radius:10px;
+  padding:18px 22px;display:flex;justify-content:space-between;align-items:center;
+}
+.detail-mesa .big{font-size:42px;font-weight:700;letter-spacing:-.035em;line-height:1;color:var(--gu-bordeaux-700);font-family:var(--f-display)}
+.detail-mesa .meta{display:flex;flex-direction:column;gap:3px;text-align:right}
+.detail-mesa .meta .who{font-size:16px;font-weight:600;letter-spacing:-.012em}
+.detail-mesa .meta .co{font-family:var(--f-mono);font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--gu-ink-500)}
+
+.detail-items{background:#fff;border:1px solid var(--gu-cream-200);border-radius:10px;padding:20px 22px;display:flex;flex-direction:column;gap:14px}
+.detail-item{display:flex;flex-direction:column;gap:8px;padding-bottom:14px;border-bottom:1px solid var(--gu-cream-200)}
+.detail-item:last-child{border-bottom:none;padding-bottom:0}
+.detail-item .row1{display:flex;justify-content:space-between;align-items:flex-start;gap:14px}
+.detail-item .row1 .left{display:flex;gap:14px;align-items:flex-start}
+.detail-item .row1 .qty{font-family:var(--f-display);font-size:28px;font-weight:600;letter-spacing:-.02em;line-height:1;color:var(--gu-bordeaux-700)}
+.detail-item .row1 .nm{font-size:16px;font-weight:500;letter-spacing:-.012em;line-height:1.2;padding-top:4px}
+.detail-item .row1 .nm .desc{display:block;font-size:11.5px;color:var(--gu-ink-500);font-weight:400;margin-top:4px;line-height:1.4}
+.detail-item .obs-block{background:#FEF3C7;border-left:6px solid #D97706;padding:14px 16px 14px 18px;border-radius:0 8px 8px 0;font-family:var(--f-text);font-size:17px;font-weight:600;color:#7C2D12;line-height:1.35;letter-spacing:-.005em;display:flex;flex-direction:column;gap:6px}
+.detail-item .obs-block::before{content:"⚠ OBSERVAÇÃO DO CLIENTE";font-family:var(--f-mono);font-size:11px;font-weight:500;letter-spacing:.18em;color:#D97706;text-transform:uppercase}
+
+.detail-side{display:flex;flex-direction:column;gap:14px}
+.side-card{background:#fff;border:1px solid var(--gu-cream-200);border-radius:10px;padding:16px 18px}
+.side-card h4{font-family:var(--f-mono);font-size:10.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--gu-bordeaux-700);margin-bottom:12px}
+.tline{position:relative;padding-left:20px;display:flex;flex-direction:column;gap:14px}
+.tline::before{content:"";position:absolute;left:5px;top:6px;bottom:6px;width:1px;background:var(--gu-cream-200)}
+.tline-step{position:relative;display:flex;flex-direction:column;gap:2px}
+.tline-step::before{content:"";position:absolute;left:-20px;top:4px;width:11px;height:11px;border-radius:50%;background:#fff;border:2px solid var(--gu-cream-200)}
+.tline-step.done::before{background:var(--gu-bordeaux-700);border-color:var(--gu-bordeaux-700)}
+.tline-step.now::before{background:var(--gu-champagne);border-color:var(--gu-champagne);box-shadow:0 0 0 4px rgba(217,181,138,.25)}
+.tline-step .t{font-size:13px;font-weight:500;letter-spacing:-.005em}
+.tline-step .ts{font-family:var(--f-mono);font-size:10.5px;letter-spacing:.04em;color:var(--gu-ink-500)}
+.tline-step.future .t{color:var(--gu-ink-300)}
+.tline-step.future .ts{color:var(--gu-ink-300)}
+
+.detail-action{padding:18px 28px;background:var(--gu-cream-100);border-top:1px solid var(--gu-cream-200);display:flex;gap:10px;align-items:center}
+.detail-action .timer-big{display:flex;flex-direction:column;gap:2px}
+.detail-action .timer-big .lbl{font-family:var(--f-mono);font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--gu-ink-500)}
+.detail-action .timer-big .val{font-size:20px;font-weight:600;letter-spacing:-.02em;color:var(--gu-bordeaux-700);font-feature-settings:"tnum"}
+.detail-action .acts{margin-left:auto;display:flex;gap:8px}
+
+/* note card on the right of detail-wrap (informational) */
+.info-stack{display:flex;flex-direction:column;gap:18px;align-self:start}
+.info-card{background:var(--gu-cream-100);border:1px solid var(--gu-cream-200);border-radius:12px;padding:24px 26px;display:flex;flex-direction:column;gap:10px}
+.info-card .eyebrow{margin-bottom:6px}
+.info-card h3{font-size:20px;font-weight:600;letter-spacing:-.018em;line-height:1.15}
+.info-card p{font-size:13px;color:var(--gu-ink-700);line-height:1.6}
+.info-card .rule{height:1px;background:var(--gu-champagne);opacity:.7;margin:6px 0}
+.info-card ul{list-style:none;display:flex;flex-direction:column;gap:8px}
+.info-card li{font-size:13px;color:var(--gu-ink-700);line-height:1.5;display:flex;gap:10px;align-items:flex-start}
+.info-card li::before{content:"—";color:var(--gu-bordeaux-700);font-family:var(--f-mono);flex-shrink:0;margin-top:1px}
+
+@media (max-width:1320px){
+  .phone-row{grid-template-columns:repeat(2,1fr)}
+  .kt-board{grid-template-columns:repeat(2,1fr)}
+  .detail-wrap{grid-template-columns:1fr}
+  .detail-body{grid-template-columns:1fr}
+  .canvas-head{flex-direction:column;align-items:flex-start} .canvas-meta{text-align:left}
+}
+@media (max-width:680px){.phone-row{grid-template-columns:1fr} .kt-board{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+
+<header class="canvas-head">
+  <div>
+    <div class="canvas-eyebrow">App Prestador · Prompt 2 / 3</div>
+    <h1>A fila acima<br>do <em>ruído.</em></h1>
+    <p style="margin-top:18px">Dois mundos, três telas. Cozinha trabalha em tablet/monitor. Garçom alterna entre o smartphone pessoal (sua fila) e um display compartilhado da equipe. Cada usuário entra direto na sua função — atribuída pelo admin.</p>
+  </div>
+  <div class="canvas-meta">
+    <div><strong>Cozinha</strong> Tablet ou desktop · 768–1280px+</div>
+    <div><strong>Garçom</strong> Mobile · Display compartilhado</div>
+    <div>Alerta sonoro · vibração · push</div>
+  </div>
+</header>
+
+<!-- ============== ROW 1 · LOGIN + MODE + GARÇOM + NOTIF ============== -->
+<div class="section-band"><strong>Mobile</strong> · Login, início de turno (função pré-designada), garçom, push notification</div>
+
+<div class="phone-row">
+
+  <!-- LOGIN -->
+  <div class="phone-cell">
+    <div class="phone">
+      <div class="screen">
+        <div class="notch"></div>
+        <div class="status-bar"><span>9:41</span><div class="right"><div class="signal"><span></span><span></span><span></span><span></span></div><div class="batt"><span></span></div></div></div>
+        <div class="login-screen">
+          <div class="login-logo">
+            <svg viewBox="0 0 24 24"><path d="M3 21 V11 a9 9 0 0 1 18 0 V21" fill="none" stroke="#2E1116" stroke-width="2" stroke-linecap="round"/><circle cx="12" cy="13" r="2.4" fill="#6B2331"/></svg>
+            <span class="wm">GreetUp</span>
+            <span class="tag">Prestador · Operação</span>
+          </div>
+          <div class="login-form">
+            <div class="field">
+              <label>E-mail operacional</label>
+              <input class="input" type="text" value="daniel.staff@greetup.com"/>
+            </div>
+            <div class="field">
+              <label>Senha</label>
+              <input class="input focus" type="password" value="••••••••"/>
+            </div>
+            <button class="btn btn-primary btn-full" style="margin-top:6px">Entrar</button>
+          </div>
+          <div class="login-foot">GreetUp · Prestador · v1.0</div>
+        </div>
+      </div>
+    </div>
+    <div class="phone-label"><span class="num">01</span> Login<span class="sub">Acesso por e-mail operacional</span></div>
+  </div>
+
+  <!-- SHIFT START (pre-assigned role) -->
+  <div class="phone-cell">
+    <div class="phone">
+      <div class="screen">
+        <div class="notch"></div>
+        <div class="status-bar"><span>9:42</span><div class="right"><div class="signal"><span></span><span></span><span></span><span></span></div><div class="batt"><span></span></div></div></div>
+        <div class="shift-screen">
+          <div class="shift-greet">
+            <div class="eyebrow">Quarta · 7 de maio · 9:42</div>
+            <div class="h1" style="margin-top:6px">Bom dia,<br><em>Daniel.</em></div>
+            <div class="meta">Fispal · Dia 2 de 4</div>
+          </div>
+
+          <div class="role-block">
+            <span class="lbl">Sua função hoje</span>
+            <div class="role-row">
+              <div class="role-ico">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 4h14M6 4v3a6 6 0 0 0 12 0V4M12 10v10M8 20h8"/></svg>
+              </div>
+              <div class="role-meta">
+                <span class="name">Cozinha · Comida</span>
+                <span class="sub">Estação A · turno 8h–17h</span>
+              </div>
+            </div>
+            <div class="role-locked">
+              <svg viewBox="0 0 16 16"><rect x="4" y="7" width="8" height="7" rx="1"/><path d="M5.5 7V5a2.5 2.5 0 0 1 5 0v2"/></svg>
+              Designada pelo administrador
+            </div>
+          </div>
+
+          <div class="shift-info">
+            <div class="row"><span class="k">Pedidos abertos</span><span class="v">14 na fila</span></div>
+            <div class="row"><span class="k">Equipe na estação</span><span class="v">Daniel · Mariana</span></div>
+            <div class="row"><span class="k">Último encerramento</span><span class="v">Ontem · 17:08</span></div>
+          </div>
+
+          <div class="shift-foot">
+            <button class="btn btn-primary btn-full">Iniciar turno</button>
+            <div class="shift-help">Função errada? <a href="#">Falar com o admin</a></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="phone-label"><span class="num">02</span> Início de turno<span class="sub">Função pré-designada · sem escolha do usuário</span></div>
+  </div>
+
+  <!-- GARÇOM -->
+  <div class="phone-cell">
+    <div class="phone">
+      <div class="screen">
+        <div class="notch"></div>
+        <div class="status-bar"><span>11:09</span><div class="right"><div class="signal"><span></span><span></span><span></span><span></span></div><div class="batt"><span></span></div></div></div>
+        <div class="garcom-header">
+          <div class="eyebrow gold">Fispal · Dia 2 · 14:09</div>
+          <div class="h1">Garçom</div>
+          <div class="cap gold" style="margin-top:2px">3 mesas · 7 itens aguardando entrega</div>
+        </div>
+        <div class="garcom-list">
+
+          <div class="garcom-group">
+            <div class="hd">
+              <div class="l"><span class="t">Mesa 07 · João Silva</span><span class="s">Itaú Asset · Rafael (gerente)</span></div>
+              <span class="badge">2 itens</span>
+            </div>
+            <div class="it"><span class="nm"><span class="qx">2×</span>Café duplo · espresso</span><div class="ck done"><svg viewBox="0 0 16 16"><path d="M3 8l3 3 7-7"/></svg></div></div>
+            <div class="it"><span class="nm"><span class="qx">3×</span>Água sem gás (sem gelo)</span><div class="ck"></div></div>
+            <div class="ft"><button class="btn btn-primary btn-full btn-sm">Confirmar entrega da mesa</button></div>
+          </div>
+
+          <div class="garcom-group">
+            <div class="hd">
+              <div class="l"><span class="t">Mesa 03 · Camila Sá</span><span class="s">Vinci Partners · Carla (gerente)</span></div>
+              <span class="badge">3 itens</span>
+            </div>
+            <div class="it"><span class="nm"><span class="qx">1×</span>Tábua de queijos</span><div class="ck"></div></div>
+            <div class="it"><span class="nm"><span class="qx">2×</span>Pão de queijo gourmet</span><div class="ck"></div></div>
+            <div class="it"><span class="nm"><span class="qx">2×</span>Espresso curto</span><div class="ck"></div></div>
+            <div class="ft"><button class="btn btn-primary btn-full btn-sm">Confirmar entrega da mesa</button></div>
+          </div>
+
+          <div class="garcom-group">
+            <div class="hd">
+              <div class="l"><span class="t">Mesa 11 · Roberto Mendes</span><span class="s">JP Morgan · Felipe (gerente)</span></div>
+              <span class="badge">2 itens</span>
+            </div>
+            <div class="it"><span class="nm"><span class="qx">2×</span>Água com gás</span><div class="ck"></div></div>
+            <div class="it"><span class="nm"><span class="qx">1×</span>Bruschetta</span><div class="ck"></div></div>
+            <div class="ft"><button class="btn btn-primary btn-full btn-sm">Confirmar entrega da mesa</button></div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+    <div class="phone-label"><span class="num">03</span> Garçom · Itens prontos<span class="sub">Agrupado por mesa · checkbox por item</span></div>
+  </div>
+
+  <!-- PUSH NOTIFICATION (system-level) -->
+  <div class="phone-cell">
+    <div class="phone">
+      <div class="screen dark">
+        <div class="notch"></div>
+        <div class="status-bar light"><span>11:12</span><div class="right"><div class="signal"><span></span><span></span><span></span><span></span></div><div class="batt"><span></span></div></div></div>
+
+        <div class="lock-screen">
+          <div class="lock-clock">
+            <div class="time">11:12</div>
+            <div class="date">Qua · 7 de maio</div>
+          </div>
+
+          <!-- iOS-style compact push notification -->
+          <div class="push-banner">
+            <div class="head">
+              <div class="app-ico">
+                <svg viewBox="0 0 24 24"><path d="M3 21 V11 a9 9 0 0 1 18 0 V21" fill="none" stroke="#F5EEDE" stroke-width="2" stroke-linecap="round"/><circle cx="12" cy="13" r="2.4" fill="#D9B58A"/></svg>
+              </div>
+              <span class="app-nm">GreetUp · Cozinha</span>
+              <span class="pulse"></span>
+              <span class="ts">agora</span>
+            </div>
+            <div class="title">Novo pedido · Mesa 12</div>
+            <div class="body">3 itens · BTG Pactual · Tier A VIP</div>
+          </div>
+
+          <div class="lock-foot">
+            <span class="grip"></span>
+            <span class="swipe">Deslize para abrir</span>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="phone-label"><span class="num">04</span> Notificação push<span class="sub">Sistema operacional · compacta · vibração + som</span></div>
+  </div>
+
+</div>
+
+
+<!-- ============== ROW 2 · KITCHEN PANEL (TABLET/DESKTOP) ============== -->
+<div class="section-band"><strong>Tablet ou Desktop</strong> · Painel de cozinha — Kanban de 4 colunas, sempre visível na estação</div>
+
+<div class="tablet-wrap">
+  <div class="tablet-frame">
+    <div class="tablet-screen">
+      <div class="kt-topbar">
+        <div class="brand">
+          <svg viewBox="0 0 24 24"><path d="M3 21 V11 a9 9 0 0 1 18 0 V21" fill="none" stroke="#F5EEDE" stroke-width="1.8" stroke-linecap="round"/><circle cx="12" cy="13" r="2.2" fill="#D9B58A"/></svg>
+          <span class="nm">GreetUp</span>
+          <span class="div"></span>
+          <span class="mode">Cozinha · Comida</span>
+        </div>
+        <div class="right">
+          <span>Fispal · Dia 2 de 4</span>
+          <span class="clock">14:09:42</span>
+          <span class="avatar">DA</span>
+        </div>
+      </div>
+
+      <div class="kt-statbar">
+        <div class="stat"><span class="lbl">Na fila</span><span class="val">14</span></div>
+        <div class="divv"></div>
+        <div class="stat"><span class="lbl">Em preparo</span><span class="val">8</span></div>
+        <div class="divv"></div>
+        <div class="stat"><span class="lbl">Prontos</span><span class="val" style="color:#86EFAC">5</span></div>
+        <div class="divv"></div>
+        <div class="stat"><span class="lbl">Tempo médio</span><span class="val">6:42</span></div>
+        <div class="divv"></div>
+        <div class="stat"><span class="lbl">Atrasados</span><span class="val alert">2</span></div>
+        <div class="filter">
+          <span class="chip on">Todos</span>
+          <span class="chip">Tier A</span>
+          <span class="chip">Atrasados</span>
+        </div>
+      </div>
+
+      <div class="kt-board">
+
+        <!-- PENDING -->
+        <div class="kt-col pending">
+          <div class="hd"><span class="t"><span class="dot"></span>Pendente</span><span class="ct">3</span></div>
+
+          <div class="kt-card pending">
+            <div class="top">
+              <div class="mesa">12<span>Mesa</span></div>
+              <span class="num">№ 0117</span>
+            </div>
+            <div class="item"><span class="qx">2×</span><span class="nm">Tábua de queijos · curada</span></div>
+            <div class="item"><span class="qx">4×</span><span class="nm">Mini quiche lorraine</span></div>
+            <div class="obs"><span>Sem gorgonzola na tábua · alergia</span></div>
+            <div class="bot">
+              <span class="timer"><svg viewBox="0 0 16 16"><circle cx="8" cy="8" r="6"/><path d="M8 5v3l2 1"/></svg>00:42</span>
+              <button class="act">Iniciar preparo</button>
+            </div>
+            <div class="gerente">Rafael (gerente) · Tier A · VIP</div>
+          </div>
+
+          <div class="kt-card pending">
+            <div class="top">
+              <div class="mesa">07<span>Mesa</span></div>
+              <span class="num">№ 0118</span>
+            </div>
+            <div class="item"><span class="qx">1×</span><span class="nm">Bruschetta tomate &amp; manjericão</span></div>
+            <div class="bot">
+              <span class="timer"><svg viewBox="0 0 16 16"><circle cx="8" cy="8" r="6"/><path d="M8 5v3l2 1"/></svg>01:28</span>
+              <button class="act">Iniciar preparo</button>
+            </div>
+            <div class="gerente">Rafael (gerente)</div>
+          </div>
+
+          <div class="kt-card pending">
+            <div class="top">
+              <div class="mesa">03<span>Mesa</span></div>
+              <span class="num">№ 0119</span>
+            </div>
+            <div class="item"><span class="qx">2×</span><span class="nm">Pão de queijo gourmet</span></div>
+            <div class="bot">
+              <span class="timer"><svg viewBox="0 0 16 16"><circle cx="8" cy="8" r="6"/><path d="M8 5v3l2 1"/></svg>02:14</span>
+              <button class="act">Iniciar preparo</button>
+            </div>
+            <div class="gerente">Carla (gerente)</div>
+          </div>
+        </div>
+
+        <!-- PREPARING -->
+        <div class="kt-col preparing">
+          <div class="hd"><span class="t"><span class="dot"></span>Em preparo</span><span class="ct">4</span></div>
+
+          <div class="kt-card preparing">
+            <div class="top">
+              <div class="mesa">05<span>Mesa</span></div>
+              <span class="num">№ 0114</span>
+            </div>
+            <div class="item"><span class="qx">3×</span><span class="nm">Mini sanduíche de pastrami</span></div>
+            <div class="obs"><span>1 unidade sem mostarda</span></div>
+            <div class="bot">
+              <span class="timer late"><svg viewBox="0 0 16 16"><circle cx="8" cy="8" r="6"/><path d="M8 5v3l2 1"/></svg>11:24 · atrasado</span>
+              <button class="act primary">Marcar pronto</button>
+            </div>
+            <div class="gerente">Marcos (gerente)</div>
+          </div>
+
+          <div class="kt-card preparing">
+            <div class="top">
+              <div class="mesa">08<span>Mesa</span></div>
+              <span class="num">№ 0115</span>
+            </div>
+            <div class="item"><span class="qx">1×</span><span class="nm">Tábua de queijos</span></div>
+            <div class="item"><span class="qx">2×</span><span class="nm">Bruschetta</span></div>
+            <div class="bot">
+              <span class="timer"><svg viewBox="0 0 16 16"><circle cx="8" cy="8" r="6"/><path d="M8 5v3l2 1"/></svg>04:18</span>
+              <button class="act primary">Marcar pronto</button>
+            </div>
+            <div class="gerente">Felipe (gerente)</div>
+          </div>
+
+          <div class="kt-card preparing">
+            <div class="top">
+              <div class="mesa">11<span>Mesa</span></div>
+              <span class="num">№ 0116</span>
+            </div>
+            <div class="item"><span class="qx">2×</span><span class="nm">Mini quiche lorraine</span></div>
+            <div class="bot">
+              <span class="timer"><svg viewBox="0 0 16 16"><circle cx="8" cy="8" r="6"/><path d="M8 5v3l2 1"/></svg>02:56</span>
+              <button class="act primary">Marcar pronto</button>
+            </div>
+            <div class="gerente">Felipe (gerente)</div>
+          </div>
+        </div>
+
+        <!-- READY -->
+        <div class="kt-col ready">
+          <div class="hd"><span class="t"><span class="dot"></span>Pronto</span><span class="ct">3</span></div>
+
+          <div class="kt-card ready">
+            <div class="top">
+              <div class="mesa">07<span>Mesa</span></div>
+              <span class="num">№ 0111</span>
+            </div>
+            <div class="item"><span class="qx">2×</span><span class="nm">Mini sanduíche pastrami</span></div>
+            <div class="bot">
+              <span class="timer" style="color:#15803D">Pronto há 0:32</span>
+              <button class="act" style="border-color:#15803D;color:#15803D">Aguard. garçom</button>
+            </div>
+            <div class="gerente">Rafael · entrega · Daniel</div>
+          </div>
+
+          <div class="kt-card ready">
+            <div class="top">
+              <div class="mesa">03<span>Mesa</span></div>
+              <span class="num">№ 0112</span>
+            </div>
+            <div class="item"><span class="qx">2×</span><span class="nm">Pão de queijo gourmet</span></div>
+            <div class="item"><span class="qx">1×</span><span class="nm">Tábua de queijos</span></div>
+            <div class="bot">
+              <span class="timer" style="color:#15803D">Pronto há 1:14</span>
+              <button class="act" style="border-color:#15803D;color:#15803D">Aguard. garçom</button>
+            </div>
+            <div class="gerente">Carla · entrega · Daniel</div>
+          </div>
+
+          <div class="kt-card ready">
+            <div class="top">
+              <div class="mesa">11<span>Mesa</span></div>
+              <span class="num">№ 0113</span>
+            </div>
+            <div class="item"><span class="qx">1×</span><span class="nm">Bruschetta</span></div>
+            <div class="bot">
+              <span class="timer" style="color:#15803D">Pronto há 2:04</span>
+              <button class="act" style="border-color:#15803D;color:#15803D">Aguard. garçom</button>
+            </div>
+            <div class="gerente">Felipe · entrega · Daniel</div>
+          </div>
+        </div>
+
+        <!-- DELIVERED -->
+        <div class="kt-col delivered">
+          <div class="hd"><span class="t"><span class="dot"></span>Entregue · 2h</span><span class="ct">132</span></div>
+
+          <div class="kt-card delivered">
+            <div class="top">
+              <div class="mesa">05<span>Mesa</span></div>
+              <span class="num">№ 0108</span>
+            </div>
+            <div class="item"><span class="qx">4×</span><span class="nm">Espresso curto</span></div>
+            <div class="bot">
+              <span class="timer">Entregue 14:02 · 6:14 ciclo</span>
+            </div>
+            <div class="gerente">Marcos · ok</div>
+          </div>
+
+          <div class="kt-card delivered">
+            <div class="top">
+              <div class="mesa">08<span>Mesa</span></div>
+              <span class="num">№ 0107</span>
+            </div>
+            <div class="item"><span class="qx">2×</span><span class="nm">Mini quiche lorraine</span></div>
+            <div class="bot">
+              <span class="timer">Entregue 13:54 · 7:32 ciclo</span>
+            </div>
+            <div class="gerente">Felipe · ok</div>
+          </div>
+
+          <div class="kt-card delivered" style="opacity:.4">
+            <div class="top">
+              <div class="mesa">02<span>Mesa</span></div>
+              <span class="num">№ 0106</span>
+            </div>
+            <div class="item"><span class="qx">1×</span><span class="nm">Tábua de queijos</span></div>
+            <div class="bot">
+              <span class="timer">Entregue 13:41</span>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+  </div>
+  <div class="phone-label" style="margin-top:18px;text-align:left"><span class="num">05</span> Cozinha · Kanban operacional<span class="sub" style="margin-top:2px">4 colunas (pendente → preparo → pronto → entregue) · timer com alerta visual de atraso · filtros por tier</span></div>
+</div>
+
+
+<!-- ============== ROW 3 · WAITER SHARED DISPLAY (TABLET) ============== -->
+<div class="section-band"><strong>Tablet, monitor ou KDS</strong> · Display compartilhado de entregas — visão única para todos os garçons</div>
+
+<div class="tablet-wrap">
+  <div class="tablet-frame">
+    <div class="tablet-screen">
+      <div class="kt-topbar">
+        <div class="brand">
+          <svg viewBox="0 0 24 24"><path d="M3 21 V11 a9 9 0 0 1 18 0 V21" fill="none" stroke="#F5EEDE" stroke-width="1.8" stroke-linecap="round"/><circle cx="12" cy="13" r="2.2" fill="#D9B58A"/></svg>
+          <span class="nm">GreetUp</span>
+          <span class="div"></span>
+          <span class="mode">Garçons · Display compartilhado</span>
+        </div>
+        <div class="right">
+          <span>Fispal · Dia 2 de 4</span>
+          <span class="clock">14:10:18</span>
+          <span class="avatar" style="background:var(--gu-champagne);color:var(--gu-bordeaux-900)">G</span>
+        </div>
+      </div>
+
+      <div class="kt-statbar">
+        <div class="stat"><span class="lbl">Aguardando retirada</span><span class="val">5</span></div>
+        <div class="divv"></div>
+        <div class="stat"><span class="lbl">Em rota de entrega</span><span class="val" style="color:#FCD96A">3</span></div>
+        <div class="divv"></div>
+        <div class="stat"><span class="lbl">Entregues · última hora</span><span class="val" style="color:#86EFAC">22</span></div>
+        <div class="divv"></div>
+        <div class="stat"><span class="lbl">Tempo médio · retirada</span><span class="val">0:48</span></div>
+        <div class="divv"></div>
+        <div class="stat"><span class="lbl">Atrasos de entrega</span><span class="val alert">1</span></div>
+        <div class="filter">
+          <span class="chip on">Todas estações</span>
+          <span class="chip">Cozinha A</span>
+          <span class="chip">Bar B</span>
+        </div>
+      </div>
+
+      <div class="kt-board" style="grid-template-columns:repeat(3,1fr)">
+
+        <!-- COL 1 · AGUARDANDO GARÇOM -->
+        <div class="kt-col ready">
+          <div class="hd"><span class="t"><span class="dot"></span>Aguardando garçom</span><span class="ct">5</span></div>
+
+          <div class="kt-card ready">
+            <div class="top">
+              <div class="mesa">07<span>Mesa</span></div>
+              <span class="num">№ 0111</span>
+            </div>
+            <div class="item"><span class="qx">2×</span><span class="nm">Mini sanduíche pastrami</span></div>
+            <div class="bot" style="flex-direction:column;align-items:stretch;gap:6px">
+              <div style="display:flex;justify-content:space-between;align-items:center;font-size:11px">
+                <span class="src">Cozinha A</span>
+                <span class="timer" style="color:#15803D"><svg viewBox="0 0 16 16"><circle cx="8" cy="8" r="6"/><path d="M8 5v3l2 1"/></svg>Pronto há 0:32</span>
+              </div>
+              <button class="act primary" style="width:100%">Pegar para entrega</button>
+            </div>
+            <div class="gerente">Mesa 07 · João Silva · Rafael (gerente)</div>
+          </div>
+
+          <div class="kt-card ready">
+            <div class="top">
+              <div class="mesa">03<span>Mesa</span></div>
+              <span class="num">№ 0112</span>
+            </div>
+            <div class="item"><span class="qx">2×</span><span class="nm">Pão de queijo gourmet</span></div>
+            <div class="item"><span class="qx">1×</span><span class="nm">Tábua de queijos</span></div>
+            <div class="bot" style="flex-direction:column;align-items:stretch;gap:6px">
+              <div style="display:flex;justify-content:space-between;align-items:center;font-size:11px">
+                <span class="src">Cozinha A</span>
+                <span class="timer" style="color:#15803D"><svg viewBox="0 0 16 16"><circle cx="8" cy="8" r="6"/><path d="M8 5v3l2 1"/></svg>Pronto há 1:14</span>
+              </div>
+              <button class="act primary" style="width:100%">Pegar para entrega</button>
+            </div>
+            <div class="gerente">Mesa 03 · Camila Sá · Carla (gerente)</div>
+          </div>
+
+          <div class="kt-card ready">
+            <div class="top">
+              <div class="mesa">11<span>Mesa</span></div>
+              <span class="num">№ 0113</span>
+            </div>
+            <div class="item"><span class="qx">2×</span><span class="nm">Água com gás · gelada</span></div>
+            <div class="bot" style="flex-direction:column;align-items:stretch;gap:6px">
+              <div style="display:flex;justify-content:space-between;align-items:center;font-size:11px">
+                <span class="src bar">Bar B</span>
+                <span class="timer" style="color:#15803D"><svg viewBox="0 0 16 16"><circle cx="8" cy="8" r="6"/><path d="M8 5v3l2 1"/></svg>Pronto há 2:04</span>
+              </div>
+              <button class="act primary" style="width:100%">Pegar para entrega</button>
+            </div>
+            <div class="gerente">Mesa 11 · Roberto Mendes · Felipe (gerente)</div>
+          </div>
+        </div>
+
+        <!-- COL 2 · EM ROTA -->
+        <div class="kt-col in-route">
+          <div class="hd"><span class="t"><span class="dot"></span>Em rota de entrega</span><span class="ct">3</span></div>
+
+          <div class="kt-card in-route">
+            <div class="top">
+              <div class="mesa">05<span>Mesa</span></div>
+              <span class="num">№ 0108</span>
+            </div>
+            <div class="item"><span class="qx">3×</span><span class="nm">Mini sanduíche pastrami</span></div>
+            <div class="bot" style="flex-direction:column;align-items:stretch;gap:6px">
+              <div style="display:flex;justify-content:space-between;align-items:center">
+                <span class="picker"><span class="av">D</span>Daniel</span>
+                <span class="timer"><svg viewBox="0 0 16 16"><circle cx="8" cy="8" r="6"/><path d="M8 5v3l2 1"/></svg>Saiu há 0:24</span>
+              </div>
+              <button class="act primary" style="width:100%">Marcar entregue</button>
+            </div>
+            <div class="gerente">Mesa 05 · Marcos (gerente)</div>
+          </div>
+
+          <div class="kt-card in-route">
+            <div class="top">
+              <div class="mesa">08<span>Mesa</span></div>
+              <span class="num">№ 0109</span>
+            </div>
+            <div class="item"><span class="qx">2×</span><span class="nm">Bruschetta tomate</span></div>
+            <div class="item"><span class="qx">1×</span><span class="nm">Mini quiche lorraine</span></div>
+            <div class="bot" style="flex-direction:column;align-items:stretch;gap:6px">
+              <div style="display:flex;justify-content:space-between;align-items:center">
+                <span class="picker"><span class="av">T</span>Thiago</span>
+                <span class="timer"><svg viewBox="0 0 16 16"><circle cx="8" cy="8" r="6"/><path d="M8 5v3l2 1"/></svg>Saiu há 1:08</span>
+              </div>
+              <button class="act primary" style="width:100%">Marcar entregue</button>
+            </div>
+            <div class="gerente">Mesa 08 · Felipe (gerente)</div>
+          </div>
+
+          <div class="kt-card in-route">
+            <div class="top">
+              <div class="mesa">10<span>Mesa</span></div>
+              <span class="num">№ 0110</span>
+            </div>
+            <div class="item"><span class="qx">4×</span><span class="nm">Espresso · curto</span></div>
+            <div class="bot" style="flex-direction:column;align-items:stretch;gap:6px">
+              <div style="display:flex;justify-content:space-between;align-items:center">
+                <span class="picker"><span class="av">D</span>Daniel</span>
+                <span class="timer late"><svg viewBox="0 0 16 16"><circle cx="8" cy="8" r="6"/><path d="M8 5v3l2 1"/></svg>Saiu há 3:42 · atraso</span>
+              </div>
+              <button class="act primary" style="width:100%">Marcar entregue</button>
+            </div>
+            <div class="gerente">Mesa 10 · Carla (gerente)</div>
+          </div>
+        </div>
+
+        <!-- COL 3 · ENTREGUE -->
+        <div class="kt-col delivered">
+          <div class="hd"><span class="t"><span class="dot"></span>Entregue · 1h</span><span class="ct">22</span></div>
+
+          <div class="kt-card delivered">
+            <div class="top">
+              <div class="mesa">02<span>Mesa</span></div>
+              <span class="num">№ 0107</span>
+            </div>
+            <div class="item"><span class="qx">2×</span><span class="nm">Espresso · curto</span></div>
+            <div class="bot">
+              <span class="picker"><span class="av">D</span>Daniel</span>
+              <span class="timer">Entregue 14:02 · ciclo 3:12</span>
+            </div>
+          </div>
+
+          <div class="kt-card delivered">
+            <div class="top">
+              <div class="mesa">09<span>Mesa</span></div>
+              <span class="num">№ 0106</span>
+            </div>
+            <div class="item"><span class="qx">1×</span><span class="nm">Tábua de queijos</span></div>
+            <div class="bot">
+              <span class="picker"><span class="av">T</span>Thiago</span>
+              <span class="timer">Entregue 13:54 · ciclo 5:48</span>
+            </div>
+          </div>
+
+          <div class="kt-card delivered" style="opacity:.55">
+            <div class="top">
+              <div class="mesa">06<span>Mesa</span></div>
+              <span class="num">№ 0105</span>
+            </div>
+            <div class="item"><span class="qx">2×</span><span class="nm">Pão de queijo gourmet</span></div>
+            <div class="bot">
+              <span class="picker"><span class="av">D</span>Daniel</span>
+              <span class="timer">Entregue 13:48</span>
+            </div>
+          </div>
+
+          <div class="kt-card delivered" style="opacity:.4">
+            <div class="top">
+              <div class="mesa">12<span>Mesa</span></div>
+              <span class="num">№ 0104</span>
+            </div>
+            <div class="item"><span class="qx">1×</span><span class="nm">Champagne · taça</span></div>
+            <div class="bot">
+              <span class="picker"><span class="av">T</span>Thiago</span>
+              <span class="timer">Entregue 13:42</span>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+  </div>
+  <div class="phone-label" style="margin-top:18px;text-align:left"><span class="num">06</span> Garçom · Display compartilhado<span class="sub" style="margin-top:2px">3 colunas (pronto → em rota → entregue) · qualquer garçom pega um pedido · pill com inicial identifica quem está em rota</span></div>
+</div>
+
+
+<!-- ============== ROW 4 · ITEM DETAIL (TABLET/DESKTOP, narrower) ============== -->
+<div class="section-band"><strong>Tablet ou Desktop</strong> · Detalhe de item — abre ao tocar em qualquer card do kanban</div>
+
+<div class="detail-wrap">
+  <div class="detail-frame">
+    <div class="detail-screen">
+      <div class="detail-top">
+        <div class="l">
+          <div class="back-btn"><svg viewBox="0 0 16 16"><path d="M10 3L5 8L10 13" fill="none" stroke="currentColor" stroke-linecap="round"/></svg></div>
+          <div>
+            <div class="eyebrow">Pedido № 0117 · Cozinha · Comida</div>
+            <div class="h1" style="margin-top:2px">Detalhe do pedido</div>
+          </div>
+        </div>
+        <span class="badge b-preparing"><span class="dot"></span>Em preparo</span>
+      </div>
+
+      <div class="detail-body">
+
+        <div class="detail-main">
+          <div class="detail-mesa">
+            <div class="big">12</div>
+            <div class="meta">
+              <span class="who">Renata Magalhães</span>
+              <span class="co">BTG Pactual · Tier A · VIP</span>
+              <span style="font-family:var(--f-mono);font-size:10px;color:var(--gu-bordeaux-700);letter-spacing:.12em;text-transform:uppercase;margin-top:4px">Gerente: Rafael Dias</span>
+            </div>
+          </div>
+
+          <div class="detail-items">
+            <div class="detail-item">
+              <div class="row1">
+                <div class="left">
+                  <span class="qty">2×</span>
+                  <div class="nm">Tábua de queijos curada<span class="desc">Brie, gruyère, gorgonzola · com geleia de pimenta</span></div>
+                </div>
+              </div>
+              <div class="obs-block"><span>Sem gorgonzola na tábua — alergia. Substituir por brie extra.</span></div>
+            </div>
+
+            <div class="detail-item">
+              <div class="row1">
+                <div class="left">
+                  <span class="qty">4×</span>
+                  <div class="nm">Mini quiche lorraine<span class="desc">Bacon, alho-poró, gruyère</span></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="detail-side">
+          <div class="side-card">
+            <h4>Histórico</h4>
+            <div class="tline">
+              <div class="tline-step done">
+                <span class="t">Pedido recebido</span>
+                <span class="ts">14:02:14 · pelo app cliente</span>
+              </div>
+              <div class="tline-step done">
+                <span class="t">Aceito na cozinha</span>
+                <span class="ts">14:02:48 · Daniel</span>
+              </div>
+              <div class="tline-step now">
+                <span class="t">Em preparo</span>
+                <span class="ts">14:03:01 · em andamento</span>
+              </div>
+              <div class="tline-step future">
+                <span class="t">Pronto</span>
+                <span class="ts">previsto 14:10</span>
+              </div>
+              <div class="tline-step future">
+                <span class="t">Entregue</span>
+                <span class="ts">aguardando</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="side-card">
+            <h4>Mesa &amp; contexto</h4>
+            <div style="display:flex;flex-direction:column;gap:8px;font-size:13px;color:var(--gu-ink-700)">
+              <div style="display:flex;justify-content:space-between"><span class="cap">Sessão</span><span>1h 38min</span></div>
+              <div style="display:flex;justify-content:space-between"><span class="cap">Pedidos hoje</span><span>4</span></div>
+              <div style="display:flex;justify-content:space-between"><span class="cap">Itens servidos</span><span>11</span></div>
+              <div style="display:flex;justify-content:space-between"><span class="cap">Restrições</span><span style="color:var(--gu-bordeaux-700);font-weight:500">Gorgonzola</span></div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <div class="detail-action">
+        <div class="timer-big">
+          <span class="lbl">Tempo decorrido</span>
+          <span class="val">06:14</span>
+        </div>
+        <div class="acts">
+          <button class="btn btn-secondary btn-sm">Reportar problema</button>
+          <button class="btn btn-primary">Marcar como pronto</button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <div class="info-stack">
+    <div class="info-card">
+      <div class="eyebrow">Por que assim</div>
+      <h3>O detalhe respeita o ritmo da cozinha.</h3>
+      <div class="rule"></div>
+      <p>A cozinha não tem tempo para hierarquia complexa. O número da mesa precisa ser maior do que qualquer outra informação. As observações nascem em itálico bordô — uma "voz humana" sobre a operação — porque o cozinheiro lê uma vez e não pode esquecer.</p>
+      <p>O histórico fica à direita, periférico mas presente: serve para auditoria, não para decisão. A única decisão é o botão primário no rodapé.</p>
+    </div>
+
+    <div class="info-card">
+      <div class="eyebrow">Regras de operação</div>
+      <h3>O que muda entre dispositivos</h3>
+      <div class="rule"></div>
+      <ul>
+        <li>Tablet fixo na cozinha: cards maiores, sempre 4 colunas visíveis, sem scroll horizontal.</li>
+        <li>Desktop/monitor: mesmo layout, melhor para coordenadores que supervisionam várias estações simultaneamente.</li>
+        <li>Mobile do garçom: só vê itens em "Pronto" + agrupado por mesa. Não acessa pendentes ou em preparo.</li>
+        <li>Display compartilhado do garçom: visão única para a equipe (qualquer um pega o pedido) — exibe quem está em rota e atrasos de entrega para o coordenador.</li>
+        <li>Mínimo de área tocável: 48 × 48px em qualquer dispositivo.</li>
+        <li>Som + vibração + alerta visual disparam ao novo pedido — e ao item ultrapassar 10 min em preparo.</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>

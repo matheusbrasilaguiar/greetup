@@ -1,0 +1,842 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<title>GreetUp — App Cliente · Mobile</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700&family=Cormorant+Garamond:ital,wght@0,400;1,400&family=JetBrains+Mono:wght@400;500&display=swap">
+
+<style>
+:root{
+  --gu-bordeaux-900:#2E1116; --gu-bordeaux-800:#4A1A24; --gu-bordeaux-700:#6B2331;
+  --gu-bordeaux-500:#92465A; --gu-bordeaux-300:#D6A8B0;
+  --gu-champagne:#D9B58A;
+  --gu-cream-50:#FBF7EF; --gu-cream-100:#F5EEDE; --gu-cream-200:#ECE2CC;
+  --gu-ink-900:#1F1A18; --gu-ink-700:#4A423E; --gu-ink-500:#7A736E; --gu-ink-300:#B0AAA5;
+  --gu-pending-bg:#FFF8E7; --gu-pending-tx:#92610A; --gu-pending-br:#D9B58A;
+  --gu-preparing-bg:#EEF2FF; --gu-preparing-tx:#3730A3; --gu-preparing-br:#6366F1;
+  --gu-ready-bg:#F0FDF4; --gu-ready-tx:#15803D; --gu-ready-br:#22C55E;
+  --gu-delivered-bg:#F5EEDE; --gu-delivered-tx:#4A423E; --gu-delivered-br:#B0AAA5;
+  --gu-canceled-bg:#FEF2F2; --gu-canceled-tx:#B91C1C; --gu-canceled-br:#EF4444;
+  --f-display:"Sora",system-ui,sans-serif;
+  --f-text:"Sora",system-ui,sans-serif;
+  --f-editorial:"Cormorant Garamond",Georgia,serif;
+  --f-mono:"JetBrains Mono",ui-monospace,monospace;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{background:#E8DEC9;font-family:var(--f-text);color:var(--gu-ink-900);-webkit-font-smoothing:antialiased;font-feature-settings:"ss01","cv11"}
+body{padding:60px 40px 100px;min-height:100vh}
+
+/* page chrome */
+.canvas-head{max-width:1600px;margin:0 auto 56px;display:flex;justify-content:space-between;align-items:end;gap:32px}
+.canvas-head h1{font-size:48px;letter-spacing:-.03em;font-weight:600;line-height:.98}
+.canvas-head h1 em{font-family:var(--f-editorial);font-style:italic;font-weight:400;color:var(--gu-bordeaux-700)}
+.canvas-head p{font-size:15px;color:var(--gu-ink-700);max-width:46ch;line-height:1.55}
+.canvas-eyebrow{font-family:var(--f-mono);font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--gu-bordeaux-700);display:flex;align-items:center;gap:12px;margin-bottom:14px}
+.canvas-eyebrow::before{content:"";width:32px;height:1px;background:var(--gu-bordeaux-700)}
+.canvas-meta{font-family:var(--f-mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--gu-ink-500);text-align:right;line-height:1.7}
+.canvas-meta strong{color:var(--gu-ink-900);font-weight:500;font-size:13px;text-transform:none;letter-spacing:-.005em;font-family:var(--f-text)}
+
+/* phones grid */
+.phones-grid{
+  max-width:1600px;margin:0 auto;
+  display:grid;
+  grid-template-columns:repeat(4,1fr);
+  gap:56px 36px;
+  justify-items:center;
+}
+.phone-cell{display:flex;flex-direction:column;align-items:center;gap:14px;width:100%}
+.phone-label{font-family:var(--f-mono);font-size:10.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--gu-ink-700);text-align:center;line-height:1.5}
+.phone-label .num{color:var(--gu-bordeaux-700);margin-right:6px}
+.phone-label .sub{display:block;color:var(--gu-ink-500);margin-top:4px;font-size:9.5px}
+
+/* phone frame */
+.phone{
+  width:316px;height:684px;
+  background:var(--gu-ink-900);
+  border-radius:42px;padding:9px;
+  box-shadow:0 40px 70px -30px rgba(46,17,22,.4), 0 14px 30px -10px rgba(46,17,22,.2);
+}
+.screen{
+  width:100%;height:100%;background:var(--gu-cream-50);
+  border-radius:34px;overflow:hidden;position:relative;
+  display:flex;flex-direction:column;
+}
+.notch{
+  position:absolute;top:0;left:50%;transform:translateX(-50%);
+  width:100px;height:24px;background:var(--gu-ink-900);border-radius:0 0 14px 14px;z-index:5;
+}
+.status-bar{
+  height:38px;display:flex;align-items:center;justify-content:space-between;
+  padding:8px 24px 0;font-family:var(--f-mono);font-size:11px;font-weight:500;color:var(--gu-ink-900);
+  flex-shrink:0;
+}
+.status-bar .right{display:flex;align-items:center;gap:6px}
+.status-bar .signal{display:flex;gap:2px;align-items:flex-end}
+.status-bar .signal span{width:3px;background:var(--gu-ink-900);border-radius:1px}
+.status-bar .signal span:nth-child(1){height:4px}
+.status-bar .signal span:nth-child(2){height:6px}
+.status-bar .signal span:nth-child(3){height:8px}
+.status-bar .signal span:nth-child(4){height:10px}
+.status-bar .batt{width:22px;height:11px;border:1px solid var(--gu-ink-900);border-radius:3px;position:relative;padding:1px}
+.status-bar .batt::after{content:"";position:absolute;right:-3px;top:3px;width:2px;height:5px;background:var(--gu-ink-900);border-radius:0 1px 1px 0}
+.status-bar .batt span{display:block;width:80%;height:100%;background:var(--gu-ink-900);border-radius:1px}
+
+.body{flex:1;overflow:hidden;padding:14px 18px 8px;display:flex;flex-direction:column;gap:14px}
+.body.no-pad{padding:0;gap:0}
+
+/* bottom nav */
+.bottom-nav{
+  display:flex;justify-content:space-around;padding:8px 0 22px;
+  background:#fff;border-top:1px solid var(--gu-cream-200);
+  flex-shrink:0;
+}
+.nav-item{
+  display:flex;flex-direction:column;align-items:center;gap:3px;
+  font-family:var(--f-mono);font-size:9px;letter-spacing:.1em;text-transform:uppercase;
+  color:var(--gu-ink-500);padding:6px 12px;position:relative;
+}
+.nav-item svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}
+.nav-item.active{color:var(--gu-bordeaux-700)}
+.nav-item.active::after{content:"";position:absolute;bottom:0;width:4px;height:4px;border-radius:50%;background:var(--gu-bordeaux-700)}
+
+/* common atoms */
+.eyebrow{font-family:var(--f-mono);font-size:9.5px;letter-spacing:.18em;text-transform:uppercase;color:var(--gu-bordeaux-700);line-height:1.4}
+.h1{font-size:22px;font-weight:600;letter-spacing:-.022em;line-height:1.05;color:var(--gu-ink-900)}
+.h2{font-size:17px;font-weight:600;letter-spacing:-.018em;color:var(--gu-ink-900)}
+.h3{font-size:14px;font-weight:500;color:var(--gu-ink-900)}
+.cap{font-family:var(--f-mono);font-size:9.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--gu-ink-500)}
+
+.btn{
+  font-family:var(--f-text);font-size:14px;font-weight:500;letter-spacing:-.003em;
+  padding:14px 22px;border-radius:8px;display:inline-flex;align-items:center;justify-content:center;gap:8px;
+  border:1.5px solid transparent;cursor:pointer;
+}
+.btn-primary{background:var(--gu-bordeaux-700);color:#fff}
+.btn-secondary{background:transparent;border-color:var(--gu-bordeaux-700);color:var(--gu-bordeaux-700)}
+.btn-ghost{background:transparent;color:var(--gu-ink-700)}
+.btn-danger{background:#fff;border-color:#B91C1C;color:#B91C1C}
+.btn-sm{padding:8px 14px;font-size:12.5px}
+.btn-full{width:100%;justify-content:center}
+
+.field{display:flex;flex-direction:column;gap:6px;margin-bottom:14px}
+.field label{font-size:11px;font-weight:500;color:var(--gu-ink-700)}
+.field label .req{color:var(--gu-bordeaux-700)}
+.input{
+  background:var(--gu-cream-50);border:1.5px solid var(--gu-cream-200);
+  border-radius:8px;padding:12px 14px;font-size:13px;color:var(--gu-ink-900);
+  font-family:inherit;width:100%;outline:none;
+}
+.input.focus{border-color:var(--gu-bordeaux-700);background:#fff}
+.input::placeholder{color:var(--gu-ink-300)}
+.input-icon{position:relative}
+.input-icon svg{position:absolute;left:14px;top:50%;transform:translateY(-50%);width:14px;height:14px;stroke:var(--gu-ink-500);fill:none;stroke-width:1.6;stroke-linecap:round}
+.input-icon input{padding-left:38px}
+
+.badge{font-family:var(--f-mono);font-size:9.5px;letter-spacing:.12em;text-transform:uppercase;padding:3px 8px;border-radius:99px;border:1px solid;display:inline-flex;align-items:center;gap:5px}
+.badge .dot{width:5px;height:5px;border-radius:50%}
+.b-pending{background:var(--gu-pending-bg);color:var(--gu-pending-tx);border-color:var(--gu-pending-br)} .b-pending .dot{background:var(--gu-pending-br)}
+.b-preparing{background:var(--gu-preparing-bg);color:var(--gu-preparing-tx);border-color:var(--gu-preparing-br)} .b-preparing .dot{background:var(--gu-preparing-br)}
+.b-ready{background:var(--gu-ready-bg);color:var(--gu-ready-tx);border-color:var(--gu-ready-br)} .b-ready .dot{background:var(--gu-ready-br)}
+.b-delivered{background:var(--gu-delivered-bg);color:var(--gu-delivered-tx);border-color:var(--gu-delivered-br)} .b-delivered .dot{background:var(--gu-delivered-br)}
+.b-canceled{background:var(--gu-canceled-bg);color:var(--gu-canceled-tx);border-color:var(--gu-canceled-br)} .b-canceled .dot{background:var(--gu-canceled-br)}
+
+.divider{height:1px;background:var(--gu-cream-200)}
+.divider-champagne{height:1px;background:var(--gu-champagne);opacity:.7;margin:8px 0}
+
+/* SCREEN-SPECIFIC --------------------- */
+
+/* Login */
+.login-screen{padding:54px 26px 22px;flex:1;display:flex;flex-direction:column}
+.login-logo{display:flex;flex-direction:column;align-items:center;margin-top:60px}
+.login-logo svg{width:38px;height:38px;margin-bottom:14px}
+.login-logo .wm{font-size:34px;font-weight:500;letter-spacing:-1.6px;color:var(--gu-ink-900)}
+.login-logo .tag{font-family:var(--f-mono);font-size:9px;letter-spacing:.28em;text-transform:uppercase;color:var(--gu-bordeaux-700);margin-top:8px}
+.login-form{margin-top:auto;margin-bottom:10px}
+.login-foot{font-family:var(--f-mono);font-size:8.5px;letter-spacing:.22em;text-transform:uppercase;color:var(--gu-ink-500);text-align:center;padding-top:14px}
+
+/* Home / Mesas */
+.greet-header{display:flex;justify-content:space-between;align-items:flex-start}
+.greet-header .bell{width:36px;height:36px;border-radius:50%;background:var(--gu-cream-100);display:flex;align-items:center;justify-content:center;position:relative}
+.greet-header .bell svg{width:16px;height:16px;stroke:var(--gu-ink-900);fill:none;stroke-width:1.6;stroke-linecap:round}
+.greet-header .bell .pip{position:absolute;top:7px;right:7px;width:7px;height:7px;background:var(--gu-bordeaux-700);border-radius:50%;border:2px solid var(--gu-cream-100)}
+
+.tables-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;overflow-y:auto;flex:1;padding-right:2px}
+.table-card{background:#fff;border:1.5px solid var(--gu-cream-200);border-radius:12px;padding:14px 12px 12px;min-height:108px;display:flex;flex-direction:column;justify-content:space-between;position:relative}
+.table-card .num{font-size:24px;font-weight:600;letter-spacing:-.02em;line-height:1}
+.table-card .lbl{font-family:var(--f-mono);font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:var(--gu-ink-500)}
+.table-card.free{border-color:#bfe8c9;background:#F0FDF4}
+.table-card.free .num{color:#15803D}
+.table-card.free .ico{align-self:flex-end;color:#15803D;opacity:.5}
+.table-card.busy{background:#fbeef0;border-color:var(--gu-bordeaux-300)}
+.table-card.busy .num{color:var(--gu-bordeaux-700);font-size:14px;font-weight:500;letter-spacing:-.005em}
+.table-card.busy .who{font-size:13px;font-weight:500;letter-spacing:-.008em;line-height:1.2;color:var(--gu-ink-900);margin-top:4px}
+.table-card.busy .meta{font-family:var(--f-mono);font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:var(--gu-bordeaux-700);margin-top:6px}
+.table-card.mine{border:2px solid var(--gu-bordeaux-700);background:#fff;box-shadow:0 0 0 4px rgba(107,35,49,.08)}
+.table-card.mine .pip{position:absolute;top:10px;right:10px;font-family:var(--f-mono);font-size:8.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--gu-bordeaux-700);background:var(--gu-cream-100);padding:2px 6px;border-radius:99px}
+
+/* Open table form */
+.back-row{display:flex;align-items:center;gap:10px;margin-bottom:4px}
+.back-row .back{width:32px;height:32px;border-radius:50%;background:var(--gu-cream-100);display:flex;align-items:center;justify-content:center;cursor:pointer}
+.back-row .back svg{width:14px;height:14px;stroke:var(--gu-ink-900);fill:none;stroke-width:1.8;stroke-linecap:round}
+.search-block{margin-top:6px}
+.divider-or{display:flex;align-items:center;gap:10px;margin:14px 0 4px;font-family:var(--f-mono);font-size:9.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--gu-ink-500)}
+.divider-or::before,.divider-or::after{content:"";flex:1;height:1px;background:var(--gu-cream-200)}
+.form-scroll{overflow-y:auto;flex:1;padding-right:2px}
+
+/* Menu */
+.menu-header{padding:12px 18px 0}
+.tabs{display:flex;gap:24px;padding:14px 18px 0;border-bottom:1px solid var(--gu-cream-200)}
+.tab{padding:8px 0;font-size:13px;font-weight:500;color:var(--gu-ink-500);letter-spacing:.04em;position:relative;cursor:pointer}
+.tab.active{color:var(--gu-bordeaux-700)}
+.tab.active::after{content:"";position:absolute;bottom:-1px;left:0;right:0;height:2px;background:var(--gu-bordeaux-700)}
+.menu-list{flex:1;overflow-y:auto;padding:12px 18px 90px;display:flex;flex-direction:column;gap:8px}
+.menu-item{background:#fff;border:1px solid var(--gu-cream-200);border-radius:10px;padding:10px 10px 10px 12px;display:flex;flex-direction:column;gap:8px}
+.menu-item .info{display:flex;gap:12px;align-items:flex-start}
+.menu-item .text{flex:1;min-width:0;display:flex;flex-direction:column;gap:3px}
+.menu-item .nm{font-size:13.5px;font-weight:500;letter-spacing:-.008em;line-height:1.25;text-wrap:pretty}
+.menu-item .desc{font-size:11px;color:var(--gu-ink-500);line-height:1.4}
+.menu-item .price{font-family:var(--f-mono);font-size:10.5px;color:var(--gu-bordeaux-700);letter-spacing:.04em;margin-top:3px}
+.menu-item .side{display:flex;flex-direction:column;align-items:flex-end;gap:8px;flex-shrink:0}
+
+/* Product photo thumbnails — branded placeholders */
+.thumb{
+  width:60px;height:60px;border-radius:8px;flex-shrink:0;
+  position:relative;overflow:hidden;
+  border:1px solid var(--gu-cream-200);
+  display:flex;align-items:center;justify-content:center;
+}
+.thumb svg{width:100%;height:100%;display:block}
+.thumb .ph{
+  position:absolute;bottom:2px;right:3px;
+  font-family:var(--f-mono);font-size:6.5px;letter-spacing:.08em;
+  color:var(--gu-ink-500);opacity:.7;text-transform:uppercase;
+  background:rgba(251,247,239,.88);padding:1px 3px;border-radius:2px;
+  line-height:1;
+}
+.thumb-pastrami{background:linear-gradient(135deg,#E8C9A0 0%,#C28E5C 60%,#8A5530 100%)}
+.thumb-queijo{background:linear-gradient(135deg,#F0E0B8 0%,#D9B58A 60%,#B08850 100%)}
+.thumb-paodequeijo{background:linear-gradient(135deg,#F5E5B5 0%,#E8C57A 60%,#C8923E 100%)}
+.thumb-bruschetta{background:linear-gradient(135deg,#E8D4A8 0%,#C77555 50%,#7A4A35 100%)}
+.thumb-quiche{background:linear-gradient(135deg,#F0D9A0 0%,#D8A050 60%,#A06820 100%)}
+.qty{display:flex;align-items:center;gap:4px;background:var(--gu-cream-100);border-radius:99px;padding:3px}
+.qty button{width:22px;height:22px;border-radius:50%;background:#fff;border:1px solid var(--gu-cream-200);color:var(--gu-ink-900);font-size:13px;line-height:1}
+.qty .v{min-width:14px;text-align:center;font-size:12.5px;font-weight:500}
+.qty.empty button:first-child{opacity:.3}
+.menu-item .obs{margin-top:4px;font-family:var(--f-mono);font-size:10px;color:var(--gu-ink-500);letter-spacing:.04em;background:var(--gu-cream-50);padding:6px 10px;border-radius:6px;border:1px dashed var(--gu-cream-200)}
+.menu-item .obs.has{color:var(--gu-bordeaux-700);border-style:solid;border-color:var(--gu-bordeaux-300);background:#fbeef0}
+.confirm-bar{
+  position:absolute;left:14px;right:14px;bottom:14px;
+  background:var(--gu-bordeaux-700);color:#fff;border-radius:12px;
+  padding:14px 18px;display:flex;justify-content:space-between;align-items:center;
+  box-shadow:0 10px 24px -10px rgba(46,17,22,.4);
+}
+.confirm-bar .l{display:flex;flex-direction:column;gap:2px}
+.confirm-bar .lbl{font-family:var(--f-mono);font-size:9px;letter-spacing:.16em;text-transform:uppercase;color:var(--gu-bordeaux-300)}
+.confirm-bar .v{font-size:14px;font-weight:500}
+.confirm-bar .r{font-size:14px;font-weight:500;display:flex;align-items:center;gap:6px}
+
+/* Review */
+.review-card{background:#fff;border:1px solid var(--gu-cream-200);border-radius:10px;padding:14px;display:flex;flex-direction:column;gap:6px}
+.review-row{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;padding:6px 0}
+.review-row .qx{font-family:var(--f-mono);font-size:11px;color:var(--gu-bordeaux-700);letter-spacing:.04em;min-width:24px}
+.review-row .it{flex:1;font-size:13px;line-height:1.35;font-weight:500}
+.review-row .it .obs{font-family:var(--f-mono);font-size:9.5px;color:var(--gu-ink-500);letter-spacing:.04em;display:block;font-weight:400;margin-top:2px}
+.note-box{background:var(--gu-cream-100);border-radius:8px;padding:10px 12px;font-size:11.5px;line-height:1.5;color:var(--gu-ink-700)}
+.note-box svg{display:inline-block;vertical-align:-2px;margin-right:4px}
+
+/* Active account */
+.acct-pill{background:var(--gu-cream-100);border-radius:99px;padding:5px 12px;font-family:var(--f-mono);font-size:9.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--gu-bordeaux-700);display:inline-flex;align-items:center;gap:6px;align-self:flex-start}
+.acct-pill .dot{width:5px;height:5px;border-radius:50%;background:var(--gu-bordeaux-700);animation:pulse 2s ease-in-out infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+.order-card{background:#fff;border:1px solid var(--gu-cream-200);border-radius:10px;padding:12px;display:flex;flex-direction:column;gap:8px}
+.order-card .top{display:flex;justify-content:space-between;align-items:center}
+.order-card .it{font-size:13px;font-weight:500;letter-spacing:-.008em;line-height:1.3}
+.order-card .qx{font-family:var(--f-mono);font-size:10px;color:var(--gu-bordeaux-700);letter-spacing:.06em;text-transform:uppercase;margin-right:4px}
+.order-card .ts{font-family:var(--f-mono);font-size:9.5px;color:var(--gu-ink-500);letter-spacing:.06em;text-transform:uppercase}
+.ready-banner{background:var(--gu-ready-bg);border:1px solid var(--gu-ready-br);border-radius:10px;padding:12px 14px;display:flex;align-items:center;gap:10px;font-size:12px;color:var(--gu-ready-tx);line-height:1.4}
+.ready-banner svg{width:18px;height:18px;stroke:var(--gu-ready-br);fill:none;stroke-width:2;flex-shrink:0}
+.ready-banner strong{font-weight:500;display:block;color:var(--gu-ready-tx)}
+.acct-actions{display:flex;flex-direction:column;gap:8px;margin-top:6px;flex-shrink:0}
+
+/* Close account (bottom sheet) */
+.sheet-bg{position:absolute;inset:0;background:rgba(31,26,24,.45);backdrop-filter:blur(2px)}
+.sheet{
+  position:absolute;left:0;right:0;bottom:0;
+  background:var(--gu-cream-50);border-top-left-radius:24px;border-top-right-radius:24px;
+  padding:8px 22px 24px;display:flex;flex-direction:column;gap:14px;
+}
+.sheet .grip{width:40px;height:4px;background:var(--gu-ink-300);border-radius:99px;margin:8px auto 4px}
+.sheet h3{font-size:20px;font-weight:600;letter-spacing:-.018em;margin-top:4px}
+.sheet p{font-size:13px;color:var(--gu-ink-700);line-height:1.5}
+.sheet-summary{background:#fff;border:1px solid var(--gu-cream-200);border-radius:10px;padding:14px;display:flex;flex-direction:column;gap:8px}
+.sheet-summary .row{display:flex;justify-content:space-between;align-items:center;font-size:13px}
+.sheet-summary .row .k{color:var(--gu-ink-500);font-family:var(--f-mono);font-size:10.5px;letter-spacing:.06em;text-transform:uppercase}
+.sheet-summary .row .v{font-weight:500}
+.sheet-alert{background:#FEF2F2;border:1px solid var(--gu-canceled-br);border-radius:10px;padding:12px 14px;display:flex;align-items:flex-start;gap:10px;font-size:12px;color:var(--gu-canceled-tx);line-height:1.4}
+.sheet-alert svg{width:16px;height:16px;stroke:var(--gu-canceled-br);fill:none;stroke-width:2;flex-shrink:0;margin-top:1px}
+.sheet-actions{display:flex;gap:8px}
+.sheet-actions .btn{flex:1}
+
+@media (max-width:1320px){.phones-grid{grid-template-columns:repeat(3,1fr)}}
+@media (max-width:980px){.phones-grid{grid-template-columns:repeat(2,1fr)} .canvas-head{flex-direction:column;align-items:flex-start} .canvas-meta{text-align:left}}
+@media (max-width:680px){.phones-grid{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+
+<header class="canvas-head">
+  <div>
+    <div class="canvas-eyebrow">App Cliente · Prompt 1 / 3</div>
+    <h1>Três toques.<br><em>Volta ao cliente.</em></h1>
+    <p style="margin-top:18px">Fluxo do gerente de vendas no estande corporativo. O cliente está na frente — a interface não pode roubar atenção. Sete telas, navegação em três abas, ações primárias sempre ao alcance do polegar.</p>
+  </div>
+  <div class="canvas-meta">
+    <div><strong>Viewport</strong> 375 × 812 (iPhone padrão)</div>
+    <div>Bottom nav · 3 abas</div>
+    <div>Mesas · Pedido Ativo · Perfil</div>
+  </div>
+</header>
+
+<div class="phones-grid">
+
+  <!-- ============ 01 LOGIN ============ -->
+  <div class="phone-cell">
+    <div class="phone">
+      <div class="screen">
+        <div class="notch"></div>
+        <div class="status-bar">
+          <span>9:41</span>
+          <div class="right"><div class="signal"><span></span><span></span><span></span><span></span></div><div class="batt"><span></span></div></div>
+        </div>
+        <div class="login-screen">
+          <div class="login-logo">
+            <svg viewBox="0 0 24 24"><path d="M3 21 V11 a9 9 0 0 1 18 0 V21" fill="none" stroke="#2E1116" stroke-width="2" stroke-linecap="round"/><circle cx="12" cy="13" r="2.4" fill="#6B2331"/></svg>
+            <span class="wm">GreetUp</span>
+            <span class="tag">Corporate Hospitality</span>
+          </div>
+          <div class="login-form">
+            <div class="field">
+              <label>E-mail corporativo</label>
+              <input class="input" type="text" value="rafael.dias@empresa.com"/>
+            </div>
+            <div class="field">
+              <label>Senha</label>
+              <input class="input focus" type="password" value="••••••••••"/>
+            </div>
+            <button class="btn btn-primary btn-full" style="margin-top:6px">Entrar</button>
+            <button class="btn btn-ghost btn-full" style="margin-top:4px;font-size:12px">Esqueci minha senha</button>
+          </div>
+          <div class="login-foot">GreetUp · Corporate Hospitality · v1.0</div>
+        </div>
+      </div>
+    </div>
+    <div class="phone-label"><span class="num">01</span> Login<span class="sub">Acesso controlado · sem cadastro</span></div>
+  </div>
+
+  <!-- ============ 02 HOME · MAPA DE MESAS ============ -->
+  <div class="phone-cell">
+    <div class="phone">
+      <div class="screen">
+        <div class="notch"></div>
+        <div class="status-bar">
+          <span>10:24</span>
+          <div class="right"><div class="signal"><span></span><span></span><span></span><span></span></div><div class="batt"><span></span></div></div>
+        </div>
+        <div class="body">
+          <div class="greet-header">
+            <div>
+              <div class="eyebrow">Fispal Food Service · Dia 2 de 4</div>
+              <div class="h1" style="margin-top:4px">Bom dia,<br>Rafael.</div>
+            </div>
+            <div class="bell">
+              <svg viewBox="0 0 24 24"><path d="M6 9 a6 6 0 0 1 12 0 v3 l2 3 H4 l2-3 z M10 19 a2 2 0 0 0 4 0"/></svg>
+              <span class="pip"></span>
+            </div>
+          </div>
+          <div style="display:flex;justify-content:space-between;align-items:center">
+            <div class="cap">Mesas no estande BTG</div>
+            <div class="cap" style="color:var(--gu-bordeaux-700)">8 / 12 livres</div>
+          </div>
+          <div class="tables-grid">
+            <div class="table-card free">
+              <div><div class="num">01</div><div class="lbl">Livre</div></div>
+              <svg class="ico" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M6 11V4M18 11V4M6 11h12v3a4 4 0 0 1-4 4h-4a4 4 0 0 1-4-4v-3zM10 18v3M14 18v3"/></svg>
+            </div>
+            <div class="table-card free">
+              <div><div class="num">02</div><div class="lbl">Livre</div></div>
+              <svg class="ico" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M6 11V4M18 11V4M6 11h12v3a4 4 0 0 1-4 4h-4a4 4 0 0 1-4-4v-3z"/></svg>
+            </div>
+            <div class="table-card busy">
+              <div><div class="num">Mesa 03</div><div class="who">Camila Sá<br>Vinci Partners</div></div>
+              <div class="meta">12 min · Carla</div>
+            </div>
+            <div class="table-card free">
+              <div><div class="num">04</div><div class="lbl">Livre</div></div>
+              <svg class="ico" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M6 11V4M18 11V4M6 11h12v3a4 4 0 0 1-4 4h-4a4 4 0 0 1-4-4v-3z"/></svg>
+            </div>
+            <div class="table-card busy">
+              <div><div class="num">Mesa 05</div><div class="who">Daniel Prado<br>XP Inc.</div></div>
+              <div class="meta">28 min · Marcos</div>
+            </div>
+            <div class="table-card free">
+              <div><div class="num">06</div><div class="lbl">Livre</div></div>
+              <svg class="ico" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M6 11V4M18 11V4M6 11h12v3a4 4 0 0 1-4 4h-4a4 4 0 0 1-4-4v-3z"/></svg>
+            </div>
+            <div class="table-card mine">
+              <span class="pip">Minha</span>
+              <div><div class="num" style="color:var(--gu-bordeaux-700);font-size:14px;font-weight:500">Mesa 07</div><div class="who" style="font-size:13px;font-weight:500;letter-spacing:-.008em;line-height:1.2;margin-top:4px">João Silva<br>Itaú Asset</div></div>
+              <div style="font-family:var(--f-mono);font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:var(--gu-bordeaux-700);margin-top:6px">45 min · ativo</div>
+            </div>
+            <div class="table-card free">
+              <div><div class="num">08</div><div class="lbl">Livre</div></div>
+              <svg class="ico" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M6 11V4M18 11V4M6 11h12v3a4 4 0 0 1-4 4h-4a4 4 0 0 1-4-4v-3z"/></svg>
+            </div>
+          </div>
+        </div>
+        <div class="bottom-nav">
+          <div class="nav-item active">
+            <svg viewBox="0 0 24 24"><rect x="3" y="3" width="8" height="8" rx="1"/><rect x="13" y="3" width="8" height="8" rx="1"/><rect x="3" y="13" width="8" height="8" rx="1"/><rect x="13" y="13" width="8" height="8" rx="1"/></svg>
+            <span>Mesas</span>
+          </div>
+          <div class="nav-item">
+            <svg viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="2"/><path d="M4 10h16M9 4v16"/></svg>
+            <span>Pedido</span>
+          </div>
+          <div class="nav-item">
+            <svg viewBox="0 0 24 24"><circle cx="12" cy="9" r="3.5"/><path d="M5 21a7 7 0 0 1 14 0"/></svg>
+            <span>Perfil</span>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="phone-label"><span class="num">02</span> Home · Mapa de mesas<span class="sub">Verde = livre · Bordô = ocupada · destaque = minha</span></div>
+  </div>
+
+  <!-- ============ 03 ABRIR MESA · CADASTRAR CLIENTE ============ -->
+  <div class="phone-cell">
+    <div class="phone">
+      <div class="screen">
+        <div class="notch"></div>
+        <div class="status-bar">
+          <span>10:26</span>
+          <div class="right"><div class="signal"><span></span><span></span><span></span><span></span></div><div class="batt"><span></span></div></div>
+        </div>
+        <div class="body" style="padding-bottom:80px">
+          <div class="back-row">
+            <div class="back"><svg viewBox="0 0 16 16"><path d="M10 3L5 8L10 13" fill="none" stroke="currentColor" stroke-linecap="round"/></svg></div>
+            <div>
+              <div class="eyebrow">Nova mesa</div>
+              <div class="h2" style="margin-top:2px">Mesa 07</div>
+            </div>
+          </div>
+          <div class="form-scroll">
+            <div class="field">
+              <label>Cliente já cadastrado</label>
+              <div class="input-icon">
+                <svg viewBox="0 0 16 16"><circle cx="7" cy="7" r="4.5"/><path d="m13.5 13.5-3-3"/></svg>
+                <input class="input" placeholder="Buscar por nome ou empresa..."/>
+              </div>
+            </div>
+            <div class="divider-or">ou cadastrar novo</div>
+            <div class="field">
+              <label>Nome completo <span class="req">*</span></label>
+              <input class="input focus" value="João Silva"/>
+            </div>
+            <div class="field">
+              <label>Empresa <span class="req">*</span></label>
+              <input class="input" value="Itaú Asset Management"/>
+            </div>
+            <div class="field">
+              <label>Cargo</label>
+              <input class="input" value="Head of Equities"/>
+            </div>
+            <div class="field">
+              <label>E-mail</label>
+              <input class="input" value="joao.silva@itau.com"/>
+            </div>
+            <div class="field">
+              <label>Telefone</label>
+              <input class="input" placeholder="(11) 9 ····-····"/>
+            </div>
+          </div>
+        </div>
+        <div style="position:absolute;left:14px;right:14px;bottom:14px">
+          <button class="btn btn-primary btn-full">Abrir atendimento</button>
+        </div>
+      </div>
+    </div>
+    <div class="phone-label"><span class="num">03</span> Abrir mesa · Cadastrar<span class="sub">Buscar existente ou criar · campos com * obrigatórios</span></div>
+  </div>
+
+  <!-- ============ 04 CARDÁPIO ============ -->
+  <div class="phone-cell">
+    <div class="phone">
+      <div class="screen">
+        <div class="notch"></div>
+        <div class="status-bar">
+          <span>10:34</span>
+          <div class="right"><div class="signal"><span></span><span></span><span></span><span></span></div><div class="batt"><span></span></div></div>
+        </div>
+        <div class="body no-pad">
+          <div class="menu-header" style="padding:14px 18px 0">
+            <div class="back-row" style="margin-bottom:8px">
+              <div class="back"><svg viewBox="0 0 16 16"><path d="M10 3L5 8L10 13" fill="none" stroke="currentColor" stroke-linecap="round"/></svg></div>
+              <div>
+                <div class="eyebrow">Mesa 07</div>
+                <div class="h2" style="margin-top:2px">João Silva</div>
+                <div class="cap" style="margin-top:2px;text-transform:none;letter-spacing:0;font-family:var(--f-text);font-size:11px;color:var(--gu-ink-500)">Itaú Asset Management</div>
+              </div>
+            </div>
+          </div>
+          <div class="tabs">
+            <div class="tab active">Comidas</div>
+            <div class="tab">Bebidas</div>
+            <div class="tab">Sobremesas</div>
+          </div>
+          <div class="menu-list">
+            <div class="menu-item">
+              <div class="info">
+                <div class="text">
+                  <div class="nm">Mini sanduíche de pastrami</div>
+                  <div class="desc">Pão brioche, mostarda dijon, pickles</div>
+                  <div class="price">— R$ 28</div>
+                </div>
+                <div class="side">
+                  <div class="thumb thumb-pastrami">
+                    <svg viewBox="0 0 64 64" preserveAspectRatio="xMidYMid slice">
+                      <ellipse cx="32" cy="22" rx="22" ry="6" fill="#F5DCBE" opacity=".85"/>
+                      <rect x="10" y="26" width="44" height="5" fill="#6B2331" opacity=".75"/>
+                      <rect x="10" y="32" width="44" height="3" fill="#9C6E2F" opacity=".55"/>
+                      <rect x="10" y="36" width="44" height="5" fill="#6B2331" opacity=".7"/>
+                      <ellipse cx="32" cy="44" rx="22" ry="6" fill="#D9B58A" opacity=".9"/>
+                    </svg>
+                    <span class="ph">foto</span>
+                  </div>
+                  <div class="qty"><button>−</button><div class="v">2</div><button>+</button></div>
+                </div>
+              </div>
+              <div class="obs has">Sem mostarda · 1 unidade</div>
+            </div>
+
+            <div class="menu-item">
+              <div class="info">
+                <div class="text">
+                  <div class="nm">Tábua de queijos</div>
+                  <div class="desc">Brie, gruyère, gorgonzola · com geleia de pimenta</div>
+                  <div class="price">— R$ 64</div>
+                </div>
+                <div class="side">
+                  <div class="thumb thumb-queijo">
+                    <svg viewBox="0 0 64 64" preserveAspectRatio="xMidYMid slice">
+                      <polygon points="14,46 26,22 38,46" fill="#F5DCBE" opacity=".95"/>
+                      <polygon points="14,46 26,22 38,46" fill="none" stroke="#6B2331" stroke-width="1" opacity=".4"/>
+                      <polygon points="30,46 42,28 54,46" fill="#E8C57A" opacity=".95"/>
+                      <polygon points="30,46 42,28 54,46" fill="none" stroke="#6B2331" stroke-width="1" opacity=".4"/>
+                      <circle cx="22" cy="38" r="1.5" fill="#6B2331" opacity=".5"/>
+                      <circle cx="26" cy="34" r="1" fill="#6B2331" opacity=".5"/>
+                      <circle cx="44" cy="40" r="1.5" fill="#6B2331" opacity=".4"/>
+                    </svg>
+                    <span class="ph">foto</span>
+                  </div>
+                  <div class="qty"><button>−</button><div class="v">1</div><button>+</button></div>
+                </div>
+              </div>
+            </div>
+
+            <div class="menu-item">
+              <div class="info">
+                <div class="text">
+                  <div class="nm">Pão de queijo gourmet</div>
+                  <div class="desc">Queijo canastra · porção (5 unidades)</div>
+                  <div class="price">— R$ 22</div>
+                </div>
+                <div class="side">
+                  <div class="thumb thumb-paodequeijo">
+                    <svg viewBox="0 0 64 64" preserveAspectRatio="xMidYMid slice">
+                      <ellipse cx="20" cy="22" rx="10" ry="9" fill="#F5DCBE" opacity=".95"/>
+                      <ellipse cx="44" cy="22" rx="10" ry="9" fill="#F5DCBE" opacity=".95"/>
+                      <ellipse cx="20" cy="44" rx="10" ry="9" fill="#F5DCBE" opacity=".95"/>
+                      <ellipse cx="44" cy="44" rx="10" ry="9" fill="#F5DCBE" opacity=".95"/>
+                      <ellipse cx="20" cy="22" rx="10" ry="9" fill="none" stroke="#6B2331" stroke-width="1" opacity=".3"/>
+                      <ellipse cx="44" cy="22" rx="10" ry="9" fill="none" stroke="#6B2331" stroke-width="1" opacity=".3"/>
+                      <ellipse cx="20" cy="44" rx="10" ry="9" fill="none" stroke="#6B2331" stroke-width="1" opacity=".3"/>
+                      <ellipse cx="44" cy="44" rx="10" ry="9" fill="none" stroke="#6B2331" stroke-width="1" opacity=".3"/>
+                    </svg>
+                    <span class="ph">foto</span>
+                  </div>
+                  <div class="qty empty"><button>−</button><div class="v">0</div><button>+</button></div>
+                </div>
+              </div>
+            </div>
+
+            <div class="menu-item">
+              <div class="info">
+                <div class="text">
+                  <div class="nm">Bruschetta tomate &amp; manjericão</div>
+                  <div class="desc">Pão italiano artesanal</div>
+                  <div class="price">— R$ 18</div>
+                </div>
+                <div class="side">
+                  <div class="thumb thumb-bruschetta">
+                    <svg viewBox="0 0 64 64" preserveAspectRatio="xMidYMid slice">
+                      <rect x="8" y="28" width="48" height="14" rx="3" fill="#F5DCBE" opacity=".95"/>
+                      <rect x="8" y="28" width="48" height="14" rx="3" fill="none" stroke="#6B2331" stroke-width="1" opacity=".3"/>
+                      <circle cx="18" cy="30" r="4" fill="#B91C1C" opacity=".75"/>
+                      <circle cx="30" cy="28" r="4" fill="#B91C1C" opacity=".75"/>
+                      <circle cx="42" cy="30" r="4" fill="#B91C1C" opacity=".75"/>
+                      <ellipse cx="24" cy="32" rx="3" ry="1.5" fill="#15803D" opacity=".7"/>
+                      <ellipse cx="38" cy="32" rx="3" ry="1.5" fill="#15803D" opacity=".7"/>
+                    </svg>
+                    <span class="ph">foto</span>
+                  </div>
+                  <div class="qty empty"><button>−</button><div class="v">0</div><button>+</button></div>
+                </div>
+              </div>
+            </div>
+
+            <div class="menu-item">
+              <div class="info">
+                <div class="text">
+                  <div class="nm">Mini quiche lorraine</div>
+                  <div class="desc">Bacon, alho-poró, gruyère</div>
+                  <div class="price">— R$ 16</div>
+                </div>
+                <div class="side">
+                  <div class="thumb thumb-quiche">
+                    <svg viewBox="0 0 64 64" preserveAspectRatio="xMidYMid slice">
+                      <circle cx="32" cy="32" r="22" fill="#E8C57A" opacity=".95"/>
+                      <circle cx="32" cy="32" r="22" fill="none" stroke="#6B2331" stroke-width="1.2" opacity=".35"/>
+                      <circle cx="32" cy="32" r="14" fill="none" stroke="#6B2331" stroke-width="1" opacity=".3"/>
+                      <line x1="32" y1="10" x2="32" y2="54" stroke="#6B2331" stroke-width="1" opacity=".25"/>
+                      <line x1="10" y1="32" x2="54" y2="32" stroke="#6B2331" stroke-width="1" opacity=".25"/>
+                      <circle cx="24" cy="26" r="1.5" fill="#6B2331" opacity=".5"/>
+                      <circle cx="40" cy="38" r="1.5" fill="#6B2331" opacity=".5"/>
+                    </svg>
+                    <span class="ph">foto</span>
+                  </div>
+                  <div class="qty empty"><button>−</button><div class="v">0</div><button>+</button></div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="confirm-bar">
+            <div class="l">
+              <div class="lbl">3 itens selecionados</div>
+              <div class="v">Confirmar pedido</div>
+            </div>
+            <div class="r">→</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="phone-label"><span class="num">04</span> Cardápio<span class="sub">Tabs · qty stepper · observação por item</span></div>
+  </div>
+
+  <!-- ============ 05 CONFIRMAR PEDIDO ============ -->
+  <div class="phone-cell">
+    <div class="phone">
+      <div class="screen">
+        <div class="notch"></div>
+        <div class="status-bar">
+          <span>10:36</span>
+          <div class="right"><div class="signal"><span></span><span></span><span></span><span></span></div><div class="batt"><span></span></div></div>
+        </div>
+        <div class="body">
+          <div class="back-row">
+            <div class="back"><svg viewBox="0 0 16 16"><path d="M10 3L5 8L10 13" fill="none" stroke="currentColor" stroke-linecap="round"/></svg></div>
+            <div>
+              <div class="eyebrow">Mesa 07 · João Silva</div>
+              <div class="h2" style="margin-top:2px">Revisar pedido</div>
+            </div>
+          </div>
+          <div class="review-card">
+            <div class="review-row">
+              <span class="qx">2×</span>
+              <div class="it">Mini sanduíche de pastrami<span class="obs">SEM MOSTARDA · 1 UNIDADE</span></div>
+            </div>
+            <div class="divider"></div>
+            <div class="review-row">
+              <span class="qx">1×</span>
+              <div class="it">Tábua de queijos</div>
+            </div>
+            <div class="divider"></div>
+            <div class="review-row">
+              <span class="qx">3×</span>
+              <div class="it">Água sem gás<span class="obs">SEM GELO</span></div>
+            </div>
+            <div class="divider-champagne"></div>
+            <div style="display:flex;justify-content:space-between;align-items:center;font-family:var(--f-mono);font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--gu-ink-700);padding-top:4px">
+              <span>Total de itens</span>
+              <span style="color:var(--gu-bordeaux-700);font-weight:500">6</span>
+            </div>
+          </div>
+          <div class="note-box">
+            <svg viewBox="0 0 16 16" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="8" cy="8" r="6.5"/><path d="M8 5v3M8 11h.01"/></svg>
+            Os itens serão enviados automaticamente para a cozinha e o garçom será notificado quando estiverem prontos.
+          </div>
+          <div style="margin-top:auto;display:flex;flex-direction:column;gap:8px">
+            <button class="btn btn-primary btn-full">Confirmar pedido</button>
+            <button class="btn btn-secondary btn-full">Editar itens</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="phone-label"><span class="num">05</span> Confirmar pedido<span class="sub">Revisão · observações destacadas</span></div>
+  </div>
+
+  <!-- ============ 06 CONTA ATIVA ============ -->
+  <div class="phone-cell">
+    <div class="phone">
+      <div class="screen">
+        <div class="notch"></div>
+        <div class="status-bar">
+          <span>11:09</span>
+          <div class="right"><div class="signal"><span></span><span></span><span></span><span></span></div><div class="batt"><span></span></div></div>
+        </div>
+        <div class="body" style="padding-bottom:14px">
+          <div style="display:flex;justify-content:space-between;align-items:flex-start">
+            <div>
+              <div class="eyebrow">Mesa 07 · Itaú Asset</div>
+              <div class="h2" style="margin-top:2px">João Silva</div>
+            </div>
+            <div class="bell">
+              <svg viewBox="0 0 24 24"><path d="M6 9 a6 6 0 0 1 12 0 v3 l2 3 H4 l2-3 z M10 19 a2 2 0 0 0 4 0"/></svg>
+            </div>
+          </div>
+          <div class="acct-pill"><span class="dot"></span>Conta aberta há 45 min</div>
+
+          <div class="ready-banner">
+            <svg viewBox="0 0 24 24"><path d="M5 13l4 4L19 7"/></svg>
+            <div><strong>Café duplo pronto para entrega</strong><span style="display:block;color:var(--gu-ink-700);font-size:11px;margin-top:1px">Daniel está a caminho da mesa</span></div>
+          </div>
+
+          <div style="overflow-y:auto;flex:1;display:flex;flex-direction:column;gap:8px;padding-right:2px;margin-right:-2px">
+            <div class="order-card">
+              <div class="top">
+                <div class="it"><span class="qx">2×</span>Café duplo · espresso</div>
+                <span class="badge b-ready"><span class="dot"></span>Pronto</span>
+              </div>
+              <span class="ts">Pedido às 11:04 · pronto há 32s</span>
+            </div>
+            <div class="order-card">
+              <div class="top">
+                <div class="it"><span class="qx">3×</span>Água sem gás</div>
+                <span class="badge b-preparing"><span class="dot"></span>Em preparo</span>
+              </div>
+              <span class="ts">Pedido às 11:06 · 3 min</span>
+            </div>
+            <div class="order-card">
+              <div class="top">
+                <div class="it"><span class="qx">1×</span>Tábua de queijos</div>
+                <span class="badge b-pending"><span class="dot"></span>Pendente</span>
+              </div>
+              <span class="ts">Pedido às 11:08 · 1 min</span>
+            </div>
+            <div class="order-card" style="opacity:.7">
+              <div class="top">
+                <div class="it"><span class="qx">2×</span>Mini sanduíche pastrami</div>
+                <span class="badge b-delivered"><span class="dot"></span>Entregue</span>
+              </div>
+              <span class="ts">Entregue às 10:48</span>
+            </div>
+            <div class="order-card" style="opacity:.7">
+              <div class="top">
+                <div class="it"><span class="qx">4×</span>Espresso</div>
+                <span class="badge b-delivered"><span class="dot"></span>Entregue</span>
+              </div>
+              <span class="ts">Entregue às 10:32</span>
+            </div>
+          </div>
+          <div class="acct-actions">
+            <button class="btn btn-secondary btn-full" style="font-size:13px;padding:12px">
+              <svg viewBox="0 0 16 16" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M8 3v10M3 8h10"/></svg>
+              Novo pedido
+            </button>
+            <button class="btn btn-danger btn-full" style="font-size:13px;padding:11px">Fechar conta</button>
+          </div>
+        </div>
+        <div class="bottom-nav">
+          <div class="nav-item">
+            <svg viewBox="0 0 24 24"><rect x="3" y="3" width="8" height="8" rx="1"/><rect x="13" y="3" width="8" height="8" rx="1"/><rect x="3" y="13" width="8" height="8" rx="1"/><rect x="13" y="13" width="8" height="8" rx="1"/></svg>
+            <span>Mesas</span>
+          </div>
+          <div class="nav-item active">
+            <svg viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="2"/><path d="M4 10h16M9 4v16"/></svg>
+            <span>Pedido</span>
+          </div>
+          <div class="nav-item">
+            <svg viewBox="0 0 24 24"><circle cx="12" cy="9" r="3.5"/><path d="M5 21a7 7 0 0 1 14 0"/></svg>
+            <span>Perfil</span>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="phone-label"><span class="num">06</span> Conta ativa<span class="sub">Status em tempo real · banner de pronto</span></div>
+  </div>
+
+  <!-- ============ 07 FECHAR CONTA (BOTTOM SHEET) ============ -->
+  <div class="phone-cell">
+    <div class="phone">
+      <div class="screen">
+        <div class="notch"></div>
+        <div class="status-bar">
+          <span>12:18</span>
+          <div class="right"><div class="signal"><span></span><span></span><span></span><span></span></div><div class="batt"><span></span></div></div>
+        </div>
+        <!-- background blurred state -->
+        <div class="body" style="padding-bottom:14px;filter:blur(0px)">
+          <div>
+            <div class="eyebrow">Mesa 07 · Itaú Asset</div>
+            <div class="h2" style="margin-top:2px">João Silva</div>
+          </div>
+          <div class="acct-pill"><span class="dot"></span>Conta aberta há 1h 54min</div>
+          <div class="order-card" style="opacity:.6">
+            <div class="top"><div class="it"><span class="qx">1×</span>Tábua de queijos</div><span class="badge b-preparing"><span class="dot"></span>Em preparo</span></div>
+            <span class="ts">Pedido às 12:11 · 7 min</span>
+          </div>
+          <div class="order-card" style="opacity:.5">
+            <div class="top"><div class="it"><span class="qx">2×</span>Café duplo</div><span class="badge b-delivered"><span class="dot"></span>Entregue</span></div>
+          </div>
+        </div>
+        <div class="bottom-nav" style="opacity:.4">
+          <div class="nav-item"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="8" height="8" rx="1"/><rect x="13" y="3" width="8" height="8" rx="1"/><rect x="3" y="13" width="8" height="8" rx="1"/><rect x="13" y="13" width="8" height="8" rx="1"/></svg><span>Mesas</span></div>
+          <div class="nav-item active"><svg viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="2"/><path d="M4 10h16M9 4v16"/></svg><span>Pedido</span></div>
+          <div class="nav-item"><svg viewBox="0 0 24 24"><circle cx="12" cy="9" r="3.5"/><path d="M5 21a7 7 0 0 1 14 0"/></svg><span>Perfil</span></div>
+        </div>
+        <!-- overlay -->
+        <div class="sheet-bg"></div>
+        <div class="sheet">
+          <div class="grip"></div>
+          <div>
+            <div class="eyebrow">Mesa 07 · 1h 54min de atendimento</div>
+            <h3 style="margin-top:4px">Fechar atendimento?</h3>
+            <p style="margin-top:6px">Hospitalidade cortesia do estande BTG. O fechamento é apenas para controle — a mesa ficará disponível e o histórico arquivado no relatório do evento.</p>
+          </div>
+          <div class="sheet-summary">
+            <div class="row"><span class="k">Itens servidos</span><span class="v">14</span></div>
+            <div class="row"><span class="k">Pedidos realizados</span><span class="v">7</span></div>
+            <div class="row"><span class="k">Convidados</span><span class="v">3</span></div>
+            <div class="divider"></div>
+            <div class="row"><span class="k">Duração do atendimento</span><span class="v" style="color:var(--gu-bordeaux-700);font-family:var(--f-mono)">1h 54min</span></div>
+          </div>
+          <div class="sheet-alert">
+            <svg viewBox="0 0 16 16"><path d="M8 1l7 13H1z"/><path d="M8 6v4M8 12h.01"/></svg>
+            <div><strong style="display:block;font-weight:500;color:var(--gu-canceled-tx)">1 item ainda em preparo</strong>Tábua de queijos será cancelado se você fechar agora.</div>
+          </div>
+          <div class="sheet-actions">
+            <button class="btn btn-ghost">Cancelar</button>
+            <button class="btn btn-primary">Fechar conta</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="phone-label"><span class="num">07</span> Fechar conta<span class="sub">Bottom sheet · resumo + alerta</span></div>
+  </div>
+
+</div>
+
+</body>
+</html>

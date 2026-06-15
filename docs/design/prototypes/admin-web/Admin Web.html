@@ -1,0 +1,1348 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<title>GreetUp — Admin Web</title>
+<meta name="viewport" content="width=1280, initial-scale=1.0">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700&family=Cormorant+Garamond:ital,wght@0,400;1,400&family=JetBrains+Mono:wght@400;500&display=swap">
+
+<style>
+:root{
+  --gu-bordeaux-900:#2E1116; --gu-bordeaux-800:#4A1A24; --gu-bordeaux-700:#6B2331;
+  --gu-bordeaux-500:#92465A; --gu-bordeaux-300:#D6A8B0;
+  --gu-champagne:#D9B58A;
+  --gu-cream-50:#FBF7EF; --gu-cream-100:#F5EEDE; --gu-cream-200:#ECE2CC;
+  --gu-ink-900:#1F1A18; --gu-ink-700:#4A423E; --gu-ink-500:#7A736E; --gu-ink-300:#B0AAA5;
+  --gu-pending-bg:#FFF8E7; --gu-pending-tx:#92610A; --gu-pending-br:#D9B58A;
+  --gu-preparing-bg:#EEF2FF; --gu-preparing-tx:#3730A3; --gu-preparing-br:#6366F1;
+  --gu-ready-bg:#F0FDF4; --gu-ready-tx:#15803D; --gu-ready-br:#22C55E;
+  --gu-delivered-bg:#F5EEDE; --gu-delivered-tx:#4A423E; --gu-delivered-br:#B0AAA5;
+  --gu-canceled-bg:#FEF2F2; --gu-canceled-tx:#B91C1C; --gu-canceled-br:#EF4444;
+  --f-display:"Sora",system-ui,sans-serif;
+  --f-text:"Sora",system-ui,sans-serif;
+  --f-editorial:"Cormorant Garamond",Georgia,serif;
+  --f-mono:"JetBrains Mono",ui-monospace,monospace;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;background:var(--gu-cream-50);font-family:var(--f-text);color:var(--gu-ink-900);-webkit-font-smoothing:antialiased;font-feature-settings:"ss01","cv11";font-size:14px;line-height:1.55}
+button{font-family:inherit;cursor:pointer;border:none;background:none;color:inherit}
+input,select,textarea{font-family:inherit}
+
+.app{display:grid;grid-template-columns:240px 1fr;min-height:100vh}
+
+/* ============ SIDEBAR ============ */
+.sidebar{
+  background:var(--gu-bordeaux-900);color:var(--gu-cream-100);
+  display:flex;flex-direction:column;
+  position:sticky;top:0;height:100vh;
+  border-right:1px solid var(--gu-bordeaux-800);
+}
+.sb-brand{
+  padding:20px 18px 22px;display:flex;align-items:center;gap:10px;
+  border-bottom:1px solid var(--gu-bordeaux-800);
+}
+.sb-brand svg{width:22px;height:22px}
+.sb-brand .nm{font-size:16px;font-weight:600;letter-spacing:-.012em;color:var(--gu-cream-50)}
+.sb-brand .div{flex:1;height:1px}
+.sb-brand .v{font-family:var(--f-mono);font-size:9px;letter-spacing:.14em;color:var(--gu-bordeaux-300);text-transform:uppercase}
+
+.sb-nav{padding:14px 10px;flex:1;overflow-y:auto;display:flex;flex-direction:column;gap:2px}
+.sb-group{
+  font-family:var(--f-mono);font-size:9.5px;letter-spacing:.16em;
+  text-transform:uppercase;color:var(--gu-bordeaux-300);
+  padding:14px 10px 6px;
+}
+.sb-item{
+  display:flex;align-items:center;gap:10px;padding:9px 10px;
+  border-radius:5px;font-size:13px;color:var(--gu-cream-200);
+  letter-spacing:-.005em;cursor:pointer;position:relative;
+  border-left:2px solid transparent;
+}
+.sb-item:hover{background:var(--gu-bordeaux-800);color:var(--gu-cream-50)}
+.sb-item.active{background:var(--gu-bordeaux-800);color:var(--gu-cream-50);border-left-color:var(--gu-champagne)}
+.sb-item svg{width:15px;height:15px;stroke:currentColor;fill:none;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round;opacity:.9;flex-shrink:0}
+.sb-item .count{margin-left:auto;font-family:var(--f-mono);font-size:10px;letter-spacing:.04em;background:var(--gu-bordeaux-700);padding:1px 7px;border-radius:99px;color:var(--gu-cream-50)}
+.sb-item.active .count{background:var(--gu-champagne);color:var(--gu-bordeaux-900);font-weight:500}
+.sb-item .pulse{margin-left:auto;width:7px;height:7px;border-radius:50%;background:#22C55E;box-shadow:0 0 0 3px rgba(34,197,94,.2)}
+
+.sb-foot{
+  border-top:1px solid var(--gu-bordeaux-800);padding:14px 14px;
+  display:flex;align-items:center;gap:10px;
+}
+.sb-foot .avatar{width:32px;height:32px;border-radius:50%;background:var(--gu-bordeaux-700);color:var(--gu-cream-50);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:500;letter-spacing:-.005em}
+.sb-foot .who{flex:1;display:flex;flex-direction:column;gap:1px;min-width:0}
+.sb-foot .who .nm{font-size:13px;font-weight:500;color:var(--gu-cream-50);letter-spacing:-.005em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sb-foot .who .rl{font-family:var(--f-mono);font-size:9.5px;letter-spacing:.1em;color:var(--gu-bordeaux-300);text-transform:uppercase}
+.sb-foot .out{width:32px;height:32px;border-radius:6px;display:flex;align-items:center;justify-content:center;color:var(--gu-bordeaux-300)}
+.sb-foot .out:hover{background:var(--gu-bordeaux-800);color:var(--gu-cream-50)}
+.sb-foot .out svg{width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:1.6;stroke-linecap:round}
+
+/* ============ MAIN AREA ============ */
+.main{display:flex;flex-direction:column;min-width:0;min-height:100vh}
+
+.topbar{
+  background:#fff;border-bottom:1px solid var(--gu-cream-200);
+  padding:14px 32px;display:flex;justify-content:space-between;align-items:center;gap:24px;
+  position:sticky;top:0;z-index:30;
+}
+.topbar .crumbs{display:flex;align-items:center;gap:10px;font-family:var(--f-mono);font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--gu-ink-500)}
+.topbar .crumbs .here{color:var(--gu-bordeaux-700)}
+.topbar .event-info{display:flex;align-items:center;gap:14px;font-size:13px}
+.topbar .event-info .ev{display:flex;flex-direction:column;align-items:flex-end;gap:1px}
+.topbar .event-info .ev .nm{font-weight:600;letter-spacing:-.008em}
+.topbar .event-info .ev .meta{font-family:var(--f-mono);font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--gu-ink-500)}
+.topbar .event-info .live{font-family:var(--f-mono);font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:#15803D;display:flex;align-items:center;gap:5px;padding:4px 10px;background:#F0FDF4;border-radius:99px;border:1px solid #22C55E}
+.topbar .event-info .live .dot{width:6px;height:6px;border-radius:50%;background:#22C55E;animation:pulse 2s ease-in-out infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+.topbar .search{display:flex;align-items:center;gap:8px;background:var(--gu-cream-50);border:1px solid var(--gu-cream-200);border-radius:6px;padding:7px 10px;color:var(--gu-ink-500);font-size:13px;width:240px}
+.topbar .search svg{width:13px;height:13px;stroke:currentColor;fill:none;stroke-width:1.7}
+.topbar .search input{background:none;border:none;outline:none;color:var(--gu-ink-900);font-size:13px;flex:1}
+.topbar .search input::placeholder{color:var(--gu-ink-300)}
+.topbar .kbd{font-family:var(--f-mono);font-size:10px;color:var(--gu-ink-500);background:#fff;border:1px solid var(--gu-cream-200);padding:1px 5px;border-radius:3px}
+
+.page{padding:28px 32px 40px;display:flex;flex-direction:column;gap:22px;flex:1}
+
+.page-head{display:flex;justify-content:space-between;align-items:flex-end;gap:24px}
+.page-head .l{display:flex;flex-direction:column;gap:6px}
+.page-head .eyebrow{font-family:var(--f-mono);font-size:10.5px;letter-spacing:.18em;text-transform:uppercase;color:var(--gu-bordeaux-700);display:flex;align-items:center;gap:10px}
+.page-head .eyebrow::before{content:"";width:24px;height:1px;background:var(--gu-bordeaux-700)}
+.page-head h1{font-size:28px;font-weight:600;letter-spacing:-.025em;line-height:1.05}
+.page-head .sub{font-size:13.5px;color:var(--gu-ink-700);max-width:62ch;margin-top:2px}
+.page-head .r{display:flex;gap:10px;align-items:center}
+
+/* Buttons */
+.btn{font-family:var(--f-text);font-size:13px;font-weight:500;letter-spacing:-.003em;padding:9px 16px;border-radius:6px;display:inline-flex;align-items:center;justify-content:center;gap:7px;border:1.5px solid transparent;cursor:pointer;white-space:nowrap}
+.btn-primary{background:var(--gu-bordeaux-700);color:#fff}
+.btn-primary:hover{background:var(--gu-bordeaux-800)}
+.btn-secondary{background:transparent;border-color:var(--gu-bordeaux-700);color:var(--gu-bordeaux-700)}
+.btn-secondary:hover{background:var(--gu-bordeaux-700);color:#fff}
+.btn-ghost{background:transparent;color:var(--gu-ink-700)}
+.btn-ghost:hover{background:var(--gu-cream-100)}
+.btn-icon{padding:8px;width:34px;height:34px}
+.btn svg{width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:1.7;stroke-linecap:round}
+
+/* Cards / panels */
+.panel{background:#fff;border:1px solid var(--gu-cream-200);border-radius:10px;overflow:hidden}
+.panel-head{padding:16px 20px;border-bottom:1px solid var(--gu-cream-200);display:flex;justify-content:space-between;align-items:center}
+.panel-head h3{font-size:15px;font-weight:600;letter-spacing:-.01em}
+.panel-head .sub{font-family:var(--f-mono);font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--gu-ink-500);margin-top:2px}
+.panel-body{padding:18px 20px}
+.panel-body.flush{padding:0}
+
+/* KPI */
+.kpi-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px}
+.kpi{background:#fff;border:1px solid var(--gu-cream-200);border-radius:10px;padding:18px 20px;position:relative;overflow:hidden}
+.kpi .lbl{font-family:var(--f-mono);font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--gu-ink-500);margin-bottom:10px}
+.kpi .val{font-size:32px;font-weight:600;letter-spacing:-.028em;line-height:1;color:var(--gu-ink-900);font-feature-settings:"tnum"}
+.kpi .val .of{font-size:18px;color:var(--gu-ink-500);font-weight:400}
+.kpi .delta{font-family:var(--f-mono);font-size:11px;letter-spacing:.04em;margin-top:8px;display:flex;align-items:center;gap:5px}
+.kpi .delta.up{color:#15803D}
+.kpi .delta.flat{color:var(--gu-ink-500)}
+.kpi .delta.warn{color:#B45309}
+.kpi .spark{position:absolute;right:18px;bottom:14px;opacity:.5}
+
+/* Table */
+.tbl{width:100%;border-collapse:collapse}
+.tbl thead th{
+  font-family:var(--f-mono);font-size:10px;letter-spacing:.14em;text-transform:uppercase;
+  color:var(--gu-ink-500);font-weight:400;text-align:left;padding:12px 16px;
+  background:var(--gu-cream-50);border-bottom:1px solid var(--gu-cream-200);
+  position:sticky;top:0;
+}
+.tbl tbody td{padding:12px 16px;font-size:13px;border-bottom:1px solid var(--gu-cream-200);vertical-align:middle}
+.tbl tbody tr:hover{background:var(--gu-cream-50)}
+.tbl tbody tr.active{background:var(--gu-cream-100)}
+.tbl tbody tr:last-child td{border-bottom:none}
+.tbl .who{display:flex;align-items:center;gap:10px}
+.tbl .av{width:28px;height:28px;border-radius:50%;background:var(--gu-cream-100);color:var(--gu-bordeaux-700);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:500;letter-spacing:-.005em;flex-shrink:0}
+.tbl .nm{font-weight:500;letter-spacing:-.005em}
+.tbl .sub{font-family:var(--f-mono);font-size:10px;color:var(--gu-ink-500);letter-spacing:.04em;text-transform:uppercase}
+.tbl .num{font-family:var(--f-mono);font-feature-settings:"tnum";font-size:12.5px;letter-spacing:.02em}
+.tbl .num.big{font-size:14px;font-weight:500;color:var(--gu-bordeaux-700)}
+.tbl .more{color:var(--gu-ink-500);width:28px;height:28px;border-radius:6px;display:inline-flex;align-items:center;justify-content:center}
+.tbl .more:hover{background:var(--gu-cream-100);color:var(--gu-ink-900)}
+
+.badge{font-family:var(--f-mono);font-size:10px;letter-spacing:.12em;text-transform:uppercase;padding:3px 9px;border-radius:99px;border:1px solid;display:inline-flex;align-items:center;gap:5px;white-space:nowrap}
+.badge .dot{width:5px;height:5px;border-radius:50%}
+.b-pending{background:var(--gu-pending-bg);color:var(--gu-pending-tx);border-color:var(--gu-pending-br)} .b-pending .dot{background:var(--gu-pending-br)}
+.b-preparing{background:var(--gu-preparing-bg);color:var(--gu-preparing-tx);border-color:var(--gu-preparing-br)} .b-preparing .dot{background:var(--gu-preparing-br)}
+.b-ready{background:var(--gu-ready-bg);color:var(--gu-ready-tx);border-color:var(--gu-ready-br)} .b-ready .dot{background:var(--gu-ready-br)}
+.b-delivered{background:var(--gu-delivered-bg);color:var(--gu-delivered-tx);border-color:var(--gu-delivered-br)} .b-delivered .dot{background:var(--gu-delivered-br)}
+.b-canceled{background:var(--gu-canceled-bg);color:var(--gu-canceled-tx);border-color:var(--gu-canceled-br)} .b-canceled .dot{background:var(--gu-canceled-br)}
+.b-free{background:#F0FDF4;color:#15803D;border-color:#86EFAC} .b-free .dot{background:#22C55E}
+.b-busy{background:#fbeef0;color:var(--gu-bordeaux-800);border-color:var(--gu-bordeaux-300)} .b-busy .dot{background:var(--gu-bordeaux-700)}
+
+/* Hide-show screens */
+.screen{display:none}
+.screen.active{display:flex;flex-direction:column;gap:22px;flex:1}
+
+/* ============ DASHBOARD ============ */
+.dash-grid{display:grid;grid-template-columns:1.7fr 1fr;gap:18px}
+.chart-wrap{height:220px;padding:14px 0 0;display:flex;flex-direction:column;gap:8px}
+.chart-svg{width:100%;height:170px}
+.chart-x{display:flex;justify-content:space-between;font-family:var(--f-mono);font-size:10px;letter-spacing:.08em;color:var(--gu-ink-500);padding:0 8px}
+.chart-legend{display:flex;gap:18px;font-family:var(--f-mono);font-size:10px;letter-spacing:.06em;color:var(--gu-ink-700);padding:0 20px 14px}
+.chart-legend span{display:flex;align-items:center;gap:5px}
+.chart-legend i{width:10px;height:2px;border-radius:1px}
+
+.feed{display:flex;flex-direction:column}
+.feed-item{padding:12px 20px;border-top:1px solid var(--gu-cream-200);display:flex;gap:12px;align-items:flex-start;font-size:12.5px;line-height:1.5}
+.feed-item:first-child{border-top:none}
+.feed-item .dot{width:6px;height:6px;border-radius:50%;flex-shrink:0;margin-top:6px}
+.feed-item .dot.bord{background:var(--gu-bordeaux-700)}
+.feed-item .dot.green{background:#22C55E}
+.feed-item .dot.blue{background:#6366F1}
+.feed-item .dot.gold{background:var(--gu-champagne)}
+.feed-item .ts{font-family:var(--f-mono);font-size:10px;letter-spacing:.04em;color:var(--gu-ink-500);margin-top:2px}
+.feed-item .txt strong{font-weight:500;color:var(--gu-ink-900)}
+
+/* ============ TABLES (visual map) ============ */
+.tables-map{display:grid;grid-template-columns:repeat(6,1fr);gap:14px}
+.t-card{background:#fff;border:1.5px solid var(--gu-cream-200);border-radius:10px;padding:14px;display:flex;flex-direction:column;gap:8px;min-height:130px;cursor:pointer;position:relative;transition:border-color .15s, box-shadow .15s}
+.t-card:hover{border-color:var(--gu-bordeaux-500);box-shadow:0 4px 12px -4px rgba(46,17,22,.12)}
+.t-card.free{border-color:#bfe8c9;background:#F7FDF8}
+.t-card.busy{border-color:var(--gu-bordeaux-300);background:#fdf6f7}
+.t-card .top{display:flex;justify-content:space-between;align-items:flex-start}
+.t-card .num{font-size:22px;font-weight:600;letter-spacing:-.02em;line-height:1;color:var(--gu-ink-900);font-family:var(--f-display)}
+.t-card.free .num{color:#15803D}
+.t-card.busy .num{color:var(--gu-bordeaux-700);font-size:14px;font-weight:500;letter-spacing:-.008em}
+.t-card .who{font-size:13px;font-weight:500;letter-spacing:-.008em;line-height:1.2}
+.t-card .co{font-family:var(--f-mono);font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--gu-ink-500)}
+.t-card .ger{font-family:var(--f-mono);font-size:9.5px;letter-spacing:.08em;color:var(--gu-bordeaux-700);text-transform:uppercase;margin-top:auto;border-top:1px solid var(--gu-cream-200);padding-top:6px;display:flex;justify-content:space-between}
+
+/* ============ PRODUCTS ============ */
+.tabs{display:flex;gap:24px;border-bottom:1px solid var(--gu-cream-200);padding:0 20px}
+.tab{padding:12px 0;font-size:13px;font-weight:500;color:var(--gu-ink-500);letter-spacing:.005em;position:relative;cursor:pointer;display:flex;align-items:center;gap:8px}
+.tab .ct{font-family:var(--f-mono);font-size:10px;background:var(--gu-cream-100);padding:1px 7px;border-radius:99px;letter-spacing:.04em;color:var(--gu-ink-700)}
+.tab.active{color:var(--gu-bordeaux-700)}
+.tab.active::after{content:"";position:absolute;bottom:-1px;left:0;right:0;height:2px;background:var(--gu-bordeaux-700)}
+.tab.active .ct{background:var(--gu-bordeaux-700);color:#fff}
+
+/* Toggle switch */
+.switch{position:relative;display:inline-block;width:36px;height:20px;cursor:pointer}
+.switch input{display:none}
+.switch .slider{position:absolute;inset:0;background:var(--gu-cream-200);border-radius:99px;transition:background .15s}
+.switch .slider::before{content:"";position:absolute;width:14px;height:14px;left:3px;top:3px;background:#fff;border-radius:50%;transition:transform .18s;box-shadow:0 1px 2px rgba(0,0,0,.15)}
+.switch input:checked + .slider{background:#22C55E}
+.switch input:checked + .slider::before{transform:translateX(16px)}
+
+/* ============ CLIENTS SPLIT ============ */
+.split{display:grid;grid-template-columns:1.55fr .85fr;gap:18px;flex:1;min-height:0}
+.split .left{display:flex;flex-direction:column}
+.split .right{display:flex;flex-direction:column;gap:14px}
+.client-detail-card{background:#fff;border:1px solid var(--gu-cream-200);border-radius:10px;padding:22px 22px 16px;display:flex;flex-direction:column;gap:14px}
+.cd-head{display:flex;align-items:center;gap:14px;padding-bottom:14px;border-bottom:1px solid var(--gu-cream-200)}
+.cd-head .av{width:54px;height:54px;border-radius:50%;background:var(--gu-cream-100);color:var(--gu-bordeaux-700);font-size:20px;font-weight:500;display:flex;align-items:center;justify-content:center;letter-spacing:-.01em}
+.cd-head h3{font-size:18px;font-weight:600;letter-spacing:-.015em}
+.cd-head .sub{font-family:var(--f-mono);font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--gu-ink-500);margin-top:3px}
+.cd-row{display:grid;grid-template-columns:120px 1fr;gap:14px;font-size:13px;padding:5px 0}
+.cd-row .k{font-family:var(--f-mono);font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--gu-ink-500);padding-top:2px}
+.cd-row .v{color:var(--gu-ink-900);font-weight:500;letter-spacing:-.005em}
+.cd-row .v.muted{color:var(--gu-ink-700);font-weight:400}
+.cd-section{margin-top:6px;padding-top:14px;border-top:1px solid var(--gu-cream-200)}
+.cd-section h4{font-family:var(--f-mono);font-size:10.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--gu-bordeaux-700);margin-bottom:12px}
+.cd-history{display:flex;flex-direction:column;gap:10px}
+.cd-h{display:flex;justify-content:space-between;gap:10px;padding:8px 10px;background:var(--gu-cream-50);border-radius:6px;font-size:12.5px}
+.cd-h .l{display:flex;flex-direction:column;gap:2px}
+.cd-h .l .ev{font-weight:500;letter-spacing:-.005em}
+.cd-h .l .meta{font-family:var(--f-mono);font-size:9.5px;color:var(--gu-ink-500);letter-spacing:.06em;text-transform:uppercase}
+.cd-h .r{text-align:right;font-family:var(--f-mono);font-size:11px;color:var(--gu-bordeaux-700);font-weight:500}
+
+.filters{display:flex;gap:10px;align-items:center;padding:14px 20px;border-bottom:1px solid var(--gu-cream-200);background:var(--gu-cream-50)}
+.filters .field{display:flex;align-items:center;gap:6px;background:#fff;border:1px solid var(--gu-cream-200);border-radius:6px;padding:6px 10px;font-size:12.5px}
+.filters .field svg{width:13px;height:13px;stroke:var(--gu-ink-500);fill:none;stroke-width:1.7}
+.filters .field input,.filters .field select{border:none;outline:none;background:none;color:var(--gu-ink-900);font-size:12.5px;font-family:inherit}
+.filters .field input::placeholder{color:var(--gu-ink-300)}
+.filters .count{margin-left:auto;font-family:var(--f-mono);font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--gu-ink-500)}
+.filters .count strong{color:var(--gu-bordeaux-700);font-weight:500}
+
+/* Stat highlight card */
+.stat-hi{
+  background:linear-gradient(135deg, var(--gu-bordeaux-900), var(--gu-bordeaux-700));
+  color:var(--gu-cream-50);border-radius:10px;padding:22px 24px;
+  display:flex;justify-content:space-between;align-items:center;gap:24px;
+  position:relative;overflow:hidden;
+}
+.stat-hi .l{display:flex;flex-direction:column;gap:6px;z-index:1}
+.stat-hi .lbl{font-family:var(--f-mono);font-size:10.5px;letter-spacing:.18em;text-transform:uppercase;color:var(--gu-champagne)}
+.stat-hi .val{font-size:46px;font-weight:600;letter-spacing:-.035em;line-height:1;color:var(--gu-cream-50)}
+.stat-hi .val span{font-size:18px;color:var(--gu-bordeaux-300);font-weight:400;margin-left:8px}
+.stat-hi .note{font-size:13px;color:var(--gu-cream-200);line-height:1.45;max-width:46ch}
+.stat-hi .arches{position:absolute;right:-20px;bottom:-30px;opacity:.4;pointer-events:none}
+
+/* Note inline */
+.note-inline{background:var(--gu-cream-100);border-left:3px solid var(--gu-champagne);border-radius:0 6px 6px 0;padding:10px 14px;font-size:12.5px;color:var(--gu-ink-700);line-height:1.5;display:flex;align-items:flex-start;gap:8px}
+.note-inline svg{width:14px;height:14px;stroke:var(--gu-champagne);fill:none;stroke-width:1.8;flex-shrink:0;margin-top:1px}
+.note-inline strong{color:var(--gu-ink-900);font-weight:500}
+
+/* Live activity dot */
+.live-pill{display:inline-flex;align-items:center;gap:5px;font-family:var(--f-mono);font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:#15803D;padding:3px 9px;background:#F0FDF4;border:1px solid #86EFAC;border-radius:99px}
+.live-pill .dot{width:5px;height:5px;border-radius:50%;background:#22C55E;animation:pulse 2s ease-in-out infinite}
+
+/* Period chips */
+.chip{font-family:var(--f-mono);font-size:11px;letter-spacing:.12em;text-transform:uppercase;padding:6px 12px;border-radius:99px;border:1px solid var(--gu-cream-200);color:var(--gu-ink-700);background:#fff;cursor:pointer}
+.chip.on{background:var(--gu-bordeaux-700);color:#fff;border-color:var(--gu-bordeaux-700)}
+
+/* Ranked bar (consumption report) */
+.rank-bar{position:relative;height:8px;background:var(--gu-cream-100);border-radius:4px;overflow:hidden;min-width:120px}
+.rank-bar > span{display:block;height:100%;background:linear-gradient(90deg, var(--gu-bordeaux-700), var(--gu-bordeaux-500));border-radius:4px}
+
+/* Two-column report grid */
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+.two-col .panel{height:100%}
+
+/* Stand layout preview (visual SVG editor placeholder) */
+.layout-stage{
+  background:var(--gu-cream-50);border:1px dashed var(--gu-cream-200);
+  border-radius:8px;padding:24px;position:relative;min-height:280px;
+  background-image:linear-gradient(var(--gu-cream-200) 1px,transparent 1px),linear-gradient(90deg,var(--gu-cream-200) 1px,transparent 1px);
+  background-size:30px 30px;background-position:0 0;
+}
+.layout-stage .pin{
+  position:absolute;background:#fff;border:1.5px solid var(--gu-bordeaux-300);border-radius:6px;
+  padding:8px 10px;font-size:11.5px;font-weight:500;letter-spacing:-.005em;display:flex;flex-direction:column;gap:2px;
+  box-shadow:0 4px 10px -4px rgba(46,17,22,.15);min-width:74px;
+}
+.layout-stage .pin .lbl{font-family:var(--f-mono);font-size:9px;letter-spacing:.12em;color:var(--gu-ink-500);text-transform:uppercase}
+.layout-stage .pin .seats{font-family:var(--f-mono);font-size:9.5px;color:var(--gu-bordeaux-700);letter-spacing:.06em}
+.layout-stage .pin.station{background:var(--gu-bordeaux-900);color:var(--gu-cream-50);border-color:var(--gu-bordeaux-700)}
+.layout-stage .pin.station .lbl{color:var(--gu-champagne)}
+.layout-stage .pin.station .seats{color:var(--gu-cream-200)}
+.layout-stage .legend{position:absolute;bottom:10px;right:14px;display:flex;gap:14px;font-family:var(--f-mono);font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--gu-ink-500)}
+.layout-stage .legend i{display:inline-block;width:10px;height:10px;border-radius:2px;vertical-align:-1px;margin-right:4px}
+
+/* Order detail row helper */
+.tbl .flag{display:inline-flex;align-items:center;gap:4px;padding:2px 7px;border-radius:99px;background:#FEF3C7;color:#7C2D12;font-family:var(--f-mono);font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;font-weight:500;border:1px solid #F5D08C}
+.tbl .flag svg{width:9px;height:9px;stroke:currentColor;fill:none;stroke-width:2}
+
+/* Highlight card (top performer) */
+.hi-card{background:#fff;border:1px solid var(--gu-cream-200);border-radius:10px;padding:18px 20px;display:flex;flex-direction:column;gap:8px}
+.hi-card .crown{font-family:var(--f-mono);font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:var(--gu-champagne);display:flex;align-items:center;gap:6px}
+.hi-card .crown svg{width:13px;height:13px;fill:var(--gu-champagne);stroke:none}
+.hi-card .who{display:flex;align-items:center;gap:12px;padding-top:6px}
+.hi-card .av{width:44px;height:44px;border-radius:50%;background:var(--gu-bordeaux-700);color:var(--gu-cream-50);display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:500;letter-spacing:-.005em}
+.hi-card .who .nm{font-size:15px;font-weight:600;letter-spacing:-.012em}
+.hi-card .who .sub{font-family:var(--f-mono);font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--gu-ink-500);margin-top:1px}
+.hi-card .stats{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;border-top:1px solid var(--gu-cream-200);padding-top:12px;margin-top:4px}
+.hi-card .stats .s{display:flex;flex-direction:column;gap:2px}
+.hi-card .stats .lbl{font-family:var(--f-mono);font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:var(--gu-ink-500)}
+.hi-card .stats .val{font-size:18px;font-weight:600;letter-spacing:-.018em;color:var(--gu-ink-900);font-feature-settings:"tnum"}
+</style>
+</head>
+<body>
+
+<div class="app">
+
+  <!-- ================= SIDEBAR ================= -->
+  <aside class="sidebar">
+    <div class="sb-brand">
+      <svg viewBox="0 0 24 24"><path d="M3 21 V11 a9 9 0 0 1 18 0 V21" fill="none" stroke="#F5EEDE" stroke-width="1.8" stroke-linecap="round"/><circle cx="12" cy="13" r="2.2" fill="#D9B58A"/></svg>
+      <span class="nm">GreetUp</span>
+      <span class="div"></span>
+      <span class="v">v1.0</span>
+    </div>
+
+    <nav class="sb-nav">
+      <div class="sb-group">Configuração</div>
+      <div class="sb-item" data-screen="users">
+        <svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="3.5"/><path d="M5 21a7 7 0 0 1 14 0"/></svg>
+        Usuários
+      </div>
+      <div class="sb-item" data-screen="products">
+        <svg viewBox="0 0 24 24"><rect x="4" y="6" width="16" height="14" rx="1"/><path d="M9 6V4h6v2M4 10h16"/></svg>
+        Produtos
+        <span class="count">42</span>
+      </div>
+      <div class="sb-item" data-screen="tables-config">
+        <svg viewBox="0 0 24 24"><rect x="3" y="3" width="8" height="8" rx="1"/><rect x="13" y="3" width="8" height="8" rx="1"/><rect x="3" y="13" width="8" height="8" rx="1"/><rect x="13" y="13" width="8" height="8" rx="1"/></svg>
+        Mesas
+      </div>
+
+      <div class="sb-group">Evento</div>
+      <div class="sb-item active" data-screen="dashboard">
+        <svg viewBox="0 0 24 24"><path d="M3 12 L7 8 L11 12 L15 6 L21 12"/><path d="M3 18 L21 18"/></svg>
+        Dashboard
+        <span class="pulse"></span>
+      </div>
+      <div class="sb-item" data-screen="tables-live">
+        <svg viewBox="0 0 24 24"><rect x="3" y="3" width="8" height="8" rx="1"/><rect x="13" y="3" width="8" height="8" rx="1"/><rect x="3" y="13" width="8" height="8" rx="1"/><rect x="13" y="13" width="8" height="8" rx="1"/></svg>
+        Mesas <span style="font-family:var(--f-mono);font-size:9px;letter-spacing:.1em;color:var(--gu-champagne);text-transform:uppercase;margin-left:4px">ao vivo</span>
+      </div>
+      <div class="sb-item" data-screen="orders">
+        <svg viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="2"/><path d="M4 10h16M9 4v16"/></svg>
+        Pedidos
+        <span class="count">38</span>
+      </div>
+
+      <div class="sb-group">Relatórios</div>
+      <div class="sb-item" data-screen="report-consumption">
+        <svg viewBox="0 0 24 24"><path d="M7 4h10l-1 7a4 4 0 0 1-8 0L7 4zM12 11v9M8 20h8"/></svg>
+        Consumo
+      </div>
+      <div class="sb-item" data-screen="report-clients">
+        <svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="3"/><path d="M5 21a7 7 0 0 1 14 0"/><path d="M9 11l-2 3M15 11l2 3"/></svg>
+        Clientes
+      </div>
+      <div class="sb-item" data-screen="report-managers">
+        <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M9 12l2 2 4-4"/></svg>
+        Gerentes
+      </div>
+      <div class="sb-item" data-screen="report-summary">
+        <svg viewBox="0 0 24 24"><rect x="4" y="3" width="16" height="18" rx="1"/><path d="M8 8h8M8 12h8M8 16h5"/></svg>
+        Resumo
+      </div>
+    </nav>
+
+    <div class="sb-foot">
+      <div class="avatar">JM</div>
+      <div class="who">
+        <span class="nm">Joana Martins</span>
+        <span class="rl">Admin · BTG</span>
+      </div>
+      <div class="out" title="Sair">
+        <svg viewBox="0 0 16 16"><path d="M10 4V2a1 1 0 0 0-1-1H3a1 1 0 0 0-1 1v12a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1v-2M7 8h8m0 0l-2.5-2.5M15 8l-2.5 2.5"/></svg>
+      </div>
+    </div>
+  </aside>
+
+  <!-- ================= MAIN ================= -->
+  <div class="main">
+    <header class="topbar">
+      <div class="crumbs">
+        <span>GreetUp</span><span>›</span><span>Evento ao vivo</span><span>›</span><span class="here" id="crumb-here">Dashboard</span>
+      </div>
+      <div class="search">
+        <svg viewBox="0 0 16 16"><circle cx="7" cy="7" r="4.5"/><path d="m13.5 13.5-3-3"/></svg>
+        <input placeholder="Buscar cliente, mesa, pedido..."/>
+        <span class="kbd">⌘ K</span>
+      </div>
+      <div class="event-info">
+        <span class="live"><span class="dot"></span>ao vivo</span>
+        <div class="ev"><span class="nm">Fispal Food Service</span><span class="meta">Dia 2 de 4 · 14:09</span></div>
+      </div>
+    </header>
+
+    <!-- ============ SCREEN: DASHBOARD ============ -->
+    <section class="screen active page" id="screen-dashboard">
+      <div class="page-head">
+        <div class="l">
+          <div class="eyebrow">Evento ao vivo · Dia 2 de 4</div>
+          <h1>Painel operacional</h1>
+          <div class="sub">Visão de tempo real do estande BTG. Atualização contínua a cada 8 segundos.</div>
+        </div>
+        <div class="r">
+          <button class="btn btn-ghost"><svg viewBox="0 0 16 16"><path d="M2 8h12M8 2l6 6-6 6"/></svg>Exportar</button>
+          <button class="btn btn-secondary"><svg viewBox="0 0 16 16"><path d="M4 4l8 8M12 4l-8 8"/></svg>Encerrar dia</button>
+          <button class="btn btn-primary"><svg viewBox="0 0 16 16"><path d="M8 3v10M3 8h10"/></svg>Novo pedido</button>
+        </div>
+      </div>
+
+      <!-- KPIs -->
+      <div class="kpi-grid">
+        <div class="kpi">
+          <div class="lbl">Mesas ocupadas</div>
+          <div class="val">8<span class="of"> / 12</span></div>
+          <div class="delta up">▲ 2 nas últimas 2h</div>
+          <svg class="spark" width="80" height="32" viewBox="0 0 80 32" fill="none" stroke="#6B2331" stroke-width="1.5"><path d="M0 24 L12 20 L24 22 L36 14 L48 16 L60 8 L72 10 L80 6"/></svg>
+        </div>
+        <div class="kpi">
+          <div class="lbl">Clientes atendidos hoje</div>
+          <div class="val">156</div>
+          <div class="delta up">▲ 18% vs. dia 1</div>
+          <svg class="spark" width="80" height="32" viewBox="0 0 80 32" fill="none" stroke="#6B2331" stroke-width="1.5"><path d="M0 28 L12 22 L24 20 L36 18 L48 14 L60 12 L72 8 L80 4"/></svg>
+        </div>
+        <div class="kpi">
+          <div class="lbl">Pedidos em aberto</div>
+          <div class="val">38</div>
+          <div class="delta warn">● 2 atrasados &gt;10min</div>
+          <svg class="spark" width="80" height="32" viewBox="0 0 80 32" fill="none" stroke="#92465A" stroke-width="1.5"><path d="M0 18 L12 12 L24 16 L36 8 L48 14 L60 6 L72 12 L80 10"/></svg>
+        </div>
+        <div class="kpi">
+          <div class="lbl">Aguardando entrega</div>
+          <div class="val">9</div>
+          <div class="delta flat">Tempo médio · 1:42</div>
+          <svg class="spark" width="80" height="32" viewBox="0 0 80 32" fill="none" stroke="#22C55E" stroke-width="1.5"><path d="M0 16 L12 18 L24 14 L36 16 L48 10 L60 14 L72 8 L80 12"/></svg>
+        </div>
+      </div>
+
+      <!-- Chart + Feed -->
+      <div class="dash-grid">
+        <div class="panel">
+          <div class="panel-head">
+            <div>
+              <h3>Pedidos por hora</h3>
+              <div class="sub">Hoje · 09:00 às 18:00</div>
+            </div>
+            <div style="display:flex;gap:6px">
+              <span class="chip on">Hoje</span>
+              <span class="chip">Dia 1</span>
+              <span class="chip">Comparar</span>
+            </div>
+          </div>
+          <div class="chart-wrap">
+            <svg class="chart-svg" viewBox="0 0 720 170" preserveAspectRatio="none">
+              <!-- grid -->
+              <g stroke="#ECE2CC" stroke-width="1">
+                <line x1="0" y1="30" x2="720" y2="30"/>
+                <line x1="0" y1="70" x2="720" y2="70"/>
+                <line x1="0" y1="110" x2="720" y2="110"/>
+                <line x1="0" y1="150" x2="720" y2="150"/>
+              </g>
+              <!-- bars: pedidos -->
+              <g fill="#6B2331" opacity="0.85">
+                <rect x="20"  y="120" width="34" height="30"/>
+                <rect x="74"  y="100" width="34" height="50"/>
+                <rect x="128" y="80"  width="34" height="70"/>
+                <rect x="182" y="50"  width="34" height="100"/>
+                <rect x="236" y="38"  width="34" height="112"/>
+                <rect x="290" y="22"  width="34" height="128"/>
+                <rect x="344" y="58"  width="34" height="92"/>
+                <rect x="398" y="44"  width="34" height="106"/>
+                <rect x="452" y="32"  width="34" height="118"/>
+                <rect x="506" y="62"  width="34" height="88"/>
+                <rect x="560" y="92"  width="34" height="58"/>
+                <rect x="614" y="118" width="34" height="32"/>
+              </g>
+              <!-- line: entregues -->
+              <path d="M37 142 L91 128 L145 108 L199 78 L253 66 L307 52 L361 86 L415 70 L469 60 L523 92 L577 122 L631 144"
+                fill="none" stroke="#D9B58A" stroke-width="2.5"/>
+              <g fill="#D9B58A">
+                <circle cx="37" cy="142" r="3"/><circle cx="91" cy="128" r="3"/><circle cx="145" cy="108" r="3"/>
+                <circle cx="199" cy="78" r="3"/><circle cx="253" cy="66" r="3"/><circle cx="307" cy="52" r="3"/>
+                <circle cx="361" cy="86" r="3"/><circle cx="415" cy="70" r="3"/><circle cx="469" cy="60" r="3"/>
+                <circle cx="523" cy="92" r="3"/><circle cx="577" cy="122" r="3"/><circle cx="631" cy="144" r="3"/>
+              </g>
+            </svg>
+            <div class="chart-x"><span>09h</span><span>10h</span><span>11h</span><span>12h</span><span>13h</span><span>14h</span><span>15h</span><span>16h</span><span>17h</span><span>18h</span></div>
+          </div>
+          <div class="chart-legend">
+            <span><i style="background:#6B2331"></i>Pedidos abertos</span>
+            <span><i style="background:#D9B58A"></i>Itens entregues</span>
+          </div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-head">
+            <div><h3>Atividade recente</h3><div class="sub">Últimos 15 minutos</div></div>
+            <span class="live-pill"><span class="dot"></span>ao vivo</span>
+          </div>
+          <div class="feed">
+            <div class="feed-item"><span class="dot bord"></span><div><span class="ts">14:09:42</span><div class="txt"><strong>Renata Magalhães</strong> abriu mesa <strong>№ 12</strong> · BTG Pactual</div></div></div>
+            <div class="feed-item"><span class="dot green"></span><div><span class="ts">14:08:17</span><div class="txt">Pedido <strong>№ 0114</strong> entregue · mesa 5 · Daniel</div></div></div>
+            <div class="feed-item"><span class="dot blue"></span><div><span class="ts">14:07:01</span><div class="txt">Cozinha aceitou pedido <strong>№ 0117</strong> · mesa 12</div></div></div>
+            <div class="feed-item"><span class="dot gold"></span><div><span class="ts">14:06:33</span><div class="txt"><strong>Carla</strong> adicionou observação ao pedido 0112</div></div></div>
+            <div class="feed-item"><span class="dot bord"></span><div><span class="ts">14:04:28</span><div class="txt">Mesa 3 fechada · 7 itens servidos · 1h 14min</div></div></div>
+            <div class="feed-item"><span class="dot green"></span><div><span class="ts">14:02:14</span><div class="txt">Pedido <strong>№ 0117</strong> recebido · 3 itens · mesa 12</div></div></div>
+            <div class="feed-item"><span class="dot blue"></span><div><span class="ts">14:00:48</span><div class="txt">Felipe abriu mesa <strong>№ 11</strong> · JP Morgan</div></div></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Recent orders -->
+      <div class="panel">
+        <div class="panel-head">
+          <div><h3>Últimos pedidos</h3><div class="sub">Atualização em tempo real</div></div>
+          <div style="display:flex;gap:6px">
+            <span class="chip on">Todos</span>
+            <span class="chip">Pendente</span>
+            <span class="chip">Em preparo</span>
+            <span class="chip">Pronto</span>
+            <span class="chip">Entregue</span>
+          </div>
+        </div>
+        <div class="panel-body flush">
+          <table class="tbl">
+            <thead><tr>
+              <th>Pedido</th><th>Mesa</th><th>Cliente</th><th>Gerente</th><th>Itens</th><th>Aberto</th><th>Status</th><th></th>
+            </tr></thead>
+            <tbody>
+              <tr><td><span class="num big">№ 0117</span></td><td><strong>Mesa 12</strong></td><td><div class="who"><span class="av">RM</span><div><div class="nm">Renata Magalhães</div><div class="sub">BTG Pactual · VIP</div></div></div></td><td>Rafael Dias</td><td>6 itens</td><td class="num">14:02 · 7 min</td><td><span class="badge b-preparing"><span class="dot"></span>Em preparo</span></td><td><button class="more">⋯</button></td></tr>
+              <tr><td><span class="num big">№ 0116</span></td><td><strong>Mesa 11</strong></td><td><div class="who"><span class="av">RB</span><div><div class="nm">Roberto Mendes</div><div class="sub">JP Morgan</div></div></div></td><td>Felipe Sanches</td><td>2 itens</td><td class="num">14:00 · 9 min</td><td><span class="badge b-pending"><span class="dot"></span>Pendente</span></td><td><button class="more">⋯</button></td></tr>
+              <tr><td><span class="num big">№ 0115</span></td><td><strong>Mesa 08</strong></td><td><div class="who"><span class="av">AS</span><div><div class="nm">Ana Souza</div><div class="sub">Vinci Partners</div></div></div></td><td>Felipe Sanches</td><td>3 itens</td><td class="num">13:58 · 11 min</td><td><span class="badge b-preparing"><span class="dot"></span>Em preparo</span></td><td><button class="more">⋯</button></td></tr>
+              <tr><td><span class="num big">№ 0114</span></td><td><strong>Mesa 05</strong></td><td><div class="who"><span class="av">DP</span><div><div class="nm">Daniel Prado</div><div class="sub">XP Inc.</div></div></div></td><td>Marcos Lemos</td><td>3 itens</td><td class="num">13:54 · 11:24</td><td><span class="badge b-canceled"><span class="dot"></span>Atrasado</span></td><td><button class="more">⋯</button></td></tr>
+              <tr><td><span class="num big">№ 0113</span></td><td><strong>Mesa 11</strong></td><td><div class="who"><span class="av">RB</span><div><div class="nm">Roberto Mendes</div><div class="sub">JP Morgan</div></div></div></td><td>Felipe Sanches</td><td>1 item</td><td class="num">13:52 · 2:04</td><td><span class="badge b-ready"><span class="dot"></span>Pronto</span></td><td><button class="more">⋯</button></td></tr>
+              <tr><td><span class="num big">№ 0112</span></td><td><strong>Mesa 03</strong></td><td><div class="who"><span class="av">CS</span><div><div class="nm">Camila Sá</div><div class="sub">Vinci Partners</div></div></div></td><td>Carla Vidal</td><td>3 itens</td><td class="num">13:48 · 1:14</td><td><span class="badge b-ready"><span class="dot"></span>Pronto</span></td><td><button class="more">⋯</button></td></tr>
+              <tr><td><span class="num big">№ 0111</span></td><td><strong>Mesa 07</strong></td><td><div class="who"><span class="av">JS</span><div><div class="nm">João Silva</div><div class="sub">Itaú Asset</div></div></div></td><td>Rafael Dias</td><td>2 itens</td><td class="num">13:42 · 0:32</td><td><span class="badge b-ready"><span class="dot"></span>Pronto</span></td><td><button class="more">⋯</button></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ SCREEN: TABLES LIVE ============ -->
+    <section class="screen page" id="screen-tables-live">
+      <div class="page-head">
+        <div class="l">
+          <div class="eyebrow">Evento ao vivo · Mesas</div>
+          <h1>Mapa de mesas</h1>
+          <div class="sub">12 mesas no estande BTG · atualização em tempo real. Clique em uma mesa ocupada para ver detalhes.</div>
+        </div>
+        <div class="r">
+          <button class="btn btn-secondary"><svg viewBox="0 0 16 16"><path d="M4 4h8v8H4z"/></svg>Editar layout</button>
+          <button class="btn btn-primary"><svg viewBox="0 0 16 16"><path d="M8 3v10M3 8h10"/></svg>Nova mesa</button>
+        </div>
+      </div>
+
+      <div style="display:flex;gap:14px">
+        <div class="kpi" style="flex:1"><div class="lbl">Livres</div><div class="val" style="color:#15803D">4</div></div>
+        <div class="kpi" style="flex:1"><div class="lbl">Ocupadas</div><div class="val" style="color:var(--gu-bordeaux-700)">8</div></div>
+        <div class="kpi" style="flex:1"><div class="lbl">Tempo médio</div><div class="val">42<span class="of">min</span></div></div>
+        <div class="kpi" style="flex:1"><div class="lbl">Próxima vaga</div><div class="val">~6<span class="of">min</span></div></div>
+      </div>
+
+      <div class="tables-map">
+        <div class="t-card free"><div class="top"><div class="num">01</div><span class="badge b-free"><span class="dot"></span>Livre</span></div><div style="font-size:11px;color:var(--gu-ink-500);font-family:var(--f-mono);letter-spacing:.06em;text-transform:uppercase;margin-top:auto">4 lugares</div></div>
+        <div class="t-card free"><div class="top"><div class="num">02</div><span class="badge b-free"><span class="dot"></span>Livre</span></div><div style="font-size:11px;color:var(--gu-ink-500);font-family:var(--f-mono);letter-spacing:.06em;text-transform:uppercase;margin-top:auto">4 lugares</div></div>
+        <div class="t-card busy">
+          <div class="top"><div class="num">Mesa 03</div><span class="badge b-busy"><span class="dot"></span>12 min</span></div>
+          <div class="who">Camila Sá</div>
+          <div class="co">Vinci Partners</div>
+          <div class="ger"><span>Carla V.</span><span>3 pedidos</span></div>
+        </div>
+        <div class="t-card free"><div class="top"><div class="num">04</div><span class="badge b-free"><span class="dot"></span>Livre</span></div><div style="font-size:11px;color:var(--gu-ink-500);font-family:var(--f-mono);letter-spacing:.06em;text-transform:uppercase;margin-top:auto">2 lugares</div></div>
+        <div class="t-card busy">
+          <div class="top"><div class="num">Mesa 05</div><span class="badge b-busy"><span class="dot"></span>28 min</span></div>
+          <div class="who">Daniel Prado</div>
+          <div class="co">XP Inc.</div>
+          <div class="ger"><span>Marcos L.</span><span>5 pedidos</span></div>
+        </div>
+        <div class="t-card free"><div class="top"><div class="num">06</div><span class="badge b-free"><span class="dot"></span>Livre</span></div><div style="font-size:11px;color:var(--gu-ink-500);font-family:var(--f-mono);letter-spacing:.06em;text-transform:uppercase;margin-top:auto">4 lugares</div></div>
+        <div class="t-card busy">
+          <div class="top"><div class="num">Mesa 07</div><span class="badge b-busy"><span class="dot"></span>45 min</span></div>
+          <div class="who">João Silva</div>
+          <div class="co">Itaú Asset</div>
+          <div class="ger"><span>Rafael D.</span><span>7 pedidos</span></div>
+        </div>
+        <div class="t-card busy">
+          <div class="top"><div class="num">Mesa 08</div><span class="badge b-busy"><span class="dot"></span>18 min</span></div>
+          <div class="who">Ana Souza</div>
+          <div class="co">Vinci Partners</div>
+          <div class="ger"><span>Felipe S.</span><span>2 pedidos</span></div>
+        </div>
+        <div class="t-card busy">
+          <div class="top"><div class="num">Mesa 09</div><span class="badge b-busy"><span class="dot"></span>34 min</span></div>
+          <div class="who">Pedro Santos</div>
+          <div class="co">Bradesco BBI</div>
+          <div class="ger"><span>Rafael D.</span><span>4 pedidos</span></div>
+        </div>
+        <div class="t-card busy">
+          <div class="top"><div class="num">Mesa 10</div><span class="badge b-busy"><span class="dot"></span>52 min</span></div>
+          <div class="who">Luisa Andrade</div>
+          <div class="co">Santander</div>
+          <div class="ger"><span>Carla V.</span><span>6 pedidos</span></div>
+        </div>
+        <div class="t-card busy">
+          <div class="top"><div class="num">Mesa 11</div><span class="badge b-busy"><span class="dot"></span>22 min</span></div>
+          <div class="who">Roberto Mendes</div>
+          <div class="co">JP Morgan</div>
+          <div class="ger"><span>Felipe S.</span><span>3 pedidos</span></div>
+        </div>
+        <div class="t-card busy">
+          <div class="top"><div class="num">Mesa 12</div><span class="badge b-busy"><span class="dot"></span>7 min · VIP</span></div>
+          <div class="who">Renata Magalhães</div>
+          <div class="co">BTG Pactual</div>
+          <div class="ger"><span>Rafael D.</span><span>1 pedido</span></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ SCREEN: PRODUCTS ============ -->
+    <section class="screen page" id="screen-products">
+      <div class="page-head">
+        <div class="l">
+          <div class="eyebrow">Configuração · Catálogo</div>
+          <h1>Produtos</h1>
+          <div class="sub">42 itens cadastrados · 38 ativos. Edite para o evento atual ou crie novo cardápio.</div>
+        </div>
+        <div class="r">
+          <button class="btn btn-ghost"><svg viewBox="0 0 16 16"><path d="M2 4h12M2 8h12M2 12h12"/></svg>Importar</button>
+          <button class="btn btn-secondary">Duplicar cardápio</button>
+          <button class="btn btn-primary"><svg viewBox="0 0 16 16"><path d="M8 3v10M3 8h10"/></svg>Novo produto</button>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="tabs">
+          <div class="tab active">Comidas <span class="ct">24</span></div>
+          <div class="tab">Bebidas <span class="ct">14</span></div>
+          <div class="tab">Sobremesas <span class="ct">4</span></div>
+        </div>
+        <div class="filters">
+          <div class="field"><svg viewBox="0 0 16 16"><circle cx="7" cy="7" r="4.5"/><path d="m13.5 13.5-3-3"/></svg><input placeholder="Buscar por nome..."/></div>
+          <div class="field"><select><option>Todas categorias</option><option>Salgados</option><option>Tábuas</option></select></div>
+          <div class="field"><select><option>Todos os status</option><option>Ativo</option><option>Inativo</option></select></div>
+          <span class="count"><strong>24</strong> resultados</span>
+        </div>
+        <table class="tbl">
+          <thead><tr>
+            <th>Produto</th><th>Categoria</th><th>Descrição</th><th>Preço base</th><th>Servidos · evento</th><th>Status</th><th></th>
+          </tr></thead>
+          <tbody>
+            <tr><td><strong>Mini sanduíche de pastrami</strong></td><td><span class="badge b-delivered"><span class="dot"></span>Salgados</span></td><td style="color:var(--gu-ink-700)">Pão brioche, mostarda, pickles</td><td class="num big">R$ 28</td><td class="num">52</td><td><label class="switch"><input type="checkbox" checked/><span class="slider"></span></label></td><td><button class="more">⋯</button></td></tr>
+            <tr><td><strong>Tábua de queijos curada</strong></td><td><span class="badge b-delivered"><span class="dot"></span>Tábuas</span></td><td style="color:var(--gu-ink-700)">Brie, gruyère, gorgonzola · geleia</td><td class="num big">R$ 64</td><td class="num">28</td><td><label class="switch"><input type="checkbox" checked/><span class="slider"></span></label></td><td><button class="more">⋯</button></td></tr>
+            <tr><td><strong>Pão de queijo gourmet</strong></td><td><span class="badge b-delivered"><span class="dot"></span>Salgados</span></td><td style="color:var(--gu-ink-700)">Queijo canastra · porção de 5</td><td class="num big">R$ 22</td><td class="num">71</td><td><label class="switch"><input type="checkbox" checked/><span class="slider"></span></label></td><td><button class="more">⋯</button></td></tr>
+            <tr><td><strong>Bruschetta tomate &amp; manjericão</strong></td><td><span class="badge b-delivered"><span class="dot"></span>Salgados</span></td><td style="color:var(--gu-ink-700)">Pão italiano artesanal</td><td class="num big">R$ 18</td><td class="num">34</td><td><label class="switch"><input type="checkbox" checked/><span class="slider"></span></label></td><td><button class="more">⋯</button></td></tr>
+            <tr><td><strong>Mini quiche lorraine</strong></td><td><span class="badge b-delivered"><span class="dot"></span>Salgados</span></td><td style="color:var(--gu-ink-700)">Bacon, alho-poró, gruyère</td><td class="num big">R$ 16</td><td class="num">42</td><td><label class="switch"><input type="checkbox" checked/><span class="slider"></span></label></td><td><button class="more">⋯</button></td></tr>
+            <tr style="opacity:.6"><td><strong>Coxinha de palmito</strong></td><td><span class="badge b-delivered"><span class="dot"></span>Salgados</span></td><td style="color:var(--gu-ink-700)">Massa rústica · vegana</td><td class="num big">R$ 14</td><td class="num">0</td><td><label class="switch"><input type="checkbox"/><span class="slider"></span></label></td><td><button class="more">⋯</button></td></tr>
+            <tr><td><strong>Tartar de salmão</strong></td><td><span class="badge b-delivered"><span class="dot"></span>Frios</span></td><td style="color:var(--gu-ink-700)">Alcaparras · torrada brioche</td><td class="num big">R$ 38</td><td class="num">18</td><td><label class="switch"><input type="checkbox" checked/><span class="slider"></span></label></td><td><button class="more">⋯</button></td></tr>
+            <tr><td><strong>Carpaccio de filé</strong></td><td><span class="badge b-delivered"><span class="dot"></span>Frios</span></td><td style="color:var(--gu-ink-700)">Rúcula, parmesão, alcaparras</td><td class="num big">R$ 42</td><td class="num">14</td><td><label class="switch"><input type="checkbox" checked/><span class="slider"></span></label></td><td><button class="more">⋯</button></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ============ SCREEN: CLIENTS ============ -->
+    <section class="screen page" id="screen-clients" style="display:none;flex:1">
+      <div class="page-head">
+        <div class="l">
+          <div class="eyebrow">Configuração · Base de clientes</div>
+          <h1>Clientes</h1>
+          <div class="sub">1.247 clientes cadastrados pelos gerentes. Clique em uma linha para ver detalhes e histórico.</div>
+        </div>
+        <div class="r">
+          <button class="btn btn-secondary">Exportar CSV</button>
+          <button class="btn btn-primary"><svg viewBox="0 0 16 16"><path d="M8 3v10M3 8h10"/></svg>Novo cliente</button>
+        </div>
+      </div>
+
+      <div class="split">
+
+        <div class="panel left">
+          <div class="filters">
+            <div class="field"><svg viewBox="0 0 16 16"><circle cx="7" cy="7" r="4.5"/><path d="m13.5 13.5-3-3"/></svg><input placeholder="Buscar por nome ou empresa..."/></div>
+            <div class="field"><select><option>Todos os gerentes</option><option>Rafael Dias</option><option>Carla Vidal</option></select></div>
+            <div class="field"><select><option>Todos os eventos</option><option>Fispal 2026</option><option>Summit Executivo</option></select></div>
+            <span class="count"><strong>1.247</strong> clientes</span>
+          </div>
+          <table class="tbl">
+            <thead><tr><th>Cliente</th><th>Empresa · Cargo</th><th>Gerente</th><th>Cadastro</th></tr></thead>
+            <tbody>
+              <tr class="active"><td><div class="who"><span class="av">JS</span><div><div class="nm">João Silva</div><div class="sub">3 eventos</div></div></div></td><td><div class="nm">Itaú Asset Management</div><div class="sub">Head of Equities</div></td><td>Rafael Dias</td><td class="num">14 mai · 09:32</td></tr>
+              <tr><td><div class="who"><span class="av">RM</span><div><div class="nm">Renata Magalhães</div><div class="sub">5 eventos · VIP</div></div></div></td><td><div class="nm">BTG Pactual</div><div class="sub">Diretora Inst.</div></td><td>Rafael Dias</td><td class="num">14 mai · 14:02</td></tr>
+              <tr><td><div class="who"><span class="av">CS</span><div><div class="nm">Camila Sá</div><div class="sub">2 eventos</div></div></div></td><td><div class="nm">Vinci Partners</div><div class="sub">Gestora</div></td><td>Carla Vidal</td><td class="num">14 mai · 13:48</td></tr>
+              <tr><td><div class="who"><span class="av">DP</span><div><div class="nm">Daniel Prado</div><div class="sub">4 eventos · VIP</div></div></div></td><td><div class="nm">XP Inc.</div><div class="sub">Sócio</div></td><td>Marcos Lemos</td><td class="num">14 mai · 13:54</td></tr>
+              <tr><td><div class="who"><span class="av">RB</span><div><div class="nm">Roberto Mendes</div><div class="sub">1 evento</div></div></div></td><td><div class="nm">JP Morgan</div><div class="sub">Vice-presidente</div></td><td>Felipe Sanches</td><td class="num">14 mai · 14:00</td></tr>
+              <tr><td><div class="who"><span class="av">LA</span><div><div class="nm">Luisa Andrade</div><div class="sub">2 eventos</div></div></div></td><td><div class="nm">Santander</div><div class="sub">Head Wealth</div></td><td>Carla Vidal</td><td class="num">14 mai · 13:22</td></tr>
+              <tr><td><div class="who"><span class="av">PS</span><div><div class="nm">Pedro Santos</div><div class="sub">3 eventos</div></div></div></td><td><div class="nm">Bradesco BBI</div><div class="sub">Diretor M&amp;A</div></td><td>Rafael Dias</td><td class="num">14 mai · 13:36</td></tr>
+              <tr><td><div class="who"><span class="av">AS</span><div><div class="nm">Ana Souza</div><div class="sub">1 evento</div></div></div></td><td><div class="nm">Vinci Partners</div><div class="sub">Analista Sr.</div></td><td>Felipe Sanches</td><td class="num">14 mai · 13:58</td></tr>
+              <tr><td><div class="who"><span class="av">MC</span><div><div class="nm">Marcelo Cunha</div><div class="sub">6 eventos · VIP</div></div></div></td><td><div class="nm">Itaú Asset</div><div class="sub">CEO</div></td><td>Rafael Dias</td><td class="num">13 mai · 16:14</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="right">
+          <div class="client-detail-card">
+            <div class="cd-head">
+              <div class="av">JS</div>
+              <div>
+                <h3>João Silva</h3>
+                <div class="sub">Itaú Asset · 3 eventos</div>
+              </div>
+              <button class="more" style="margin-left:auto;width:32px;height:32px;border-radius:6px;background:var(--gu-cream-100);font-size:14px">⋯</button>
+            </div>
+            <div>
+              <div class="cd-row"><span class="k">Cargo</span><span class="v muted">Head of Equities</span></div>
+              <div class="cd-row"><span class="k">E-mail</span><span class="v muted">joao.silva@itau.com</span></div>
+              <div class="cd-row"><span class="k">Telefone</span><span class="v muted">(11) 9 8472-1180</span></div>
+              <div class="cd-row"><span class="k">Cadastrado por</span><span class="v">Rafael Dias</span></div>
+              <div class="cd-row"><span class="k">Tier</span><span class="v">B · Convidado</span></div>
+              <div class="cd-row"><span class="k">Restrições</span><span class="v" style="color:var(--gu-bordeaux-700)">Glúten</span></div>
+            </div>
+
+            <div class="cd-section">
+              <h4>Histórico de eventos</h4>
+              <div class="cd-history">
+                <div class="cd-h"><div class="l"><span class="ev">Fispal Food Service 2026</span><span class="meta">Hoje · Mesa 07 · ativa</span></div><div class="r">14 itens<br><span style="color:var(--gu-ink-500);font-weight:400">R$ 412</span></div></div>
+                <div class="cd-h"><div class="l"><span class="ev">Summit Executivo 2026</span><span class="meta">14 nov 2025 · Mesa 03</span></div><div class="r">22 itens<br><span style="color:var(--gu-ink-500);font-weight:400">R$ 684</span></div></div>
+                <div class="cd-h"><div class="l"><span class="ev">Investor Day BTG</span><span class="meta">28 set 2025 · Mesa 09</span></div><div class="r">9 itens<br><span style="color:var(--gu-ink-500);font-weight:400">R$ 248</span></div></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="panel">
+            <div class="panel-head"><div><h3 style="font-size:13px">Preferências detectadas</h3><div class="sub">Baseado nos 3 eventos</div></div></div>
+            <div class="panel-body" style="display:flex;flex-direction:column;gap:8px;font-size:12.5px;color:var(--gu-ink-700)">
+              <div style="display:flex;justify-content:space-between"><span>Espresso curto</span><span style="font-family:var(--f-mono);color:var(--gu-bordeaux-700)">8×</span></div>
+              <div style="display:flex;justify-content:space-between"><span>Água sem gás (sem gelo)</span><span style="font-family:var(--f-mono);color:var(--gu-bordeaux-700)">14×</span></div>
+              <div style="display:flex;justify-content:space-between"><span>Pão de queijo</span><span style="font-family:var(--f-mono);color:var(--gu-bordeaux-700)">6×</span></div>
+              <div style="display:flex;justify-content:space-between"><span>Tábua de queijos</span><span style="font-family:var(--f-mono);color:var(--gu-bordeaux-700)">3×</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ SCREEN: REPORT CONSUMPTION ============ -->
+    <section class="screen page" id="screen-report-consumption">
+      <div class="page-head">
+        <div class="l">
+          <div class="eyebrow">Relatório · Consumo de bebidas</div>
+          <h1>Consumo · Fispal Food Service</h1>
+          <div class="sub">Dia 2 de 4 · 09:00 às 14:09. Base para pagamento ao fornecedor e cálculo de reposição.</div>
+        </div>
+        <div class="r">
+          <button class="btn btn-ghost"><svg viewBox="0 0 16 16"><path d="M2 8h12M8 2l6 6-6 6"/></svg>Imprimir</button>
+          <button class="btn btn-primary"><svg viewBox="0 0 16 16"><path d="M8 2v10M3 7l5 5 5-5M3 14h10"/></svg>Exportar CSV</button>
+        </div>
+      </div>
+
+      <div class="stat-hi">
+        <div class="l">
+          <span class="lbl">Total servido · evento</span>
+          <span class="val">1.842<span>unidades de bebida</span></span>
+          <span class="note">Base de cálculo para faturamento. Inclui apenas itens com status "entregue" — pendentes não contam.</span>
+        </div>
+        <svg class="arches" viewBox="0 0 260 200" width="260" height="200">
+          <g stroke="#D9B58A" stroke-opacity=".6" stroke-width="1" fill="none">
+            <path d="M20 200 V110 a50 50 0 0 1 100 0 V200"/>
+            <path d="M140 200 V110 a50 50 0 0 1 100 0 V200"/>
+            <path d="M80 200 V150 a30 30 0 0 1 60 0 V200"/>
+          </g>
+        </svg>
+      </div>
+
+      <div class="panel">
+        <div class="panel-head">
+          <div><h3>Ranking por produto</h3><div class="sub">Ordenado por volume decrescente</div></div>
+          <div style="display:flex;gap:6px">
+            <span class="chip">Hoje</span>
+            <span class="chip on">Evento (4 dias)</span>
+            <span class="chip">Personalizado</span>
+          </div>
+        </div>
+        <div class="filters">
+          <div class="field"><svg viewBox="0 0 16 16"><circle cx="7" cy="7" r="4.5"/><path d="m13.5 13.5-3-3"/></svg><input placeholder="Buscar produto..."/></div>
+          <div class="field"><select><option>Todas categorias</option><option>Águas</option><option>Cafés</option><option>Sucos</option></select></div>
+          <span class="count"><strong>14</strong> produtos</span>
+        </div>
+        <table class="tbl">
+          <thead><tr><th style="width:32px">#</th><th>Produto</th><th>Categoria</th><th style="width:200px">Volume</th><th style="text-align:right">Unidades</th><th style="text-align:right">% do total</th></tr></thead>
+          <tbody>
+            <tr><td class="num">01</td><td><strong>Água sem gás · 500ml</strong></td><td><span class="badge b-delivered"><span class="dot"></span>Águas</span></td><td><div class="rank-bar"><span style="width:96%"></span></div></td><td style="text-align:right" class="num big">512</td><td style="text-align:right" class="num">27.8%</td></tr>
+            <tr><td class="num">02</td><td><strong>Espresso · curto</strong></td><td><span class="badge b-delivered"><span class="dot"></span>Cafés</span></td><td><div class="rank-bar"><span style="width:78%"></span></div></td><td style="text-align:right" class="num big">418</td><td style="text-align:right" class="num">22.7%</td></tr>
+            <tr><td class="num">03</td><td><strong>Água com gás · 500ml</strong></td><td><span class="badge b-delivered"><span class="dot"></span>Águas</span></td><td><div class="rank-bar"><span style="width:54%"></span></div></td><td style="text-align:right" class="num big">288</td><td style="text-align:right" class="num">15.6%</td></tr>
+            <tr><td class="num">04</td><td><strong>Café duplo · espresso</strong></td><td><span class="badge b-delivered"><span class="dot"></span>Cafés</span></td><td><div class="rank-bar"><span style="width:40%"></span></div></td><td style="text-align:right" class="num big">214</td><td style="text-align:right" class="num">11.6%</td></tr>
+            <tr><td class="num">05</td><td><strong>Suco de laranja natural</strong></td><td><span class="badge b-delivered"><span class="dot"></span>Sucos</span></td><td><div class="rank-bar"><span style="width:28%"></span></div></td><td style="text-align:right" class="num big">148</td><td style="text-align:right" class="num">8.0%</td></tr>
+            <tr><td class="num">06</td><td><strong>Chá gelado · hibisco</strong></td><td><span class="badge b-delivered"><span class="dot"></span>Chás</span></td><td><div class="rank-bar"><span style="width:18%"></span></div></td><td style="text-align:right" class="num big">96</td><td style="text-align:right" class="num">5.2%</td></tr>
+            <tr><td class="num">07</td><td><strong>Cappuccino</strong></td><td><span class="badge b-delivered"><span class="dot"></span>Cafés</span></td><td><div class="rank-bar"><span style="width:14%"></span></div></td><td style="text-align:right" class="num big">76</td><td style="text-align:right" class="num">4.1%</td></tr>
+            <tr><td class="num">08</td><td><strong>Suco de uva integral</strong></td><td><span class="badge b-delivered"><span class="dot"></span>Sucos</span></td><td><div class="rank-bar"><span style="width:10%"></span></div></td><td style="text-align:right" class="num big">52</td><td style="text-align:right" class="num">2.8%</td></tr>
+            <tr><td class="num">09</td><td><strong>Champagne · taça</strong></td><td><span class="badge b-delivered"><span class="dot"></span>Vinhos</span></td><td><div class="rank-bar"><span style="width:5%"></span></div></td><td style="text-align:right" class="num big">28</td><td style="text-align:right" class="num">1.5%</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="note-inline">
+        <svg viewBox="0 0 16 16"><circle cx="8" cy="8" r="6.5"/><path d="M8 5v3M8 11h.01"/></svg>
+        <div><strong>Base para pagamento ao fornecedor.</strong> Os valores acima são consolidados ao final do evento (dia 4) e enviados automaticamente para conciliação financeira. Faturas pendentes aparecem na seção Resumo.</div>
+      </div>
+    </section>
+
+    <!-- ============ SCREEN: REPORT CLIENTS ============ -->
+    <section class="screen page" id="screen-report-clients">
+      <div class="page-head">
+        <div class="l">
+          <div class="eyebrow">Relatório · Clientes atendidos</div>
+          <h1>Clientes atendidos · evento</h1>
+          <div class="sub">Lista completa de todos os clientes recebidos no estande durante o Fispal Food Service.</div>
+        </div>
+        <div class="r">
+          <button class="btn btn-ghost">Imprimir</button>
+          <button class="btn btn-primary"><svg viewBox="0 0 16 16"><path d="M8 2v10M3 7l5 5 5-5M3 14h10"/></svg>Exportar CSV</button>
+        </div>
+      </div>
+
+      <div class="stat-hi">
+        <div class="l">
+          <span class="lbl">Total atendido · evento</span>
+          <span class="val">600<span>clientes em 4 dias</span></span>
+          <span class="note">Média de 150 clientes/dia · pico no dia 2 (com 184 atendimentos). 38% retornaram em dias subsequentes.</span>
+        </div>
+        <svg class="arches" viewBox="0 0 260 200" width="260" height="200">
+          <g stroke="#D9B58A" stroke-opacity=".6" stroke-width="1" fill="none">
+            <path d="M40 200 V90 a60 60 0 0 1 120 0 V200"/>
+            <path d="M100 200 V130 a40 40 0 0 1 80 0 V200"/>
+          </g>
+        </svg>
+      </div>
+
+      <div class="panel">
+        <div class="panel-head">
+          <div><h3>Atendimentos · Fispal Food Service</h3><div class="sub">Ordenado por data &amp; horário</div></div>
+          <div style="display:flex;gap:6px">
+            <span class="chip">Dia 1</span>
+            <span class="chip on">Dia 2</span>
+            <span class="chip">Dia 3</span>
+            <span class="chip">Dia 4</span>
+          </div>
+        </div>
+        <div class="filters">
+          <div class="field"><svg viewBox="0 0 16 16"><circle cx="7" cy="7" r="4.5"/><path d="m13.5 13.5-3-3"/></svg><input placeholder="Buscar cliente ou empresa..."/></div>
+          <div class="field"><select><option>Todos os gerentes</option><option>Rafael Dias</option><option>Carla Vidal</option><option>Felipe Sanches</option><option>Marcos Lemos</option></select></div>
+          <div class="field"><select><option>Todos os tiers</option><option>VIP</option><option>Convidado</option></select></div>
+          <span class="count"><strong>156</strong> atendidos hoje</span>
+        </div>
+        <table class="tbl">
+          <thead><tr><th>Cliente</th><th>Empresa</th><th>Cargo</th><th>Gerente</th><th>Mesa</th><th>Abertura</th><th>Fechamento</th><th>Duração</th></tr></thead>
+          <tbody>
+            <tr><td><div class="who"><span class="av">RM</span><div><div class="nm">Renata Magalhães</div><div class="sub">VIP</div></div></div></td><td><strong>BTG Pactual</strong></td><td>Diretora Inst.</td><td>Rafael Dias</td><td class="num big">12</td><td class="num">14:02</td><td style="color:var(--gu-ink-500)">em curso</td><td class="num">— · ativa</td></tr>
+            <tr><td><div class="who"><span class="av">RB</span><div><div class="nm">Roberto Mendes</div><div class="sub">—</div></div></div></td><td><strong>JP Morgan</strong></td><td>Vice-presidente</td><td>Felipe Sanches</td><td class="num big">11</td><td class="num">14:00</td><td style="color:var(--gu-ink-500)">em curso</td><td class="num">— · ativa</td></tr>
+            <tr><td><div class="who"><span class="av">AS</span><div><div class="nm">Ana Souza</div><div class="sub">—</div></div></div></td><td><strong>Vinci Partners</strong></td><td>Analista Sr.</td><td>Felipe Sanches</td><td class="num big">8</td><td class="num">13:58</td><td style="color:var(--gu-ink-500)">em curso</td><td class="num">— · ativa</td></tr>
+            <tr><td><div class="who"><span class="av">DP</span><div><div class="nm">Daniel Prado</div><div class="sub">VIP</div></div></div></td><td><strong>XP Inc.</strong></td><td>Sócio</td><td>Marcos Lemos</td><td class="num big">5</td><td class="num">13:54</td><td style="color:var(--gu-ink-500)">em curso</td><td class="num">— · ativa</td></tr>
+            <tr><td><div class="who"><span class="av">PS</span><div><div class="nm">Pedro Santos</div><div class="sub">—</div></div></div></td><td><strong>Bradesco BBI</strong></td><td>Diretor M&amp;A</td><td>Rafael Dias</td><td class="num big">9</td><td class="num">13:36</td><td style="color:var(--gu-ink-500)">em curso</td><td class="num">— · ativa</td></tr>
+            <tr><td><div class="who"><span class="av">LA</span><div><div class="nm">Luisa Andrade</div><div class="sub">—</div></div></div></td><td><strong>Santander</strong></td><td>Head Wealth</td><td>Carla Vidal</td><td class="num big">10</td><td class="num">13:22</td><td style="color:var(--gu-ink-500)">em curso</td><td class="num">— · ativa</td></tr>
+            <tr><td><div class="who"><span class="av">JS</span><div><div class="nm">João Silva</div><div class="sub">—</div></div></div></td><td><strong>Itaú Asset</strong></td><td>Head of Equities</td><td>Rafael Dias</td><td class="num big">7</td><td class="num">13:24</td><td class="num">14:08</td><td class="num">44 min</td></tr>
+            <tr><td><div class="who"><span class="av">CS</span><div><div class="nm">Camila Sá</div><div class="sub">—</div></div></div></td><td><strong>Vinci Partners</strong></td><td>Gestora</td><td>Carla Vidal</td><td class="num big">3</td><td class="num">12:46</td><td class="num">13:58</td><td class="num">1h 12min</td></tr>
+            <tr><td><div class="who"><span class="av">MC</span><div><div class="nm">Marcelo Cunha</div><div class="sub">VIP</div></div></div></td><td><strong>Itaú Asset</strong></td><td>CEO</td><td>Rafael Dias</td><td class="num big">6</td><td class="num">11:12</td><td class="num">12:38</td><td class="num">1h 26min</td></tr>
+            <tr><td><div class="who"><span class="av">EF</span><div><div class="nm">Eduardo Faria</div><div class="sub">—</div></div></div></td><td><strong>Goldman Sachs</strong></td><td>Managing Dir.</td><td>Felipe Sanches</td><td class="num big">2</td><td class="num">10:48</td><td class="num">11:54</td><td class="num">1h 06min</td></tr>
+            <tr><td><div class="who"><span class="av">JT</span><div><div class="nm">Juliana Teixeira</div><div class="sub">VIP</div></div></div></td><td><strong>Stone Co.</strong></td><td>CFO</td><td>Marcos Lemos</td><td class="num big">4</td><td class="num">10:14</td><td class="num">11:32</td><td class="num">1h 18min</td></tr>
+            <tr><td><div class="who"><span class="av">CO</span><div><div class="nm">Caio Oliveira</div><div class="sub">—</div></div></div></td><td><strong>Pátria Inv.</strong></td><td>Sócio</td><td>Carla Vidal</td><td class="num big">1</td><td class="num">09:42</td><td class="num">10:48</td><td class="num">1h 06min</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ============ SCREEN: USERS (mini) ============ -->
+    <section class="screen page" id="screen-users">
+      <div class="page-head">
+        <div class="l">
+          <div class="eyebrow">Configuração · Equipe</div>
+          <h1>Usuários do sistema</h1>
+          <div class="sub">12 usuários ativos · 4 gerentes, 5 cozinha, 2 garçons, 1 admin. Convide novos pela equipe.</div>
+        </div>
+        <div class="r">
+          <button class="btn btn-secondary">Convidar por e-mail</button>
+          <button class="btn btn-primary"><svg viewBox="0 0 16 16"><path d="M8 3v10M3 8h10"/></svg>Novo usuário</button>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="filters">
+          <div class="field"><svg viewBox="0 0 16 16"><circle cx="7" cy="7" r="4.5"/><path d="m13.5 13.5-3-3"/></svg><input placeholder="Buscar por nome..."/></div>
+          <div class="field"><select><option>Todos os papéis</option><option>Admin</option><option>Gerente</option><option>Cozinha</option><option>Garçom</option></select></div>
+          <span class="count"><strong>12</strong> usuários</span>
+        </div>
+        <table class="tbl">
+          <thead><tr><th>Nome</th><th>E-mail</th><th>Papel</th><th>Último acesso</th><th>Status</th><th></th></tr></thead>
+          <tbody>
+            <tr><td><div class="who"><span class="av">JM</span><div><div class="nm">Joana Martins</div><div class="sub">você</div></div></div></td><td>joana@btg.com</td><td><span class="badge b-busy"><span class="dot"></span>Admin</span></td><td class="num">agora</td><td><label class="switch"><input checked type="checkbox"/><span class="slider"></span></label></td><td><button class="more">⋯</button></td></tr>
+            <tr><td><div class="who"><span class="av">RD</span><div><div class="nm">Rafael Dias</div></div></div></td><td>rafael.dias@btg.com</td><td><span class="badge b-preparing"><span class="dot"></span>Gerente</span></td><td class="num">há 2 min</td><td><label class="switch"><input checked type="checkbox"/><span class="slider"></span></label></td><td><button class="more">⋯</button></td></tr>
+            <tr><td><div class="who"><span class="av">CV</span><div><div class="nm">Carla Vidal</div></div></div></td><td>carla.vidal@btg.com</td><td><span class="badge b-preparing"><span class="dot"></span>Gerente</span></td><td class="num">há 6 min</td><td><label class="switch"><input checked type="checkbox"/><span class="slider"></span></label></td><td><button class="more">⋯</button></td></tr>
+            <tr><td><div class="who"><span class="av">FS</span><div><div class="nm">Felipe Sanches</div></div></div></td><td>felipe.sanches@btg.com</td><td><span class="badge b-preparing"><span class="dot"></span>Gerente</span></td><td class="num">há 1 min</td><td><label class="switch"><input checked type="checkbox"/><span class="slider"></span></label></td><td><button class="more">⋯</button></td></tr>
+            <tr><td><div class="who"><span class="av">DA</span><div><div class="nm">Daniel Alves</div></div></div></td><td>daniel@greetup.com</td><td><span class="badge b-pending"><span class="dot"></span>Cozinha · Comida</span></td><td class="num">há 22s</td><td><label class="switch"><input checked type="checkbox"/><span class="slider"></span></label></td><td><button class="more">⋯</button></td></tr>
+            <tr><td><div class="who"><span class="av">MP</span><div><div class="nm">Mariana Pinto</div></div></div></td><td>mariana@greetup.com</td><td><span class="badge b-pending"><span class="dot"></span>Cozinha · Bebida</span></td><td class="num">há 14s</td><td><label class="switch"><input checked type="checkbox"/><span class="slider"></span></label></td><td><button class="more">⋯</button></td></tr>
+            <tr><td><div class="who"><span class="av">TM</span><div><div class="nm">Thiago Mello</div></div></div></td><td>thiago@greetup.com</td><td><span class="badge b-ready"><span class="dot"></span>Garçom</span></td><td class="num">há 8s</td><td><label class="switch"><input checked type="checkbox"/><span class="slider"></span></label></td><td><button class="more">⋯</button></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ============ SCREEN: TABLES (CONFIG) ============ -->
+    <section class="screen page" id="screen-tables-config">
+      <div class="page-head">
+        <div class="l">
+          <div class="eyebrow">Configuração · Layout do estande</div>
+          <h1>Mesas do estande</h1>
+          <div class="sub">12 mesas cadastradas no estande BTG. Defina capacidade, estação atribuída e posição no layout — aplicado ao próximo evento.</div>
+        </div>
+        <div class="r">
+          <button class="btn btn-ghost">Duplicar layout</button>
+          <button class="btn btn-secondary"><svg viewBox="0 0 16 16"><path d="M2 4h12M2 8h12M2 12h12"/></svg>Importar planta</button>
+          <button class="btn btn-primary"><svg viewBox="0 0 16 16"><path d="M8 3v10M3 8h10"/></svg>Nova mesa</button>
+        </div>
+      </div>
+
+      <div class="kpi-grid">
+        <div class="kpi"><div class="lbl">Mesas cadastradas</div><div class="val">12</div><div class="delta flat">3 tipos · 4 / 2 / 6 lugares</div></div>
+        <div class="kpi"><div class="lbl">Capacidade total</div><div class="val">38<span class="of"> lugares</span></div><div class="delta flat">média de 3.2 / mesa</div></div>
+        <div class="kpi"><div class="lbl">Estações operacionais</div><div class="val">3</div><div class="delta flat">Cozinha A · Bar B · Lounge</div></div>
+        <div class="kpi"><div class="lbl">Última alteração</div><div class="val" style="font-size:22px">12 mai</div><div class="delta flat">Joana · 16:42</div></div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-head">
+          <div><h3>Layout no estande</h3><div class="sub">Pré-visualização · arraste mesas no editor para reposicionar</div></div>
+          <div style="display:flex;gap:6px">
+            <span class="chip on">Visão estande</span>
+            <span class="chip">Visão estações</span>
+          </div>
+        </div>
+        <div class="panel-body">
+          <div class="layout-stage">
+            <div class="pin station" style="top:14px;left:14px"><span class="lbl">Estação A</span><span style="font-weight:500">Cozinha · Comida</span><span class="seats">Daniel · Mariana</span></div>
+            <div class="pin station" style="top:14px;right:14px"><span class="lbl">Estação B</span><span style="font-weight:500">Bar · Bebida</span><span class="seats">Lucas</span></div>
+
+            <div class="pin" style="top:96px;left:80px"><span class="lbl">Mesa 01</span><span class="seats">4 lugares · Estação A</span></div>
+            <div class="pin" style="top:96px;left:200px"><span class="lbl">Mesa 02</span><span class="seats">4 lugares · Estação A</span></div>
+            <div class="pin" style="top:96px;left:320px"><span class="lbl">Mesa 03</span><span class="seats">4 lugares · Estação A</span></div>
+            <div class="pin" style="top:96px;right:80px"><span class="lbl">Mesa 04</span><span class="seats">2 lugares · Estação B</span></div>
+
+            <div class="pin" style="top:178px;left:80px"><span class="lbl">Mesa 05</span><span class="seats">4 lugares · Estação A</span></div>
+            <div class="pin" style="top:178px;left:200px"><span class="lbl">Mesa 06</span><span class="seats">2 lugares · Estação A</span></div>
+            <div class="pin" style="top:178px;left:320px"><span class="lbl">Mesa 07</span><span class="seats">4 lugares · Estação A</span></div>
+            <div class="pin" style="top:178px;right:80px" data-comment-anchor="lounge-anchor"><span class="lbl">Mesa 12 · VIP</span><span class="seats">2 lugares · Lounge</span></div>
+
+            <div class="legend">
+              <span><i style="background:#fff;border:1.5px solid var(--gu-bordeaux-300)"></i>Mesa</span>
+              <span><i style="background:var(--gu-bordeaux-900)"></i>Estação</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-head">
+          <div><h3>Mesas cadastradas</h3><div class="sub">Edite individualmente para alterar capacidade ou estação</div></div>
+          <div style="display:flex;gap:6px">
+            <span class="chip on">Todas</span>
+            <span class="chip">Cozinha A</span>
+            <span class="chip">Bar B</span>
+            <span class="chip">Lounge VIP</span>
+          </div>
+        </div>
+        <table class="tbl">
+          <thead><tr><th style="width:60px">#</th><th>Identificação</th><th>Tipo</th><th>Capacidade</th><th>Estação atribuída</th><th>Status</th><th></th></tr></thead>
+          <tbody>
+            <tr><td class="num big">01</td><td><strong>Mesa 01</strong><div class="sub">Posição A1 · canto SW</div></td><td><span class="badge b-delivered"><span class="dot"></span>Bistrô</span></td><td class="num">4 lugares</td><td>Cozinha · Comida</td><td><label class="switch"><input type="checkbox" checked/><span class="slider"></span></label></td><td><button class="more">⋯</button></td></tr>
+            <tr><td class="num big">02</td><td><strong>Mesa 02</strong><div class="sub">Posição A2 · centro-W</div></td><td><span class="badge b-delivered"><span class="dot"></span>Bistrô</span></td><td class="num">4 lugares</td><td>Cozinha · Comida</td><td><label class="switch"><input type="checkbox" checked/><span class="slider"></span></label></td><td><button class="more">⋯</button></td></tr>
+            <tr><td class="num big">03</td><td><strong>Mesa 03</strong><div class="sub">Posição A3 · centro</div></td><td><span class="badge b-delivered"><span class="dot"></span>Bistrô</span></td><td class="num">4 lugares</td><td>Cozinha · Comida</td><td><label class="switch"><input type="checkbox" checked/><span class="slider"></span></label></td><td><button class="more">⋯</button></td></tr>
+            <tr><td class="num big">04</td><td><strong>Mesa 04</strong><div class="sub">Posição B1 · canto NE</div></td><td><span class="badge b-delivered"><span class="dot"></span>Cocktail</span></td><td class="num">2 lugares</td><td>Bar · Bebida</td><td><label class="switch"><input type="checkbox" checked/><span class="slider"></span></label></td><td><button class="more">⋯</button></td></tr>
+            <tr><td class="num big">06</td><td><strong>Mesa 06</strong><div class="sub">Posição A5 · centro</div></td><td><span class="badge b-delivered"><span class="dot"></span>Cocktail</span></td><td class="num">2 lugares</td><td>Cozinha · Comida</td><td><label class="switch"><input type="checkbox" checked/><span class="slider"></span></label></td><td><button class="more">⋯</button></td></tr>
+            <tr><td class="num big">07</td><td><strong>Mesa 07</strong><div class="sub">Posição A6 · centro-E</div></td><td><span class="badge b-delivered"><span class="dot"></span>Bistrô</span></td><td class="num">4 lugares</td><td>Cozinha · Comida</td><td><label class="switch"><input type="checkbox" checked/><span class="slider"></span></label></td><td><button class="more">⋯</button></td></tr>
+            <tr><td class="num big">12</td><td><strong>Mesa 12 · VIP</strong><div class="sub">Lounge separado · acesso restrito</div></td><td><span class="badge b-busy"><span class="dot"></span>Lounge</span></td><td class="num">2 lugares</td><td>Lounge · acompanhante</td><td><label class="switch"><input type="checkbox" checked/><span class="slider"></span></label></td><td><button class="more">⋯</button></td></tr>
+            <tr style="opacity:.6"><td class="num big">13</td><td><strong>Mesa 13</strong><div class="sub">Reserva · não utilizada no Fispal</div></td><td><span class="badge b-delivered"><span class="dot"></span>Bistrô</span></td><td class="num">4 lugares</td><td>—</td><td><label class="switch"><input type="checkbox"/><span class="slider"></span></label></td><td><button class="more">⋯</button></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="note-inline">
+        <svg viewBox="0 0 16 16"><circle cx="8" cy="8" r="6.5"/><path d="M8 5v3M8 11h.01"/></svg>
+        <div><strong>Configuração reflete o estande físico.</strong> Alterações aqui afetam o mapa de mesas vistos pelos gerentes (App Cliente) e o roteamento de pedidos para as estações. Mesas desativadas não aparecem no app durante o evento.</div>
+      </div>
+    </section>
+
+    <!-- ============ SCREEN: ORDERS (full management) ============ -->
+    <section class="screen page" id="screen-orders">
+      <div class="page-head">
+        <div class="l">
+          <div class="eyebrow">Evento ao vivo · Gestão de pedidos</div>
+          <h1>Pedidos · Fispal Food Service</h1>
+          <div class="sub">184 pedidos no evento · 38 em andamento agora. Filtre, reatribua estação ou cancele em caso de problema.</div>
+        </div>
+        <div class="r">
+          <button class="btn btn-ghost"><svg viewBox="0 0 16 16"><path d="M3 11V4h10v7M3 11h10M5 11v3h6v-3"/></svg>Imprimir</button>
+          <button class="btn btn-secondary"><svg viewBox="0 0 16 16"><path d="M8 2v10M3 7l5 5 5-5M3 14h10"/></svg>Exportar CSV</button>
+          <button class="btn btn-primary"><svg viewBox="0 0 16 16"><path d="M8 3v10M3 8h10"/></svg>Novo pedido manual</button>
+        </div>
+      </div>
+
+      <div class="kpi-grid">
+        <div class="kpi"><div class="lbl">Pendente</div><div class="val" style="color:var(--gu-pending-tx)">9</div><div class="delta flat">aguardando aceite</div></div>
+        <div class="kpi"><div class="lbl">Em preparo</div><div class="val" style="color:var(--gu-preparing-tx)">14</div><div class="delta warn">● 2 atrasados &gt;10min</div></div>
+        <div class="kpi"><div class="lbl">Pronto</div><div class="val" style="color:var(--gu-ready-tx)">9</div><div class="delta flat">aguardando garçom</div></div>
+        <div class="kpi"><div class="lbl">Entregues · hoje</div><div class="val">132</div><div class="delta up">▲ 14 vs. dia 1</div></div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-head">
+          <div><h3>Todos os pedidos</h3><div class="sub">Atualização contínua · ordem por entrada (mais recente primeiro)</div></div>
+          <div style="display:flex;gap:6px">
+            <span class="chip on">Todos <span style="opacity:.6">· 38</span></span>
+            <span class="chip">Pendente · 9</span>
+            <span class="chip">Em preparo · 14</span>
+            <span class="chip">Pronto · 9</span>
+            <span class="chip">Atrasados · 2</span>
+          </div>
+        </div>
+        <div class="filters">
+          <div class="field"><svg viewBox="0 0 16 16"><circle cx="7" cy="7" r="4.5"/><path d="m13.5 13.5-3-3"/></svg><input placeholder="Buscar por № do pedido ou cliente..."/></div>
+          <div class="field"><select><option>Todas as mesas</option><option>Mesa 03</option><option>Mesa 05</option><option>Mesa 07</option></select></div>
+          <div class="field"><select><option>Todos os gerentes</option><option>Rafael Dias</option><option>Carla Vidal</option><option>Felipe Sanches</option></select></div>
+          <div class="field"><select><option>Estação · Todas</option><option>Cozinha · Comida</option><option>Cozinha · Bebida</option></select></div>
+          <span class="count"><strong>38</strong> pedidos abertos</span>
+        </div>
+        <table class="tbl">
+          <thead><tr><th>Pedido</th><th>Mesa</th><th>Cliente · Empresa</th><th>Itens</th><th>Gerente</th><th>Estação</th><th>Tempo</th><th>Status</th><th></th></tr></thead>
+          <tbody>
+            <tr><td><span class="num big">№ 0119</span><div class="sub">14:09:42</div></td><td><strong>Mesa 03</strong></td><td><div class="who"><span class="av">CS</span><div><div class="nm">Camila Sá</div><div class="sub">Vinci Partners</div></div></div></td><td>2 itens<div class="sub" style="font-family:var(--f-mono);font-size:9.5px">Pão de queijo (2×)</div></td><td>Carla Vidal</td><td>Cozinha · Comida</td><td class="num">02:14</td><td><span class="badge b-pending"><span class="dot"></span>Pendente</span></td><td><button class="more">⋯</button></td></tr>
+            <tr><td><span class="num big">№ 0118</span><div class="sub">14:09:01</div></td><td><strong>Mesa 07</strong></td><td><div class="who"><span class="av">JS</span><div><div class="nm">João Silva</div><div class="sub">Itaú Asset</div></div></div></td><td>1 item</td><td>Rafael Dias</td><td>Cozinha · Comida</td><td class="num">01:28</td><td><span class="badge b-pending"><span class="dot"></span>Pendente</span></td><td><button class="more">⋯</button></td></tr>
+            <tr><td><span class="num big">№ 0117</span><div class="sub">14:08:14</div></td><td><strong>Mesa 12</strong><div class="sub" style="color:var(--gu-bordeaux-700)">VIP · Tier A</div></td><td><div class="who"><span class="av">RM</span><div><div class="nm">Renata Magalhães</div><div class="sub">BTG Pactual</div></div></div></td><td>6 itens <span class="flag"><svg viewBox="0 0 16 16"><path d="M2 13l6-10 6 10z"/><path d="M8 6v3M8 11h.01"/></svg>obs</span></td><td>Rafael Dias</td><td>Cozinha · Comida</td><td class="num">00:42</td><td><span class="badge b-preparing"><span class="dot"></span>Em preparo</span></td><td><button class="more">⋯</button></td></tr>
+            <tr><td><span class="num big">№ 0116</span><div class="sub">14:00:48</div></td><td><strong>Mesa 11</strong></td><td><div class="who"><span class="av">RB</span><div><div class="nm">Roberto Mendes</div><div class="sub">JP Morgan</div></div></div></td><td>2 itens</td><td>Felipe Sanches</td><td>Cozinha · Comida</td><td class="num">02:56</td><td><span class="badge b-preparing"><span class="dot"></span>Em preparo</span></td><td><button class="more">⋯</button></td></tr>
+            <tr><td><span class="num big">№ 0115</span><div class="sub">13:58:22</div></td><td><strong>Mesa 08</strong></td><td><div class="who"><span class="av">AS</span><div><div class="nm">Ana Souza</div><div class="sub">Vinci Partners</div></div></div></td><td>3 itens</td><td>Felipe Sanches</td><td>Cozinha · Comida</td><td class="num">04:18</td><td><span class="badge b-preparing"><span class="dot"></span>Em preparo</span></td><td><button class="more">⋯</button></td></tr>
+            <tr><td><span class="num big">№ 0114</span><div class="sub">13:54:10</div></td><td><strong>Mesa 05</strong></td><td><div class="who"><span class="av">DP</span><div><div class="nm">Daniel Prado</div><div class="sub">XP Inc.</div></div></div></td><td>3 itens <span class="flag"><svg viewBox="0 0 16 16"><path d="M2 13l6-10 6 10z"/><path d="M8 6v3M8 11h.01"/></svg>obs</span></td><td>Marcos Lemos</td><td>Cozinha · Comida</td><td class="num" style="color:#B91C1C;font-weight:500">11:24 atrasado</td><td><span class="badge b-canceled"><span class="dot"></span>Atrasado</span></td><td><button class="more">⋯</button></td></tr>
+            <tr><td><span class="num big">№ 0113</span><div class="sub">13:52:38</div></td><td><strong>Mesa 11</strong></td><td><div class="who"><span class="av">RB</span><div><div class="nm">Roberto Mendes</div><div class="sub">JP Morgan</div></div></div></td><td>1 item</td><td>Felipe Sanches</td><td>Bar · Bebida</td><td class="num">02:04</td><td><span class="badge b-ready"><span class="dot"></span>Pronto · aguard. garçom</span></td><td><button class="more">⋯</button></td></tr>
+            <tr><td><span class="num big">№ 0112</span><div class="sub">13:48:00</div></td><td><strong>Mesa 03</strong></td><td><div class="who"><span class="av">CS</span><div><div class="nm">Camila Sá</div><div class="sub">Vinci Partners</div></div></div></td><td>3 itens</td><td>Carla Vidal</td><td>Cozinha · Comida</td><td class="num">01:14</td><td><span class="badge b-ready"><span class="dot"></span>Pronto · aguard. garçom</span></td><td><button class="more">⋯</button></td></tr>
+            <tr><td><span class="num big">№ 0111</span><div class="sub">13:42:18</div></td><td><strong>Mesa 07</strong></td><td><div class="who"><span class="av">JS</span><div><div class="nm">João Silva</div><div class="sub">Itaú Asset</div></div></div></td><td>2 itens</td><td>Rafael Dias</td><td>Bar · Bebida</td><td class="num">00:32</td><td><span class="badge b-ready"><span class="dot"></span>Pronto · aguard. garçom</span></td><td><button class="more">⋯</button></td></tr>
+            <tr style="opacity:.7"><td><span class="num big">№ 0110</span><div class="sub">13:38:42</div></td><td><strong>Mesa 09</strong></td><td><div class="who"><span class="av">PS</span><div><div class="nm">Pedro Santos</div><div class="sub">Bradesco BBI</div></div></div></td><td>4 itens</td><td>Rafael Dias</td><td>Cozinha · Comida</td><td class="num">5:48 ciclo</td><td><span class="badge b-delivered"><span class="dot"></span>Entregue</span></td><td><button class="more">⋯</button></td></tr>
+            <tr style="opacity:.7"><td><span class="num big">№ 0109</span><div class="sub">13:34:00</div></td><td><strong>Mesa 10</strong></td><td><div class="who"><span class="av">LA</span><div><div class="nm">Luisa Andrade</div><div class="sub">Santander</div></div></div></td><td>2 itens</td><td>Carla Vidal</td><td>Bar · Bebida</td><td class="num">3:22 ciclo</td><td><span class="badge b-delivered"><span class="dot"></span>Entregue</span></td><td><button class="more">⋯</button></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="note-inline">
+        <svg viewBox="0 0 16 16"><circle cx="8" cy="8" r="6.5"/><path d="M8 5v3M8 11h.01"/></svg>
+        <div><strong>SLA do evento.</strong> Pedidos não aceitos pela cozinha em 3 min disparam alerta para o coordenador. Pedidos em preparo &gt;10 min entram automaticamente em "Atrasado" e a chefia recebe push.</div>
+      </div>
+    </section>
+
+    <!-- ============ SCREEN: REPORT MANAGERS ============ -->
+    <section class="screen page" id="screen-report-managers">
+      <div class="page-head">
+        <div class="l">
+          <div class="eyebrow">Relatório · Performance de equipe</div>
+          <h1>Gerentes · Fispal Food Service</h1>
+          <div class="sub">Performance dos 4 gerentes de vendas no evento. Use para definir bônus, identificar gargalos e dimensionar equipe em próximas edições.</div>
+        </div>
+        <div class="r">
+          <button class="btn btn-ghost">Imprimir</button>
+          <button class="btn btn-primary"><svg viewBox="0 0 16 16"><path d="M8 2v10M3 7l5 5 5-5M3 14h10"/></svg>Exportar CSV</button>
+        </div>
+      </div>
+
+      <div class="stat-hi">
+        <div class="l">
+          <span class="lbl">Equipe de vendas · evento</span>
+          <span class="val">4<span>gerentes ativos</span></span>
+          <span class="note">Total de 156 atendimentos hoje · média de 39 por gerente. Rafael Dias lidera em volume e VIPs atendidos.</span>
+        </div>
+        <svg class="arches" viewBox="0 0 260 200" width="260" height="200">
+          <g stroke="#D9B58A" stroke-opacity=".6" stroke-width="1" fill="none">
+            <path d="M30 200 V100 a55 55 0 0 1 110 0 V200"/>
+            <path d="M120 200 V130 a40 40 0 0 1 80 0 V200"/>
+          </g>
+        </svg>
+      </div>
+
+      <div class="two-col">
+        <div class="hi-card">
+          <span class="crown">
+            <svg viewBox="0 0 16 16"><path d="M1 12 L3 5 L6 8 L8 4 L10 8 L13 5 L15 12 Z"/></svg>
+            Topo · volume
+          </span>
+          <div class="who"><span class="av">RD</span><div><div class="nm">Rafael Dias</div><div class="sub">Gerente sênior · 4 anos</div></div></div>
+          <div class="stats">
+            <div class="s"><span class="lbl">Atendidos</span><span class="val">52</span></div>
+            <div class="s"><span class="lbl">VIPs</span><span class="val">11</span></div>
+            <div class="s"><span class="lbl">Tempo médio</span><span class="val">1:21<span style="font-size:11px;color:var(--gu-ink-500);font-weight:400">h</span></span></div>
+          </div>
+        </div>
+        <div class="hi-card">
+          <span class="crown" style="color:#22C55E">
+            <svg viewBox="0 0 16 16" style="fill:#22C55E"><path d="M3 8l3 3 7-7v3l-7 7-3-3z"/></svg>
+            Topo · eficiência
+          </span>
+          <div class="who"><span class="av" style="background:#15803D">CV</span><div><div class="nm">Carla Vidal</div><div class="sub">Gerente · 2 anos</div></div></div>
+          <div class="stats">
+            <div class="s"><span class="lbl">Atendidos</span><span class="val">41</span></div>
+            <div class="s"><span class="lbl">Tempo médio</span><span class="val">1:08<span style="font-size:11px;color:var(--gu-ink-500);font-weight:400">h</span></span></div>
+            <div class="s"><span class="lbl">Avaliação</span><span class="val">4.9<span style="font-size:11px;color:var(--gu-ink-500);font-weight:400">/5</span></span></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-head">
+          <div><h3>Ranking completo</h3><div class="sub">Ordenado por número de clientes atendidos</div></div>
+          <div style="display:flex;gap:6px">
+            <span class="chip">Dia 1</span>
+            <span class="chip on">Dia 2</span>
+            <span class="chip">Acumulado</span>
+          </div>
+        </div>
+        <table class="tbl">
+          <thead><tr><th style="width:36px">#</th><th>Gerente</th><th>Mesas servidas</th><th>Atendimentos</th><th>Pedidos abertos</th><th>VIPs atendidos</th><th style="width:180px">Volume</th><th>Tempo médio</th></tr></thead>
+          <tbody>
+            <tr><td class="num">01</td><td><div class="who"><span class="av">RD</span><div><div class="nm">Rafael Dias</div><div class="sub">Sênior</div></div></div></td><td class="num big">7</td><td class="num big">52</td><td class="num">38</td><td class="num">11</td><td><div class="rank-bar"><span style="width:100%"></span></div></td><td class="num">1h 21min</td></tr>
+            <tr><td class="num">02</td><td><div class="who"><span class="av" style="background:#15803D">CV</span><div><div class="nm">Carla Vidal</div><div class="sub">Pleno</div></div></div></td><td class="num big">6</td><td class="num big">41</td><td class="num">29</td><td class="num">6</td><td><div class="rank-bar"><span style="width:79%"></span></div></td><td class="num">1h 08min</td></tr>
+            <tr><td class="num">03</td><td><div class="who"><span class="av">FS</span><div><div class="nm">Felipe Sanches</div><div class="sub">Pleno</div></div></div></td><td class="num big">5</td><td class="num big">38</td><td class="num">24</td><td class="num">4</td><td><div class="rank-bar"><span style="width:73%"></span></div></td><td class="num">1h 14min</td></tr>
+            <tr><td class="num">04</td><td><div class="who"><span class="av">ML</span><div><div class="nm">Marcos Lemos</div><div class="sub">Júnior</div></div></div></td><td class="num big">4</td><td class="num big">25</td><td class="num">18</td><td class="num">3</td><td><div class="rank-bar"><span style="width:48%"></span></div></td><td class="num">1h 32min</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="note-inline">
+        <svg viewBox="0 0 16 16"><circle cx="8" cy="8" r="6.5"/><path d="M8 5v3M8 11h.01"/></svg>
+        <div><strong>Como ler.</strong> Volume = clientes atendidos. VIPs Tier A pesam 2× no cálculo de bônus. Tempo médio inclui da abertura ao fechamento da mesa. Pedidos cancelados não contam.</div>
+      </div>
+    </section>
+
+    <!-- ============ SCREEN: REPORT SUMMARY (event totals) ============ -->
+    <section class="screen page" id="screen-report-summary">
+      <div class="page-head">
+        <div class="l">
+          <div class="eyebrow">Relatório · Resumo do evento</div>
+          <h1>Resumo · Fispal Food Service</h1>
+          <div class="sub">Dia 2 de 4 · resultado consolidado. Exporte para apresentação executiva ou conciliação com o fornecedor.</div>
+        </div>
+        <div class="r">
+          <button class="btn btn-ghost">Imprimir A4</button>
+          <button class="btn btn-secondary">Compartilhar link</button>
+          <button class="btn btn-primary"><svg viewBox="0 0 16 16"><path d="M8 2v10M3 7l5 5 5-5M3 14h10"/></svg>Exportar PDF</button>
+        </div>
+      </div>
+
+      <div class="stat-hi">
+        <div class="l">
+          <span class="lbl">Resumo consolidado · projetado para 4 dias</span>
+          <span class="val">600<span>clientes · projeção</span></span>
+          <span class="note">Com base no ritmo do dia 2 (184 atendimentos), a projeção total do evento é de 600+ clientes. Pico esperado no dia 3 (sexta-feira).</span>
+        </div>
+        <svg class="arches" viewBox="0 0 260 200" width="260" height="200">
+          <g stroke="#D9B58A" stroke-opacity=".6" stroke-width="1" fill="none">
+            <path d="M20 200 V90 a60 60 0 0 1 120 0 V200"/>
+            <path d="M140 200 V120 a40 40 0 0 1 80 0 V200"/>
+            <path d="M60 200 V150 a25 25 0 0 1 50 0 V200"/>
+          </g>
+        </svg>
+      </div>
+
+      <div class="kpi-grid">
+        <div class="kpi">
+          <div class="lbl">Atendidos · acumulado</div>
+          <div class="val">340<span class="of"> / 600 proj.</span></div>
+          <div class="delta up">▲ 13% acima da meta</div>
+        </div>
+        <div class="kpi">
+          <div class="lbl">Itens servidos</div>
+          <div class="val">2.142</div>
+          <div class="delta up">▲ 8% vs. Fispal 2025</div>
+        </div>
+        <div class="kpi">
+          <div class="lbl">Tempo médio · sessão</div>
+          <div class="val">1:18<span class="of">h</span></div>
+          <div class="delta flat">dentro do esperado</div>
+        </div>
+        <div class="kpi">
+          <div class="lbl">Pico de ocupação</div>
+          <div class="val">12<span class="of"> / 12</span></div>
+          <div class="delta warn">● ocorreu 3× hoje</div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-head">
+          <div><h3>Por dia do evento</h3><div class="sub">Quarta a sábado · 4 dias · estande BTG</div></div>
+        </div>
+        <table class="tbl">
+          <thead><tr><th>Dia</th><th>Data</th><th>Atendidos</th><th>Pedidos</th><th>Itens servidos</th><th>Tempo médio</th><th>Pico de mesas</th><th>Status</th></tr></thead>
+          <tbody>
+            <tr><td><strong>Dia 1</strong></td><td class="num">6 mai · qua</td><td class="num big">156</td><td class="num">142</td><td class="num">982</td><td class="num">1h 22min</td><td class="num">12 / 12</td><td><span class="badge b-delivered"><span class="dot"></span>Encerrado</span></td></tr>
+            <tr class="active"><td><strong>Dia 2</strong></td><td class="num">7 mai · qui</td><td class="num big">184</td><td class="num">168</td><td class="num">1.160</td><td class="num">1h 18min</td><td class="num">12 / 12</td><td><span class="badge b-preparing"><span class="dot"></span>Em curso</span></td></tr>
+            <tr style="opacity:.5"><td><strong>Dia 3</strong></td><td class="num">8 mai · sex</td><td class="num">—</td><td class="num">—</td><td class="num">—</td><td class="num">—</td><td class="num">—</td><td><span class="badge b-pending"><span class="dot"></span>Pendente</span></td></tr>
+            <tr style="opacity:.5"><td><strong>Dia 4</strong></td><td class="num">9 mai · sáb</td><td class="num">—</td><td class="num">—</td><td class="num">—</td><td class="num">—</td><td class="num">—</td><td><span class="badge b-pending"><span class="dot"></span>Pendente</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="two-col">
+        <div class="panel">
+          <div class="panel-head"><div><h3>Top 5 clientes · evento</h3><div class="sub">Por volume de atendimentos</div></div></div>
+          <table class="tbl">
+            <thead><tr><th style="width:32px">#</th><th>Cliente</th><th>Empresa</th><th>Sessões</th></tr></thead>
+            <tbody>
+              <tr><td class="num">01</td><td><div class="who"><span class="av">RM</span><div><div class="nm">Renata Magalhães</div><div class="sub">VIP</div></div></div></td><td><strong>BTG Pactual</strong></td><td class="num big">3</td></tr>
+              <tr><td class="num">02</td><td><div class="who"><span class="av">MC</span><div><div class="nm">Marcelo Cunha</div><div class="sub">VIP</div></div></div></td><td><strong>Itaú Asset</strong></td><td class="num big">2</td></tr>
+              <tr><td class="num">03</td><td><div class="who"><span class="av">JT</span><div><div class="nm">Juliana Teixeira</div><div class="sub">VIP</div></div></div></td><td><strong>Stone Co.</strong></td><td class="num big">2</td></tr>
+              <tr><td class="num">04</td><td><div class="who"><span class="av">JS</span><div><div class="nm">João Silva</div><div class="sub">—</div></div></div></td><td><strong>Itaú Asset</strong></td><td class="num big">2</td></tr>
+              <tr><td class="num">05</td><td><div class="who"><span class="av">EF</span><div><div class="nm">Eduardo Faria</div><div class="sub">—</div></div></div></td><td><strong>Goldman Sachs</strong></td><td class="num big">1</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="panel">
+          <div class="panel-head"><div><h3>Top 5 produtos · evento</h3><div class="sub">Unidades entregues acumuladas</div></div></div>
+          <table class="tbl">
+            <thead><tr><th style="width:32px">#</th><th>Produto</th><th>Categoria</th><th style="text-align:right">Unidades</th></tr></thead>
+            <tbody>
+              <tr><td class="num">01</td><td><strong>Água sem gás · 500ml</strong></td><td><span class="badge b-delivered"><span class="dot"></span>Águas</span></td><td style="text-align:right" class="num big">512</td></tr>
+              <tr><td class="num">02</td><td><strong>Espresso · curto</strong></td><td><span class="badge b-delivered"><span class="dot"></span>Cafés</span></td><td style="text-align:right" class="num big">418</td></tr>
+              <tr><td class="num">03</td><td><strong>Pão de queijo gourmet</strong></td><td><span class="badge b-delivered"><span class="dot"></span>Salgados</span></td><td style="text-align:right" class="num big">312</td></tr>
+              <tr><td class="num">04</td><td><strong>Água com gás · 500ml</strong></td><td><span class="badge b-delivered"><span class="dot"></span>Águas</span></td><td style="text-align:right" class="num big">288</td></tr>
+              <tr><td class="num">05</td><td><strong>Mini quiche lorraine</strong></td><td><span class="badge b-delivered"><span class="dot"></span>Salgados</span></td><td style="text-align:right" class="num big">186</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="note-inline">
+        <svg viewBox="0 0 16 16"><circle cx="8" cy="8" r="6.5"/><path d="M8 5v3M8 11h.01"/></svg>
+        <div><strong>Relatório consolidado ao final do evento.</strong> O Resumo é a base para a apresentação executiva pós-evento e para a conciliação com o fornecedor de catering. Inclui também avaliação NPS dos clientes (coletada via App Cliente) quando disponível.</div>
+      </div>
+    </section>
+
+  </div>
+</div>
+
+<script>
+// sidebar navigation
+const items = document.querySelectorAll('.sb-item');
+const screens = document.querySelectorAll('.screen');
+const crumb = document.getElementById('crumb-here');
+
+const labels = {
+  'dashboard':'Dashboard',
+  'tables-live':'Mesas · ao vivo',
+  'tables-config':'Mesas',
+  'products':'Produtos',
+  'users':'Usuários',
+  'clients':'Clientes',
+  'orders':'Pedidos',
+  'report-consumption':'Consumo · bebidas',
+  'report-clients':'Clientes atendidos',
+  'report-managers':'Gerentes',
+  'report-summary':'Resumo'
+};
+
+// every sidebar item now resolves to its own dedicated screen
+items.forEach(it => {
+  it.addEventListener('click', () => {
+    items.forEach(x => x.classList.remove('active'));
+    it.classList.add('active');
+    const id = it.dataset.screen;
+    crumb.textContent = labels[id] || id;
+    screens.forEach(s => s.classList.remove('active'));
+    screens.forEach(s => s.style.display = 'none');
+    const target = document.getElementById('screen-' + id);
+    if (target){
+      target.classList.add('active');
+      target.style.display = 'flex';
+    }
+    window.scrollTo({top:0,behavior:'smooth'});
+  });
+});
+
+// init: only dashboard visible
+screens.forEach(s => { if (!s.classList.contains('active')) s.style.display = 'none'; });
+
+// Tab toggle in Products
+document.querySelectorAll('.tabs .tab').forEach(t => {
+  t.addEventListener('click', () => {
+    t.parentElement.querySelectorAll('.tab').forEach(x => x.classList.remove('active'));
+    t.classList.add('active');
+  });
+});
+
+// Chips
+document.querySelectorAll('.chip').forEach(c => {
+  c.addEventListener('click', () => {
+    // only toggle within same group
+    const group = c.parentElement;
+    group.querySelectorAll('.chip').forEach(x => x.classList.remove('on'));
+    c.classList.add('on');
+  });
+});
+
+// Live clock
+const liveSpan = document.querySelector('.event-info .ev .meta');
+function tick(){
+  const d = new Date();
+  const hh = String(d.getHours()).padStart(2,'0');
+  const mm = String(d.getMinutes()).padStart(2,'0');
+  if (liveSpan) liveSpan.textContent = `Dia 2 de 4 · ${hh}:${mm}`;
+}
+tick(); setInterval(tick, 30000);
+</script>
+
+</body>
+</html>
