@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
@@ -30,6 +31,7 @@ class _OpenSessionScreenState extends State<OpenSessionScreen> {
   final _phoneCtrl    = TextEditingController();
 
   CustomerModel? _selected;
+  Timer? _debounce;
 
   @override
   void initState() {
@@ -39,6 +41,7 @@ class _OpenSessionScreenState extends State<OpenSessionScreen> {
 
   @override
   void dispose() {
+    _debounce?.cancel();
     _searchCtrl.dispose();
     _nameCtrl.dispose();
     _employerCtrl.dispose();
@@ -141,7 +144,12 @@ class _OpenSessionScreenState extends State<OpenSessionScreen> {
                           hint: 'Buscar por nome ou empresa…',
                           controller: _searchCtrl,
                           prefixIcon: Icons.search_outlined,
-                          onChanged: (q) => session.searchCustomers(q),
+                          onChanged: (q) {
+                            _debounce?.cancel();
+                            _debounce = Timer(const Duration(milliseconds: 300), () {
+                              session.searchCustomers(q);
+                            });
+                          },
                         ),
 
                         if (session.searching)
