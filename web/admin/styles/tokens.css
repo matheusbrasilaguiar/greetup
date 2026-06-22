@@ -1,0 +1,47 @@
+:root {
+  /* Bordeaux */
+  --gu-bordeaux-300: #D6A8B0;
+  --gu-bordeaux-500: #92465A;
+  --gu-bordeaux-700: #6B2331;
+  --gu-bordeaux-800: #4A1A24;
+  --gu-bordeaux-900: #2E1116;
+
+  /* Cream */
+  --gu-cream-50: #FBF7EF;
+  --gu-cream-100: #F5EEDE;
+  --gu-cream-200: #ECE2CC;
+
+  /* Ink */
+  --gu-ink-300: #B0AAA5;
+  --gu-ink-500: #7A736E;
+  --gu-ink-700: #4A423E;
+  --gu-ink-900: #1F1A18;
+
+  /* Champagne */
+  --gu-champagne: #D9B58A;
+
+  /* Status — Pending */
+  --gu-pending-bg: #FFF8E7;
+  --gu-pending-br: #D9B58A;
+  --gu-pending-tx: #92610A;
+
+  /* Status — Preparing */
+  --gu-preparing-bg: #EEF2FF;
+  --gu-preparing-br: #6366F1;
+  --gu-preparing-tx: #3730A3;
+
+  /* Status — Ready */
+  --gu-ready-bg: #F0FDF4;
+  --gu-ready-br: #22C55E;
+  --gu-ready-tx: #15803D;
+
+  /* Status — Delivered */
+  --gu-delivered-bg: #F5EEDE;
+  --gu-delivered-br: #B0AAA5;
+  --gu-delivered-tx: #4A423E;
+
+  /* Status — Canceled */
+  --gu-canceled-bg: #FEF2F2;
+  --gu-canceled-br: #EF4444;
+  --gu-canceled-tx: #B91C1C;
+}
