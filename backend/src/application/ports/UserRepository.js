@@ -14,6 +14,14 @@ class UserRepository {
   async createUser(data) {
     throw new Error("UserRepository#createUser not implemented");
   }
+
+  async updateUser(id, data, companyId) {
+    throw new Error("UserRepository#updateUser not implemented");
+  }
+
+  async deleteUser(id, companyId) {
+    throw new Error("UserRepository#deleteUser not implemented");
+  }
 }
 
 module.exports = UserRepository;

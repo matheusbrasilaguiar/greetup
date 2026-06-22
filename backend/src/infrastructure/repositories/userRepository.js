@@ -20,6 +20,14 @@ class UserRepository extends UserRepositoryPort {
   async createUser(data) {
     return prisma.user.create({ data });
   }
+
+  async updateUser(id, data, companyId) {
+    return prisma.user.updateMany({ where: { id, companyId }, data });
+  }
+
+  async deleteUser(id, companyId) {
+    return prisma.user.deleteMany({ where: { id, companyId } });
+  }
 }
 
 module.exports = new UserRepository();

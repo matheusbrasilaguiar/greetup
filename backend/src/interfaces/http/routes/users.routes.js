@@ -11,6 +11,8 @@ function createUsersRouter(authMiddleware) {
   router.post("/", usersController.create);
   router.get("/", usersController.list);
   router.get("/:id", usersController.getById);
+  router.patch("/:id", usersController.update);
+  router.delete("/:id", usersController.remove);
 
   return router;
 }
