@@ -8,7 +8,7 @@ class TokenService extends TokenServicePort {
     return jwt.sign(
       { role: user.role, email: user.email, companyId: user.companyId, operatorFunction: user.operatorFunction || null },
       jwtSecret,
-      { subject: user.id, expiresIn: "1d" }
+      { subject: user.id, expiresIn: "12h" }
     );
   }
 
