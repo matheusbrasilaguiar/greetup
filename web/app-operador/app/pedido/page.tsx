@@ -13,6 +13,7 @@ type Stage = "idle" | "building" | "confirm" | "success";
 interface CartItem {
   product: Product;
   quantity: number;
+  notes: string;
 }
 
 export default function PedidoPage() {
@@ -46,6 +47,7 @@ export default function PedidoPage() {
       [product.id]: {
         product,
         quantity: (prev[product.id]?.quantity ?? 0) + 1,
+        notes: prev[product.id]?.notes ?? "",
       },
     }));
   }
@@ -60,6 +62,13 @@ export default function PedidoPage() {
       }
       return { ...prev, [productId]: { ...prev[productId], quantity: qty - 1 } };
     });
+  }
+
+  function setNotes(productId: string, notes: string) {
+    setCart((prev) => ({
+      ...prev,
+      [productId]: { ...prev[productId], notes },
+    }));
   }
 
   function resetAll() {
@@ -90,9 +99,10 @@ export default function PedidoPage() {
       const sessionId = sessionRes.data.id;
       console.log("[pedido] sessão:", sessionId);
 
-      const items = Object.values(cart).map(({ product, quantity }) => ({
+      const items = Object.values(cart).map(({ product, quantity, notes }) => ({
         productId: product.id,
         quantity,
+        ...(notes.trim() ? { notes: notes.trim() } : {}),
       }));
       console.log("[pedido] 4. criando pedido...", { sessionId, items });
       await api.post("/orders", { sessionId, items });
@@ -192,44 +202,56 @@ export default function PedidoPage() {
               <div className="flex flex-col gap-2">
                 {items.map((product) => {
                   const qty = cart[product.id]?.quantity ?? 0;
+                  const notes = cart[product.id]?.notes ?? "";
                   return (
                     <div
                       key={product.id}
-                      className="flex items-center justify-between bg-bordeaux-800 rounded-xl px-4 py-3"
+                      className="bg-bordeaux-800 rounded-xl px-4 py-3"
                     >
-                      <div className="flex-1 min-w-0 mr-4">
-                        <p className="text-cream-50 font-medium text-sm leading-tight">
-                          {product.name}
-                        </p>
-                        <p className="text-champagne text-xs mt-0.5 font-mono">
-                          R$ {Number(product.price ?? 0).toFixed(2).replace(".", ",")}
-                        </p>
-                      </div>
-                      {qty === 0 ? (
-                        <button
-                          onClick={() => addToCart(product)}
-                          className="rounded-lg bg-bordeaux-700 hover:bg-bordeaux-500 active:scale-95 text-cream-50 text-lg px-4 py-1.5 font-semibold transition-all"
-                        >
-                          +
-                        </button>
-                      ) : (
-                        <div className="flex items-center gap-3">
-                          <button
-                            onClick={() => removeFromCart(product.id)}
-                            className="w-8 h-8 rounded-lg bg-bordeaux-900 text-cream-50 text-lg font-semibold active:scale-95 transition-all flex items-center justify-center"
-                          >
-                            −
-                          </button>
-                          <span className="text-cream-50 font-semibold w-4 text-center font-mono">
-                            {qty}
-                          </span>
+                      <div className="flex items-center justify-between">
+                        <div className="flex-1 min-w-0 mr-4">
+                          <p className="text-cream-50 font-medium text-sm leading-tight">
+                            {product.name}
+                          </p>
+                          <p className="text-champagne text-xs mt-0.5 font-mono">
+                            R$ {Number(product.price ?? 0).toFixed(2).replace(".", ",")}
+                          </p>
+                        </div>
+                        {qty === 0 ? (
                           <button
                             onClick={() => addToCart(product)}
-                            className="w-8 h-8 rounded-lg bg-bordeaux-700 hover:bg-bordeaux-500 text-cream-50 text-lg font-semibold active:scale-95 transition-all flex items-center justify-center"
+                            className="rounded-lg bg-bordeaux-700 hover:bg-bordeaux-500 active:scale-95 text-cream-50 text-lg px-4 py-1.5 font-semibold transition-all"
                           >
                             +
                           </button>
-                        </div>
+                        ) : (
+                          <div className="flex items-center gap-3">
+                            <button
+                              onClick={() => removeFromCart(product.id)}
+                              className="w-8 h-8 rounded-lg bg-bordeaux-900 text-cream-50 text-lg font-semibold active:scale-95 transition-all flex items-center justify-center"
+                            >
+                              −
+                            </button>
+                            <span className="text-cream-50 font-semibold w-4 text-center font-mono">
+                              {qty}
+                            </span>
+                            <button
+                              onClick={() => addToCart(product)}
+                              className="w-8 h-8 rounded-lg bg-bordeaux-700 hover:bg-bordeaux-500 text-cream-50 text-lg font-semibold active:scale-95 transition-all flex items-center justify-center"
+                            >
+                              +
+                            </button>
+                          </div>
+                        )}
+                      </div>
+                      {qty > 0 && (
+                        <input
+                          type="text"
+                          value={notes}
+                          onChange={(e) => setNotes(product.id, e.target.value)}
+                          placeholder="Observação (opcional)"
+                          className="mt-2 w-full rounded-lg bg-bordeaux-900 border border-bordeaux-700 px-3 py-1.5 text-cream-50 text-xs placeholder:text-ink-500 focus:outline-none focus:border-champagne transition-colors"
+                        />
                       )}
                     </div>
                   );
