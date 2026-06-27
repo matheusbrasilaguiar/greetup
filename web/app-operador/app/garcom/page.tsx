@@ -118,12 +118,19 @@ export default function GarcomPage() {
                       key={item.id}
                       className="flex items-center justify-between px-4 py-3 border-t border-cream-200"
                     >
-                      <p className="text-ink-900 text-sm flex-1">
-                        <span className="font-mono text-bordeaux-700 mr-1">
-                          {item.quantity}×
-                        </span>
-                        {item.product.name}
-                      </p>
+                      <div className="flex-1">
+                        <p className="text-ink-900 text-sm">
+                          <span className="font-mono text-bordeaux-700 mr-1">
+                            {item.quantity}×
+                          </span>
+                          {item.product.name}
+                        </p>
+                        {item.notes && (
+                          <p className="text-amber-700 text-xs mt-0.5 font-medium">
+                            Obs: {item.notes}
+                          </p>
+                        )}
+                      </div>
                       <button
                         onClick={() => toggleCheck(item.id)}
                         className="w-6 h-6 rounded-md border-2 flex items-center justify-center transition-colors ml-3 shrink-0"
