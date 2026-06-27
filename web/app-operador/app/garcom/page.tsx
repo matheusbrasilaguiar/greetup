@@ -1,0 +1,197 @@
+"use client";
+
+import { useCallback, useMemo, useState } from "react";
+import { useQueryClient } from "@tanstack/react-query";
+import { useOrderItems, OrderItem, useAdvanceItemStatus } from "@/lib/hooks/useOrderItems";
+import { useSocketEvents } from "@/lib/hooks/useSocketEvents";
+import { useAuth } from "@/lib/hooks/useAuth";
+
+export default function GarcomPage() {
+  const { logout } = useAuth();
+  const { data: items = [], isLoading } = useOrderItems("PRONTO");
+  const advance = useAdvanceItemStatus();
+  const qc = useQueryClient();
+  const [checked, setChecked] = useState<Record<string, boolean>>({});
+  const [banner, setBanner] = useState<string | null>(null);
+
+  const socketHandlers = useCallback(
+    () => ({
+      order_item_status_changed: (data: unknown) => {
+        qc.invalidateQueries({ queryKey: ["order-items"] });
+        const d = data as { status?: string; customerName?: string };
+        if (d?.status === "PRONTO") {
+          const name = d.customerName ?? "cliente";
+          setBanner(`Novo item pronto — ${name}`);
+          setTimeout(() => setBanner(null), 3000);
+        }
+      },
+    }),
+    [qc]
+  );
+
+  useSocketEvents(socketHandlers());
+
+  const byCustomer = useMemo(() => {
+    const map = new Map<string, { name: string; items: OrderItem[] }>();
+    for (const item of items) {
+      const name = item.order.session.customer?.name ?? "Sem nome";
+      const key = item.order.session.customer?.id ?? name;
+      if (!map.has(key)) map.set(key, { name, items: [] });
+      map.get(key)!.items.push(item);
+    }
+    return Array.from(map.values());
+  }, [items]);
+
+  function toggleCheck(itemId: string) {
+    setChecked((prev) => ({ ...prev, [itemId]: !prev[itemId] }));
+  }
+
+  async function confirmDelivery(groupItems: OrderItem[]) {
+    await Promise.all(
+      groupItems.map((item) => advance(item.orderId, item.id, "ENTREGUE"))
+    );
+    setChecked((prev) => {
+      const next = { ...prev };
+      for (const item of groupItems) delete next[item.id];
+      return next;
+    });
+  }
+
+  return (
+    <div className="min-h-screen flex flex-col bg-cream-50">
+      {/* Header */}
+      <div className="bg-bordeaux-900 px-4 pt-10 pb-5">
+        <p className="text-xs font-mono text-champagne tracking-widest uppercase mb-1">
+          GreetUp · Garçom
+        </p>
+        <h1 className="text-xl font-semibold text-cream-50 tracking-tight">
+          Itens prontos
+        </h1>
+        <div className="flex items-center justify-between mt-1">
+          <p className="text-xs text-ink-300">
+            {byCustomer.length} {byCustomer.length === 1 ? "cliente" : "clientes"} aguardando
+          </p>
+          <button onClick={logout} className="text-xs text-ink-500 hover:text-ink-300 transition-colors">
+            Sair
+          </button>
+        </div>
+      </div>
+
+      {/* Banner */}
+      {banner && (
+        <div className="bg-bordeaux-700 px-4 py-2.5 text-cream-50 text-sm font-medium animate-pulse">
+          {banner}
+        </div>
+      )}
+
+      {/* Lista */}
+      <div className="flex-1 overflow-y-auto p-4">
+        {isLoading ? (
+          <p className="text-ink-500 text-sm text-center py-10 font-mono">Carregando...</p>
+        ) : byCustomer.length === 0 ? (
+          <EmptyState />
+        ) : (
+          <div className="flex flex-col gap-4">
+            {byCustomer.map(({ name, items: groupItems }) => {
+              const allChecked = groupItems.every((i) => checked[i.id]);
+              return (
+                <div
+                  key={name}
+                  className="bg-white rounded-xl overflow-hidden border border-cream-200"
+                >
+                  {/* Group header */}
+                  <div className="bg-cream-100 px-4 py-3 flex items-center justify-between">
+                    <div>
+                      <p className="font-semibold text-ink-900 text-sm">{name}</p>
+                      <p className="text-xs text-ink-500 mt-0.5">
+                        {groupItems.length} {groupItems.length === 1 ? "item" : "itens"}
+                      </p>
+                    </div>
+                    <span className="text-xs font-mono bg-bordeaux-700 text-cream-50 px-2.5 py-1 rounded-full">
+                      {groupItems.length} itens
+                    </span>
+                  </div>
+
+                  {/* Items */}
+                  {groupItems.map((item) => (
+                    <div
+                      key={item.id}
+                      className="flex items-center justify-between px-4 py-3 border-t border-cream-200"
+                    >
+                      <p className="text-ink-900 text-sm flex-1">
+                        <span className="font-mono text-bordeaux-700 mr-1">
+                          {item.quantity}×
+                        </span>
+                        {item.product.name}
+                      </p>
+                      <button
+                        onClick={() => toggleCheck(item.id)}
+                        className="w-6 h-6 rounded-md border-2 flex items-center justify-center transition-colors ml-3 shrink-0"
+                        style={{
+                          backgroundColor: checked[item.id] ? "#6B2331" : "white",
+                          borderColor: checked[item.id] ? "#6B2331" : "#B0AAA5",
+                        }}
+                      >
+                        {checked[item.id] && (
+                          <svg
+                            width="12"
+                            height="12"
+                            viewBox="0 0 12 12"
+                            fill="none"
+                          >
+                            <path
+                              d="M2 6L5 9L10 3"
+                              stroke="white"
+                              strokeWidth="1.8"
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                            />
+                          </svg>
+                        )}
+                      </button>
+                    </div>
+                  ))}
+
+                  {/* Confirm button */}
+                  <div className="px-4 py-3 border-t border-cream-200">
+                    <button
+                      disabled={!allChecked}
+                      onClick={() => confirmDelivery(groupItems)}
+                      className="w-full rounded-lg py-3 text-sm font-semibold transition-colors"
+                      style={{
+                        backgroundColor: allChecked ? "#6B2331" : "#ECE2CC",
+                        color: allChecked ? "#FBF7EF" : "#7A736E",
+                      }}
+                    >
+                      Confirmar entrega
+                    </button>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function EmptyState() {
+  return (
+    <div className="flex flex-col items-center justify-center py-20 text-center">
+      <div className="w-16 h-16 rounded-full bg-cream-100 flex items-center justify-center mb-4">
+        <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
+          <path
+            d="M5 14L11 20L23 8"
+            stroke="#6B2331"
+            strokeWidth="2.2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
+        </svg>
+      </div>
+      <p className="text-ink-900 font-semibold text-base">Tudo entregue!</p>
+      <p className="text-ink-500 text-sm mt-1">Aguardando novos pedidos prontos.</p>
+    </div>
+  );
+}
