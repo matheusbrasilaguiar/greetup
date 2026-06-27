@@ -7,68 +7,31 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-// ─── Enums ───────────────────────────────────────────────────────────────────
-
-enum Role {
-  ADMIN
-  GERENTE
-  OPERADOR
-}
-
-enum OperatorFunction {
-  COZINHA
-  GARCOM
-  DISPLAY
-}
-
-enum ProductCategory {
-  COMIDA
-  BEBIDA
-}
-
-enum TableStatus {
-  OPEN
-  OCCUPIED
-  CLOSED
-}
-
-enum OrderStatus {
-  OPEN
-  CLOSED
-}
-
-enum ItemStatus {
-  PENDENTE
-  EM_PREPARO
-  PRONTO
-  ENTREGUE
-}
-
-// ─── Models ──────────────────────────────────────────────────────────────────
-
 model Company {
   id        String         @id @default(cuid())
   name      String
   createdAt DateTime       @default(now())
-  users     User[]
-  products  Product[]
-  tables    Table[]
   customers Customer[]
   orders    Order[]
+  products  Product[]
+  tables    Table[]
   sessions  TableSession[]
+  users     User[]
 }
 
 model User {
-  id           String         @id @default(cuid())
-  name         String
-  email        String
-  passwordHash String
+  id               String            @id @default(cuid())
+  name             String
+  email            String
+  passwordHash     String
   role             Role              @default(ADMIN)
-  operatorFunction OperatorFunction?
+  active           Boolean           @default(true)
+  lastLogin        DateTime?
   createdAt        DateTime          @default(now())
   companyId        String
-  company          Company           @relation(fields: [companyId], references: [id])
+  operatorFunction OperatorFunction?
   sessions         TableSession[]    @relation("SessionAttendant")
+  company          Company           @relation(fields: [companyId], references: [id])
 
   @@unique([email, companyId])
 }
@@ -78,12 +41,13 @@ model Product {
   name        String
   description String?
   category    ProductCategory
+  price       Decimal?
   active      Boolean         @default(true)
   createdAt   DateTime        @default(now())
   updatedAt   DateTime        @updatedAt
   companyId   String
-  company     Company         @relation(fields: [companyId], references: [id])
   orderItems  OrderItem[]
+  company     Company         @relation(fields: [companyId], references: [id])
 }
 
 model Table {
@@ -120,24 +84,22 @@ model TableSession {
   tableId     String
   customerId  String?
   attendantId String
-
-  company   Company   @relation(fields: [companyId], references: [id])
-  table     Table     @relation(fields: [tableId], references: [id])
-  customer  Customer? @relation(fields: [customerId], references: [id])
-  attendant User      @relation("SessionAttendant", fields: [attendantId], references: [id])
-  orders    Order[]
+  orders      Order[]
+  attendant   User      @relation("SessionAttendant", fields: [attendantId], references: [id])
+  company     Company   @relation(fields: [companyId], references: [id])
+  customer    Customer? @relation(fields: [customerId], references: [id])
+  table       Table     @relation(fields: [tableId], references: [id])
 }
 
 model Order {
-  id        String      @id @default(cuid())
-  sessionId String
-  status    OrderStatus @default(OPEN)
-  createdAt DateTime    @default(now())
-  updatedAt DateTime    @updatedAt
+  id        String       @id @default(cuid())
+  status    OrderStatus  @default(OPEN)
+  createdAt DateTime     @default(now())
+  updatedAt DateTime     @updatedAt
   companyId String
-
-  session   TableSession @relation(fields: [sessionId], references: [id])
+  sessionId String
   company   Company      @relation(fields: [companyId], references: [id])
+  session   TableSession @relation(fields: [sessionId], references: [id])
   items     OrderItem[]
 }
 
@@ -152,4 +114,39 @@ model OrderItem {
   updatedAt DateTime   @updatedAt
   order     Order      @relation(fields: [orderId], references: [id])
   product   Product    @relation(fields: [productId], references: [id])
+}
+
+enum Role {
+  ADMIN
+  GERENTE
+  OPERADOR
+}
+
+enum OperatorFunction {
+  COZINHA
+  GARCOM
+  DISPLAY
+}
+
+enum ProductCategory {
+  COMIDA
+  BEBIDA
+}
+
+enum TableStatus {
+  OPEN
+  OCCUPIED
+  CLOSED
+}
+
+enum OrderStatus {
+  OPEN
+  CLOSED
+}
+
+enum ItemStatus {
+  PENDENTE
+  EM_PREPARO
+  PRONTO
+  ENTREGUE
 }
