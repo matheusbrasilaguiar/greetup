@@ -19,17 +19,18 @@ const STYLES: Record<BadgeVariant, string> = {
   canceled:
     "bg-[var(--gu-canceled-bg)] text-[var(--gu-canceled-tx)] border-[var(--gu-canceled-br)]",
   free: "bg-[var(--gu-ready-bg)] text-[var(--gu-ready-tx)] border-[var(--gu-ready-br)]",
-  busy: "bg-[#FBE8EC] text-bordeaux-700 border-bordeaux-300",
+  busy: "bg-[#fdf6f7] text-bordeaux-700 border-bordeaux-300",
 };
 
-const LABELS: Record<string, string> = {
+const DEFAULT_LABELS: Record<string, string> = {
   PENDENTE: "Pendente",
-  PREPARANDO: "Preparando",
+  EM_PREPARO: "Em preparo",
   PRONTO: "Pronto",
   ENTREGUE: "Entregue",
   CANCELADO: "Cancelado",
-  FREE: "Livre",
+  OPEN: "Livre",
   OCCUPIED: "Ocupada",
+  CLOSED: "Fechada",
 };
 
 interface BadgeProps {
@@ -40,22 +41,40 @@ interface BadgeProps {
 export function Badge({ variant, label }: BadgeProps) {
   return (
     <span
-      className={`inline-flex items-center font-mono text-[10px] tracking-widest uppercase px-2 py-0.5 rounded border ${STYLES[variant]}`}
+      className={`inline-flex items-center gap-1 font-mono text-[10px] tracking-widest uppercase px-2 py-0.5 rounded border ${STYLES[variant]}`}
     >
-      {label ?? LABELS[variant] ?? variant}
+      <span className="w-1.5 h-1.5 rounded-full bg-current opacity-70" />
+      {label ?? DEFAULT_LABELS[variant] ?? variant}
     </span>
   );
 }
 
-export function statusToBadge(status: string): BadgeVariant {
+/** Maps API status strings to badge variants */
+export function tableStatusToBadge(status: string): BadgeVariant {
+  const map: Record<string, BadgeVariant> = {
+    OPEN: "free",
+    OCCUPIED: "busy",
+    CLOSED: "canceled",
+  };
+  return map[status] ?? "free";
+}
+
+export function itemStatusToBadge(status: string): BadgeVariant {
   const map: Record<string, BadgeVariant> = {
     PENDENTE: "pending",
-    PREPARANDO: "preparing",
+    EM_PREPARO: "preparing",
     PRONTO: "ready",
     ENTREGUE: "delivered",
     CANCELADO: "canceled",
-    FREE: "free",
-    OCCUPIED: "busy",
   };
   return map[status] ?? "pending";
+}
+
+export function orderStatusLabel(status: string): string {
+  return status === "OPEN" ? "Em aberto" : "Fechado";
+}
+
+/** @deprecated use tableStatusToBadge or itemStatusToBadge */
+export function statusToBadge(status: string): BadgeVariant {
+  return tableStatusToBadge(status);
 }

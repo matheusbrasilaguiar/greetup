@@ -31,8 +31,8 @@ const config: Config = {
       },
       fontFamily: {
         sans: ["var(--font-sora)", "sans-serif"],
-        display: ["var(--font-cormorant)", "serif"],
-        mono: ["var(--font-jetbrains)", "monospace"],
+        editorial: ["var(--font-cormorant)", "Georgia", "serif"],
+        mono: ["var(--font-jetbrains)", "ui-monospace", "monospace"],
       },
     },
   },

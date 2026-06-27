@@ -9,13 +9,15 @@ export interface TableSession {
   closedAt: string | null;
   customer: { id: string; name: string; employer: string | null } | null;
   attendant: { id: string; name: string } | null;
+  orders: { id: string; status: string }[];
 }
 
 export interface Table {
   id: string;
   code: string;
   capacity: number;
-  status: string;
+  /** "OPEN" = livre, "OCCUPIED" = ocupada, "CLOSED" = desativada */
+  status: "OPEN" | "OCCUPIED" | "CLOSED";
   activeSession: TableSession | null;
 }
 

@@ -17,13 +17,19 @@ export default function LoginPage() {
     <div className="min-h-screen flex items-center justify-center bg-cream-50">
       <div className="w-full max-w-sm">
         {/* Logo */}
-        <div className="text-center mb-10">
-          <p className="font-mono text-xs tracking-[0.2em] text-ink-500 uppercase mb-1">
-            Admin
-          </p>
-          <h1 className="font-display text-4xl font-semibold text-bordeaux-700">
-            Greetup
-          </h1>
+        <div className="flex flex-col items-center mb-10 gap-3">
+          <svg viewBox="0 0 120 120" width="52" height="52" aria-hidden="true">
+            <path d="M18 102 V54 a42 42 0 0 1 84 0 V102" fill="none" stroke="#6B2331" strokeWidth="4.2" strokeLinecap="round" />
+            <circle cx="60" cy="64" r="6.6" fill="#D9B58A" />
+          </svg>
+          <div className="text-center">
+            <p className="font-mono text-[10px] tracking-[0.2em] uppercase mb-0.5" style={{ color: "var(--gu-ink-300)" }}>
+              Admin
+            </p>
+            <h1 className="font-sans font-semibold tracking-[-0.022em]" style={{ fontSize: 28, color: "var(--gu-bordeaux-700)", lineHeight: 1.05 }}>
+              GreetUp
+            </h1>
+          </div>
         </div>
 
         {/* Card */}

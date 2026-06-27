@@ -2,6 +2,7 @@
 
 import { KpiCard } from "@/components/ui/KpiCard";
 import { Panel } from "@/components/ui/Panel";
+import { PageHead } from "@/components/ui/PageHead";
 import { useTables } from "@/lib/hooks/useTables";
 import { useOrders, useOrderItems } from "@/lib/hooks/useOrders";
 import { useClients } from "@/lib/hooks/useClients";
@@ -35,6 +36,8 @@ export default function SummaryReportPage() {
 
   return (
     <div className="flex flex-col gap-6">
+      <PageHead eyebrow="Relatórios · Resumo" title="Resumo do evento" sub="Visão consolidada de todas as métricas" />
+
       <div className="grid grid-cols-4 gap-4">
         <KpiCard label="Mesas" value={tables.length} />
         <KpiCard label="Clientes atendidos" value={clients.length} />

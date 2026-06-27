@@ -1,56 +1,154 @@
 "use client";
 
+import { useEffect, useState, useCallback } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import { KpiCard } from "@/components/ui/KpiCard";
-import { Badge, statusToBadge } from "@/components/ui/Badge";
+import { PageHead } from "@/components/ui/PageHead";
 import { useTables } from "@/lib/hooks/useTables";
+import { useSocketEvents } from "@/lib/hooks/useSocketEvents";
 
-export default function TablesLivePage() {
-  const { data: tables = [], isLoading } = useTables();
+function ElapsedBadge({ openedAt }: { openedAt: string }) {
+  const calc = () =>
+    Math.floor((Date.now() - new Date(openedAt).getTime()) / 60_000);
+  const [mins, setMins] = useState(calc);
 
-  const occupied = tables.filter((t) => t.status === "OCCUPIED").length;
-  const free = tables.filter((t) => t.status === "FREE").length;
+  useEffect(() => {
+    const id = setInterval(() => setMins(calc()), 30_000);
+    return () => clearInterval(id);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [openedAt]);
 
   return (
-    <div className="flex flex-col gap-6">
-      <div className="grid grid-cols-3 gap-4">
+    <span
+      className="flex items-center gap-1 font-mono text-[10px] tracking-widest uppercase px-2 py-0.5 rounded border"
+      style={{
+        background: "#fbeef0",
+        color: "var(--gu-bordeaux-800)",
+        borderColor: "var(--gu-bordeaux-300)",
+      }}
+    >
+      <span className="w-1.5 h-1.5 rounded-full" style={{ background: "var(--gu-bordeaux-700)" }} />
+      {mins} min
+    </span>
+  );
+}
+
+function FreeBadge() {
+  return (
+    <span
+      className="flex items-center gap-1 font-mono text-[10px] tracking-widest uppercase px-2 py-0.5 rounded border"
+      style={{
+        background: "#F7FDF8",
+        color: "#15803D",
+        borderColor: "#bfe8c9",
+      }}
+    >
+      <span className="w-1.5 h-1.5 rounded-full" style={{ background: "#22C55E" }} />
+      Livre
+    </span>
+  );
+}
+
+export default function TablesLivePage() {
+  const qc = useQueryClient();
+  const { data: tables = [], isLoading } = useTables();
+
+  const invalidate = useCallback(() => {
+    qc.invalidateQueries({ queryKey: ["tables"] });
+  }, [qc]);
+
+  useSocketEvents({
+    table_session_opened: invalidate,
+    table_session_closed: invalidate,
+  });
+
+  const occupied = tables.filter((t) => t.status === "OCCUPIED").length;
+  const free = tables.filter((t) => t.status === "OPEN").length;
+  const closed = tables.filter((t) => t.status === "CLOSED").length;
+
+  return (
+    <div className="flex flex-col gap-[22px]">
+      <PageHead eyebrow="Evento ao vivo · Mesas" title="Mapa de mesas" sub="Visualize o estado de cada mesa em tempo real" />
+
+      <div className="grid grid-cols-4 gap-4">
         <KpiCard label="Total de mesas" value={tables.length} />
-        <KpiCard label="Ocupadas" value={occupied} />
-        <KpiCard label="Livres" value={free} />
+        <KpiCard label="Ocupadas" value={occupied} valueColor="var(--gu-bordeaux-700)" />
+        <KpiCard label="Livres" value={free} valueColor="var(--gu-ready-tx)" />
+        <KpiCard label="Desativadas" value={closed} />
       </div>
 
       {isLoading ? (
-        <div className="text-sm text-ink-300 font-sans">Carregando mesas…</div>
+        <p className="text-sm" style={{ color: "var(--gu-ink-300)" }}>Carregando mesas…</p>
       ) : (
-        <div className="grid grid-cols-6 gap-3">
+        <div className="grid gap-3.5" style={{ gridTemplateColumns: "repeat(6, 1fr)" }}>
           {tables.map((table) => {
             const busy = table.status === "OCCUPIED";
+            const inactive = table.status === "CLOSED";
+            const session = table.activeSession;
+            const orderCount = session?.orders?.length ?? 0;
+
             return (
               <div
                 key={table.id}
-                className={`rounded-xl border p-4 flex flex-col gap-2 transition ${
-                  busy
-                    ? "bg-[#FBE8EC] border-bordeaux-300"
-                    : "bg-[var(--gu-ready-bg)] border-[var(--gu-ready-br)]"
-                }`}
+                className="rounded-[10px] flex flex-col gap-2 p-4 transition-all"
+                style={{
+                  minHeight: 130,
+                  border: busy
+                    ? "1.5px solid var(--gu-bordeaux-300)"
+                    : inactive
+                    ? "1.5px solid var(--gu-cream-200)"
+                    : "1.5px solid #bfe8c9",
+                  background: busy ? "#fdf6f7" : inactive ? "var(--gu-cream-50)" : "#F7FDF8",
+                  opacity: inactive ? 0.5 : 1,
+                }}
               >
-                <div className="flex items-center justify-between">
-                  <p className="font-mono text-xs font-medium text-ink-900">{table.code}</p>
-                  <Badge variant={statusToBadge(table.status)} />
+                {/* Header */}
+                <div className="flex items-center justify-between gap-1">
+                  <span
+                    className="font-mono text-sm font-medium"
+                    style={{ color: busy ? "var(--gu-bordeaux-700)" : inactive ? "var(--gu-ink-300)" : "#15803D" }}
+                  >
+                    {table.code}
+                  </span>
+                  {busy && session ? (
+                    <ElapsedBadge openedAt={session.openedAt} />
+                  ) : inactive ? (
+                    <span className="font-mono text-[9px] uppercase tracking-widest" style={{ color: "var(--gu-ink-300)" }}>
+                      Fechada
+                    </span>
+                  ) : (
+                    <FreeBadge />
+                  )}
                 </div>
-                {table.activeSession ? (
-                  <div className="mt-1">
-                    <p className="text-xs font-medium text-ink-900 truncate">
-                      {table.activeSession.customer?.name ?? "—"}
+
+                {/* Body */}
+                {busy && session ? (
+                  <div className="flex flex-col gap-0.5 mt-1">
+                    <p className="text-xs font-medium truncate" style={{ color: "var(--gu-ink-900)" }}>
+                      {session.customer?.name ?? "—"}
                     </p>
-                    <p className="text-[10px] text-ink-500 truncate">
-                      {table.activeSession.customer?.employer ?? ""}
-                    </p>
-                    <p className="text-[10px] text-ink-300 mt-1 truncate">
-                      {table.activeSession.attendant?.name ?? ""}
-                    </p>
+                    {session.customer?.employer && (
+                      <p className="text-[11px] truncate" style={{ color: "var(--gu-ink-500)" }}>
+                        {session.customer.employer}
+                      </p>
+                    )}
+                    <div className="flex items-center justify-between mt-1">
+                      <p className="text-[10px] truncate" style={{ color: "var(--gu-ink-300)" }}>
+                        {session.attendant
+                          ? session.attendant.name.split(" ")[0]
+                          : "—"}
+                      </p>
+                      <p className="font-mono text-[10px]" style={{ color: "var(--gu-ink-300)" }}>
+                        {orderCount} pedido{orderCount !== 1 ? "s" : ""}
+                      </p>
+                    </div>
                   </div>
                 ) : (
-                  <p className="text-[11px] text-ink-300 mt-1">Disponível</p>
+                  !inactive && (
+                    <p className="text-[11px] mt-1" style={{ color: "var(--gu-ink-300)" }}>
+                      Disponível · {table.capacity} lugares
+                    </p>
+                  )
                 )}
               </div>
             );

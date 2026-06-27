@@ -1,32 +1,128 @@
 "use client";
 
 import { usePathname } from "next/navigation";
+import { Search } from "lucide-react";
+import { useEffect, useState } from "react";
 
-const LABELS: Record<string, string> = {
-  "/dashboard": "Dashboard",
-  "/tables": "Mesas ao vivo",
-  "/tables/config": "Configuração de mesas",
-  "/orders": "Pedidos",
-  "/products": "Produtos",
-  "/clients": "Clientes",
-  "/users": "Usuários",
-  "/reports/consumption": "Relatório de consumo",
-  "/reports/clients": "Relatório de clientes",
-  "/reports/managers": "Relatório de gerentes",
-  "/reports/summary": "Resumo do evento",
+interface BreadcrumbDef {
+  section: string;
+  page: string;
+}
+
+const BREADCRUMBS: Record<string, BreadcrumbDef> = {
+  "/dashboard":          { section: "Evento ao vivo", page: "Dashboard" },
+  "/tables":             { section: "Evento ao vivo", page: "Mesas ao vivo" },
+  "/orders":             { section: "Evento ao vivo", page: "Pedidos" },
+  "/users":              { section: "Configuração", page: "Usuários" },
+  "/products":           { section: "Configuração", page: "Produtos" },
+  "/tables/config":      { section: "Configuração", page: "Mesas" },
+  "/clients":            { section: "Configuração", page: "Clientes" },
+  "/reports/consumption":{ section: "Relatórios", page: "Consumo" },
+  "/reports/clients":    { section: "Relatórios", page: "Clientes" },
+  "/reports/managers":   { section: "Relatórios", page: "Gerentes" },
+  "/reports/summary":    { section: "Relatórios", page: "Resumo" },
 };
+
+function LiveClock() {
+  const [time, setTime] = useState("");
+
+  useEffect(() => {
+    function tick() {
+      const d = new Date();
+      const hh = String(d.getHours()).padStart(2, "0");
+      const mm = String(d.getMinutes()).padStart(2, "0");
+      setTime(`${hh}:${mm}`);
+    }
+    tick();
+    const id = setInterval(tick, 30_000);
+    return () => clearInterval(id);
+  }, []);
+
+  return <>{time}</>;
+}
 
 export function Topbar() {
   const pathname = usePathname();
-  const title = LABELS[pathname] ?? "Admin";
+  const crumb = BREADCRUMBS[pathname] ?? { section: "Admin", page: "" };
 
   return (
-    <header className="h-14 border-b border-cream-200 bg-white flex items-center px-6 gap-4">
-      <h2 className="font-sans text-sm font-medium text-ink-900 flex-1">{title}</h2>
-      <span className="flex items-center gap-1.5 font-mono text-[10px] tracking-widest text-[var(--gu-ready-tx)] bg-[var(--gu-ready-bg)] border border-[var(--gu-ready-br)] px-2.5 py-1 rounded-full uppercase">
-        <span className="w-1.5 h-1.5 rounded-full bg-[var(--gu-ready-tx)] animate-pulse" />
-        Ao vivo
-      </span>
+    <header
+      className="sticky top-0 z-10 flex items-center px-8 gap-4 bg-white"
+      style={{
+        height: 60,
+        borderBottom: "1px solid var(--gu-cream-200)",
+      }}
+    >
+      {/* Breadcrumb */}
+      <div className="flex items-center gap-2 font-mono text-[10.5px] tracking-[0.14em] uppercase flex-1 min-w-0">
+        <span style={{ color: "var(--gu-ink-500)" }}>Greetup</span>
+        <span style={{ color: "var(--gu-ink-300)" }}>›</span>
+        <span style={{ color: "var(--gu-ink-500)" }}>{crumb.section}</span>
+        {crumb.page && (
+          <>
+            <span style={{ color: "var(--gu-ink-300)" }}>›</span>
+            <span style={{ color: "var(--gu-bordeaux-700)" }}>{crumb.page}</span>
+          </>
+        )}
+      </div>
+
+      {/* Search */}
+      <div
+        className="flex items-center gap-2 rounded-md px-2.5 py-[7px]"
+        style={{
+          background: "var(--gu-cream-50)",
+          border: "1px solid var(--gu-cream-200)",
+          width: 240,
+        }}
+      >
+        <Search size={13} strokeWidth={1.6} style={{ color: "var(--gu-ink-300)", flexShrink: 0 }} />
+        <input
+          className="flex-1 bg-transparent border-none outline-none text-[13px]"
+          style={{ color: "var(--gu-ink-900)" }}
+          placeholder="Buscar cliente, mesa, pedido…"
+        />
+        <span
+          className="font-mono text-[10px] px-1 rounded"
+          style={{
+            color: "var(--gu-ink-500)",
+            border: "1px solid var(--gu-cream-200)",
+          }}
+        >
+          ⌘K
+        </span>
+      </div>
+
+      {/* Event info */}
+      <div className="flex items-center gap-3 flex-shrink-0">
+        <span className="font-mono text-[10.5px] tracking-[0.1em]" style={{ color: "var(--gu-ink-500)" }}>
+          Estande · <LiveClock />
+        </span>
+        <span
+          className="flex items-center gap-1.5 font-mono text-[10px] tracking-[0.14em] uppercase px-2.5 py-1 rounded-full"
+          style={{
+            color: "#15803D",
+            background: "#F0FDF4",
+            border: "1px solid #22C55E",
+          }}
+        >
+          <span
+            className="w-1.5 h-1.5 rounded-full"
+            style={{
+              background: "#22C55E",
+              animation: "pulse 2s ease-in-out infinite",
+            }}
+          />
+          ao vivo
+        </span>
+      </div>
+
+      <style jsx>{`
+        @keyframes pulse {
+          0%, 100% { opacity: 1; }
+          50% { opacity: 0.3; }
+        }
+        input::placeholder { color: var(--gu-ink-300); }
+      `}</style>
     </header>
   );
 }

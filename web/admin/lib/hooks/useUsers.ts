@@ -9,6 +9,8 @@ export interface User {
   email: string;
   role: string;
   operatorFunction: string | null;
+  active: boolean;
+  lastLogin: string | null;
   createdAt: string;
 }
 
@@ -24,6 +26,7 @@ export interface UpdateUserPayload {
   name?: string;
   role?: string;
   operatorFunction?: string;
+  active?: boolean;
 }
 
 export function useUsers() {

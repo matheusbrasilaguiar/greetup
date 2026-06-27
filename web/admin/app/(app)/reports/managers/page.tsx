@@ -2,6 +2,7 @@
 
 import { Panel } from "@/components/ui/Panel";
 import { KpiCard } from "@/components/ui/KpiCard";
+import { PageHead } from "@/components/ui/PageHead";
 import { useTables } from "@/lib/hooks/useTables";
 import { useQuery } from "@tanstack/react-query";
 import api from "@/lib/api";
@@ -59,6 +60,8 @@ export default function ManagersReportPage() {
 
   return (
     <div className="flex flex-col gap-6">
+      <PageHead eyebrow="Relatórios · Gerentes" title="Performance dos gerentes" sub="Atendimentos e tempo médio por gerente" />
+
       <div className="grid grid-cols-2 gap-4">
         <KpiCard label="Gerentes com atendimentos" value={ranked.length} />
         <KpiCard label="Total de sessões" value={sessions.length} />

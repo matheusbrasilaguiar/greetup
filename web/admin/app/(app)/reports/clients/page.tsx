@@ -2,6 +2,7 @@
 
 import { Panel } from "@/components/ui/Panel";
 import { KpiCard } from "@/components/ui/KpiCard";
+import { PageHead } from "@/components/ui/PageHead";
 import { useClients } from "@/lib/hooks/useClients";
 
 export default function ClientsReportPage() {
@@ -14,6 +15,8 @@ export default function ClientsReportPage() {
 
   return (
     <div className="flex flex-col gap-6">
+      <PageHead eyebrow="Relatórios · Clientes" title="Relatório de clientes" sub="Clientes atendidos durante o evento" />
+
       <div className="grid grid-cols-2 gap-4">
         <KpiCard label="Total de clientes" value={clients.length} />
         <KpiCard label="Cadastrados hoje" value={todayCount} />

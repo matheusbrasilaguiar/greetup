@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 560 140" width="560" height="140">
+  <defs>
+    
+  </defs>
+  <title>GreetUp — Primary Lockup (Inverse)</title>
+  <rect width="560" height="140" fill="#2E1116"></rect>
+  <g transform="translate(36,38)">
+    <path d="M0 64 V32 a32 32 0 0 1 64 0 V64" fill="none" stroke="#F5EEDE" stroke-width="3.2" stroke-linecap="round"></path>
+    <circle cx="32" cy="40" r="5" fill="#D9B58A"></circle>
+  </g>
+  <line x1="128" y1="36" x2="128" y2="104" stroke="#F5EEDE" stroke-opacity="0.3" stroke-width="1"></line>
+  <text x="152" y="92" font-family="Sora, system-ui, sans-serif" font-size="60" font-weight="500" fill="#F5EEDE" letter-spacing="-2.4">GreetUp</text>
+</svg>

@@ -7,17 +7,19 @@ export interface OrderItem {
   id: string;
   quantity: number;
   notes: string | null;
-  status: string;
+  status: "PENDENTE" | "EM_PREPARO" | "PRONTO" | "ENTREGUE" | "CANCELADO";
   product: { id: string; name: string; category: string };
 }
 
 export interface Order {
   id: string;
-  status: string;
+  /** "OPEN" = em aberto, "CLOSED" = fechado */
+  status: "OPEN" | "CLOSED";
   createdAt: string;
   session: {
     id: string;
     table: { id: string; code: string };
+    customer: { id: string; name: string; employer: string | null } | null;
     attendant: { id: string; name: string } | null;
   };
   items: OrderItem[];
@@ -35,7 +37,7 @@ export function useOrders() {
 }
 
 export function useOrderItems() {
-  return useQuery<OrderItem[]>({
+  return useQuery<(OrderItem & { order: { session: { table: { code: string } } } })[]>({
     queryKey: ["order-items"],
     queryFn: async () => {
       const res = await api.get("/orders/items");

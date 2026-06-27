@@ -2,6 +2,7 @@
 
 import { Panel } from "@/components/ui/Panel";
 import { KpiCard } from "@/components/ui/KpiCard";
+import { PageHead } from "@/components/ui/PageHead";
 import { useOrderItems } from "@/lib/hooks/useOrders";
 
 export default function ConsumptionReportPage() {
@@ -30,8 +31,10 @@ export default function ConsumptionReportPage() {
 
   return (
     <div className="flex flex-col gap-6">
+      <PageHead eyebrow="Relatórios · Consumo" title="Relatório de consumo" sub="Ranking de produtos mais pedidos no evento" />
+
       <div className="grid grid-cols-3 gap-4">
-        <KpiCard label="Itens entregues" value={total} />
+        <KpiCard label="Itens entregues" value={total} valueColor="var(--gu-ready-tx)" />
         <KpiCard label="Produtos distintos" value={ranked.length} />
         <KpiCard label="Mais pedido" value={top?.name ?? "—"} sub={top ? `${top.qty}× pedido` : undefined} />
       </div>

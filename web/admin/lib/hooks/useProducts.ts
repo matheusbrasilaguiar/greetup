@@ -8,6 +8,7 @@ export interface Product {
   name: string;
   description: string | null;
   category: string;
+  price: number | null;
   active: boolean;
   companyId: string;
 }
@@ -16,6 +17,7 @@ export interface ProductPayload {
   name: string;
   description?: string;
   category: string;
+  price?: number | null;
 }
 
 export function useProducts() {

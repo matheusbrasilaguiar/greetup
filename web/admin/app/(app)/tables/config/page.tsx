@@ -4,6 +4,7 @@ import { useState } from "react";
 import { Panel } from "@/components/ui/Panel";
 import { Button } from "@/components/ui/Button";
 import { Badge, statusToBadge } from "@/components/ui/Badge";
+import { PageHead } from "@/components/ui/PageHead";
 import { useTables, useCreateTable, useUpdateTableStatus } from "@/lib/hooks/useTables";
 
 function CreateTableModal({ onClose }: { onClose: () => void }) {
@@ -86,10 +87,14 @@ export default function TablesConfigPage() {
 
   return (
     <>
-      <Panel
+      <PageHead
+        eyebrow="Configuração · Mesas"
         title="Configuração de mesas"
-        action={<Button onClick={() => setShowCreate(true)}>+ Nova mesa</Button>}
-      >
+        sub="Gerencie as mesas disponíveis para o evento"
+        actions={<Button onClick={() => setShowCreate(true)}>+ Nova mesa</Button>}
+      />
+
+      <Panel>
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead>
@@ -132,12 +137,12 @@ export default function TablesConfigPage() {
                         onClick={() =>
                           updateStatus({
                             id: table.id,
-                            status: table.status === "FREE" ? "CLOSED" : "FREE",
+                            status: table.status === "OPEN" ? "CLOSED" : "OPEN",
                           })
                         }
                         className="text-xs text-bordeaux-700 hover:underline font-sans"
                       >
-                        {table.status === "FREE" ? "Desativar" : "Ativar"}
+                        {table.status === "OPEN" ? "Desativar" : "Ativar"}
                       </button>
                     )}
                   </td>

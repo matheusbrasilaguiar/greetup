@@ -1,17 +1,34 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useCallback } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import { Panel } from "@/components/ui/Panel";
-import { Badge, statusToBadge } from "@/components/ui/Badge";
+import { Badge, itemStatusToBadge, orderStatusLabel } from "@/components/ui/Badge";
 import { KpiCard } from "@/components/ui/KpiCard";
+import { PageHead } from "@/components/ui/PageHead";
 import { useOrders } from "@/lib/hooks/useOrders";
+import { useSocketEvents } from "@/lib/hooks/useSocketEvents";
 
 export default function OrdersPage() {
+  const qc = useQueryClient();
   const { data: orders = [], isLoading } = useOrders();
-  const [filter, setFilter] = useState("TODOS");
+  const [filter, setFilter] = useState<"TODOS" | "OPEN" | "CLOSED">("TODOS");
 
-  const STATUS_FILTERS = ["TODOS", "OPEN", "CLOSED"];
-  const STATUS_LABELS: Record<string, string> = { TODOS: "Todos", OPEN: "Abertos", CLOSED: "Fechados" };
+  const invalidate = useCallback(() => {
+    qc.invalidateQueries({ queryKey: ["orders"] });
+  }, [qc]);
+
+  useSocketEvents({
+    order_created: invalidate,
+    order_item_status_changed: invalidate,
+    order_closed: invalidate,
+  });
+
+  const STATUS_FILTERS = [
+    { value: "TODOS" as const, label: "Todos" },
+    { value: "OPEN" as const, label: "Abertos" },
+    { value: "CLOSED" as const, label: "Fechados" },
+  ];
 
   const filtered = filter === "TODOS" ? orders : orders.filter((o) => o.status === filter);
   const open = orders.filter((o) => o.status === "OPEN").length;
@@ -19,25 +36,29 @@ export default function OrdersPage() {
   const totalItems = orders.flatMap((o) => o.items).length;
 
   return (
-    <div className="flex flex-col gap-6">
+    <div className="flex flex-col gap-[22px]">
+      <PageHead eyebrow="Evento ao vivo · Gestão de pedidos" title="Pedidos" sub="Acompanhe todos os pedidos do evento" />
+
       <div className="grid grid-cols-3 gap-4">
-        <KpiCard label="Pedidos abertos" value={open} />
+        <KpiCard label="Pedidos abertos" value={open} valueColor="var(--gu-pending-tx)" />
         <KpiCard label="Pedidos fechados" value={closed} />
         <KpiCard label="Total de itens" value={totalItems} />
       </div>
 
       <Panel title="Pedidos">
         {/* Filtros */}
-        <div className="flex gap-1 px-5 py-3 border-b border-cream-200">
-          {STATUS_FILTERS.map((s) => (
+        <div className="flex gap-1 px-5 py-3" style={{ borderBottom: "1px solid var(--gu-cream-200)" }}>
+          {STATUS_FILTERS.map((f) => (
             <button
-              key={s}
-              onClick={() => setFilter(s)}
-              className={`font-mono text-xs tracking-widest uppercase px-3 py-1.5 rounded-lg transition ${
-                filter === s ? "bg-bordeaux-700 text-cream-50" : "text-ink-500 hover:bg-cream-100"
-              }`}
+              key={f.value}
+              onClick={() => setFilter(f.value)}
+              className="font-mono text-xs tracking-widest uppercase px-3 py-1.5 rounded-lg transition-colors"
+              style={{
+                background: filter === f.value ? "var(--gu-bordeaux-700)" : "transparent",
+                color: filter === f.value ? "var(--gu-cream-50)" : "var(--gu-ink-500)",
+              }}
             >
-              {STATUS_LABELS[s]}
+              {f.label}
             </button>
           ))}
         </div>
@@ -45,12 +66,9 @@ export default function OrdersPage() {
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead>
-              <tr className="border-b border-cream-200">
-                {["Mesa", "Gerente", "Itens", "Status", "Horário"].map((h) => (
-                  <th
-                    key={h}
-                    className="font-mono text-[10px] tracking-widest text-ink-300 uppercase text-left px-5 py-3"
-                  >
+              <tr style={{ borderBottom: "1px solid var(--gu-cream-200)" }}>
+                {["Mesa", "Cliente", "Gerente", "Itens", "Pedido", "Horário"].map((h) => (
+                  <th key={h} className="font-mono text-[10px] tracking-widest uppercase text-left px-5 py-3" style={{ color: "var(--gu-ink-300)" }}>
                     {h}
                   </th>
                 ))}
@@ -58,37 +76,63 @@ export default function OrdersPage() {
             </thead>
             <tbody>
               {isLoading && (
-                <tr>
-                  <td colSpan={5} className="text-center text-sm text-ink-300 py-10">Carregando…</td>
-                </tr>
+                <tr><td colSpan={6} className="text-center text-sm py-10" style={{ color: "var(--gu-ink-300)" }}>Carregando…</td></tr>
               )}
               {!isLoading && filtered.length === 0 && (
-                <tr>
-                  <td colSpan={5} className="text-center text-sm text-ink-300 py-10">
-                    Nenhum pedido
-                  </td>
-                </tr>
+                <tr><td colSpan={6} className="text-center text-sm py-10" style={{ color: "var(--gu-ink-300)" }}>Nenhum pedido</td></tr>
               )}
-              {filtered.map((order) => (
-                <tr key={order.id} className="border-b border-cream-100 hover:bg-cream-50 transition">
-                  <td className="px-5 py-3 font-mono text-sm text-ink-900">
-                    {order.session.table.code}
-                  </td>
-                  <td className="px-5 py-3 text-sm text-ink-700">
-                    {order.session.attendant?.name ?? "—"}
-                  </td>
-                  <td className="px-5 py-3 text-sm text-ink-700">{order.items.length}</td>
-                  <td className="px-5 py-3">
-                    <Badge variant={statusToBadge(order.status)} label={order.status} />
-                  </td>
-                  <td className="px-5 py-3 font-mono text-xs text-ink-300">
-                    {new Date(order.createdAt).toLocaleTimeString("pt-BR", {
-                      hour: "2-digit",
-                      minute: "2-digit",
-                    })}
-                  </td>
-                </tr>
-              ))}
+              {filtered.map((order) => {
+                const lastItem = order.items[order.items.length - 1];
+                return (
+                  <tr
+                    key={order.id}
+                    className="transition-colors"
+                    style={{ borderBottom: "1px solid var(--gu-cream-100)" }}
+                    onMouseEnter={(e) => ((e.currentTarget as HTMLElement).style.background = "var(--gu-cream-50)")}
+                    onMouseLeave={(e) => ((e.currentTarget as HTMLElement).style.background = "")}
+                  >
+                    <td className="px-5 py-3 font-mono text-sm font-medium" style={{ color: "var(--gu-ink-900)" }}>
+                      {order.session.table.code}
+                    </td>
+                    <td className="px-5 py-3 text-sm" style={{ color: "var(--gu-ink-700)" }}>
+                      {order.session.customer?.name ?? "—"}
+                    </td>
+                    <td className="px-5 py-3 text-sm" style={{ color: "var(--gu-ink-700)" }}>
+                      {order.session.attendant?.name ?? "—"}
+                    </td>
+                    <td className="px-5 py-3 text-sm" style={{ color: "var(--gu-ink-700)" }}>
+                      {order.items.length}
+                      {order.items.some((i) => i.notes) && (
+                        <span
+                          className="ml-2 font-mono text-[9.5px] uppercase px-1.5 py-0.5 rounded-full"
+                          style={{
+                            background: "#FEF3C7",
+                            color: "#7C2D12",
+                            border: "1px solid #F5D08C",
+                          }}
+                        >
+                          obs
+                        </span>
+                      )}
+                    </td>
+                    <td className="px-5 py-3">
+                      {lastItem ? (
+                        <Badge variant={itemStatusToBadge(lastItem.status)} label={lastItem.status} />
+                      ) : (
+                        <span className="text-xs" style={{ color: "var(--gu-ink-300)" }}>
+                          {orderStatusLabel(order.status)}
+                        </span>
+                      )}
+                    </td>
+                    <td className="px-5 py-3 font-mono text-xs" style={{ color: "var(--gu-ink-300)" }}>
+                      {new Date(order.createdAt).toLocaleTimeString("pt-BR", {
+                        hour: "2-digit",
+                        minute: "2-digit",
+                      })}
+                    </td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         </div>
