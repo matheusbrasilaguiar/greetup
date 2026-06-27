@@ -250,7 +250,8 @@ export default function PedidoPage() {
                           value={notes}
                           onChange={(e) => setNotes(product.id, e.target.value)}
                           placeholder="Observação (opcional)"
-                          className="mt-2 w-full rounded-lg bg-bordeaux-900 border border-bordeaux-700 px-3 py-1.5 text-cream-50 text-xs placeholder:text-ink-500 focus:outline-none focus:border-champagne transition-colors"
+                          className="mt-2 w-full rounded-lg bg-bordeaux-900 border border-bordeaux-700 px-3 py-1.5 text-cream-50 placeholder:text-ink-500 focus:outline-none focus:border-champagne transition-colors"
+                          style={{ fontSize: "16px" }}
                         />
                       )}
                     </div>
@@ -273,7 +274,8 @@ export default function PedidoPage() {
                 onChange={(e) => setCustomerName(e.target.value)}
                 placeholder="Nome do cliente"
                 autoFocus
-                className="w-full rounded-xl bg-bordeaux-800 border border-bordeaux-700 px-4 py-3 text-cream-50 text-base placeholder:text-ink-500 focus:outline-none focus:border-champagne transition-colors"
+                className="w-full rounded-xl bg-bordeaux-800 border border-bordeaux-700 px-4 py-3 text-cream-50 placeholder:text-ink-500 focus:outline-none focus:border-champagne transition-colors"
+                style={{ fontSize: "16px" }}
               />
               {submitError && (
                 <p className="text-red-400 text-sm text-center">{submitError}</p>
