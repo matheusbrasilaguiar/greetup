@@ -12,6 +12,8 @@ function sanitize(user) {
     email: user.email,
     role: user.role,
     operatorFunction: user.operatorFunction || null,
+    active: user.active ?? true,
+    lastLogin: user.lastLogin ?? null,
     createdAt: user.createdAt
   };
 }

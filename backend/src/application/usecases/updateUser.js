@@ -2,14 +2,14 @@ const { Roles } = require("../../domain/constants/roles");
 
 const OperatorFunctions = ["COZINHA", "GARCOM", "DISPLAY"];
 
-async function updateUser({ id, name, role, operatorFunction, companyId }, { userRepository }) {
+async function updateUser({ id, name, role, operatorFunction, active, companyId }, { userRepository }) {
   if (!id) {
     const error = new Error("Id is required");
     error.status = 400;
     throw error;
   }
 
-  const hasUpdates = name !== undefined || role !== undefined || operatorFunction !== undefined;
+  const hasUpdates = name !== undefined || role !== undefined || operatorFunction !== undefined || active !== undefined;
   if (!hasUpdates) {
     const error = new Error("No fields to update");
     error.status = 400;
@@ -60,6 +60,8 @@ async function updateUser({ id, name, role, operatorFunction, companyId }, { use
     }
     data.operatorFunction = operatorFunction;
   }
+
+  if (active !== undefined) data.active = Boolean(active);
 
   await userRepository.updateUser(id, data, companyId);
   return userRepository.getUserById(id, companyId);

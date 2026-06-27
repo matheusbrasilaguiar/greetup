@@ -1,0 +1,18 @@
+@import '../styles/tokens.css';
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+html {
+  font-feature-settings: "ss01", "cv11";
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  background-color: var(--gu-cream-50);
+  color: var(--gu-ink-900);
+  font-size: 14px;
+  line-height: 1.55;
+}

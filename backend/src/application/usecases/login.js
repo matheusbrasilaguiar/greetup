@@ -20,6 +20,9 @@ async function login({ email, password }, { userRepository, hashService, tokenSe
   }
 
   const token = tokenService.sign(user);
+
+  userRepository.updateLastLogin(user.id).catch(() => {});
+
   return { user, token };
 }
 
