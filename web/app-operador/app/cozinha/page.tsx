@@ -77,13 +77,13 @@ export default function CozinhaPage() {
         </button>
       </div>
 
-      {/* Kanban — scroll horizontal no mobile */}
-      <div className="flex-1 overflow-x-auto">
-        <div className="flex gap-3 p-4 min-w-max h-full">
+      {/* Kanban */}
+      <div className="flex-1 overflow-hidden">
+        <div className="flex gap-2 p-3 h-full">
           {COLUMNS.map(({ status, label, accent }) => {
             const col = byStatus[status] ?? [];
             return (
-              <div key={status} className="w-72 flex flex-col gap-3">
+              <div key={status} className="flex-1 min-w-0 flex flex-col gap-2">
                 {/* Column header */}
                 <div className="flex items-center gap-2 px-1">
                   <span
@@ -97,7 +97,7 @@ export default function CozinhaPage() {
                 </div>
 
                 {/* Cards */}
-                <div className="flex flex-col gap-2">
+                <div className="flex-1 overflow-y-auto flex flex-col gap-2 pb-2">
                   {col.length === 0 && (
                     <div className="text-ink-700 text-xs text-center py-6 font-mono">
                       —
@@ -144,10 +144,10 @@ function KanbanCard({
       className="bg-cream-50 rounded-xl overflow-hidden"
       style={{ borderLeft: `4px solid ${accent}` }}
     >
-      <div className="px-3 pt-3 pb-2">
+      <div className="px-2 pt-2 pb-1.5">
         {/* Customer + ID */}
-        <div className="flex items-start justify-between gap-2 mb-2">
-          <p className="text-ink-900 font-semibold text-sm leading-tight">
+        <div className="flex items-start justify-between gap-1 mb-1">
+          <p className="text-ink-900 font-semibold text-xs leading-tight truncate">
             {customer?.name ?? "—"}
           </p>
           <span
@@ -158,7 +158,7 @@ function KanbanCard({
         </div>
 
         {/* Product */}
-        <p className="text-ink-700 text-sm">
+        <p className="text-ink-700 text-xs">
           <span className="font-mono text-bordeaux-700 mr-1">{item.quantity}×</span>
           {item.product.name}
         </p>
@@ -176,10 +176,10 @@ function KanbanCard({
 
       {/* Action */}
       {onAction && (
-        <div className="px-3 pb-3">
+        <div className="px-2 pb-2">
           <button
             onClick={onAction}
-            className="w-full rounded-lg py-2 text-xs font-semibold transition-colors"
+            className="w-full rounded-lg py-1.5 text-xs font-semibold transition-colors"
             style={{
               backgroundColor: item.status === "PENDENTE" ? "transparent" : accent,
               color: item.status === "PENDENTE" ? accent : "#FBF7EF",
