@@ -91,11 +91,11 @@ flutter build apk --release \
 
 ## Deploy (Produção)
 
-| Componente | Plataforma | URL |
-|---|---|---|
-| Backend REST | Railway | `backend-production-5230.up.railway.app` |
-| Gateway WebSocket | Railway | `gateway-production-f859.up.railway.app` |
-| PostgreSQL | Railway | gerenciado |
-| RabbitMQ | CloudAMQP | gerenciado |
-| Admin Web | Vercel | — |
-| App Operador Web | Vercel | — |
+| Componente | Plataforma |
+|---|---|
+| Backend REST | Railway |
+| Gateway WebSocket | Railway |
+| PostgreSQL | Railway (gerenciado) |
+| RabbitMQ | CloudAMQP (gerenciado) |
+| Admin Web | Vercel |
+| App Operador Web | Vercel |
