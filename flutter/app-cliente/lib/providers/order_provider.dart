@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import '../models/order_model.dart';
 import '../providers/menu_provider.dart';
@@ -9,6 +10,7 @@ class OrderProvider extends ChangeNotifier {
   bool _loading = false;
   String? _error;
   String? _readyBanner; // nome do item que ficou pronto
+  Timer? _pollTimer;
 
   List<OrderModel> get orders => _orders;
   List<OrderModel> get openOrders =>
@@ -98,11 +100,19 @@ class OrderProvider extends ChangeNotifier {
     SocketService().on('order_created', (data) {
       loadOrders(sessionId);
     });
+
+    _pollTimer?.cancel();
+    _pollTimer = Timer.periodic(
+      const Duration(seconds: 15),
+      (_) => loadOrders(sessionId),
+    );
   }
 
   void stopListening() {
     SocketService().off('order_item_status_changed');
     SocketService().off('order_created');
+    _pollTimer?.cancel();
+    _pollTimer = null;
   }
 
   void clear() {

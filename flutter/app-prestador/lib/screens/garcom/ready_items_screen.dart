@@ -67,84 +67,83 @@ class _ReadyItemsScreenState extends State<ReadyItemsScreen> {
 
     return Scaffold(
       backgroundColor: GuColors.cream50,
-      body: Column(
-        children: [
-          // Header escuro
-          Container(
-            color: GuColors.bordeaux900,
-            padding: EdgeInsets.only(
-              top: MediaQuery.of(context).padding.top + 14,
-              left: 18,
-              right: 18,
-              bottom: 14,
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text('EVENTO AO VIVO',
-                    style: GuType.caption.copyWith(
-                        color: GuColors.champagne, letterSpacing: 0.18)),
-                const SizedBox(height: 4),
-                Text('Garçom',
-                    style: GuType.h1.copyWith(
-                        color: GuColors.cream50, fontSize: 22, letterSpacing: -0.022)),
-                const SizedBox(height: 4),
-                Text(
-                  '$mesas ${mesas == 1 ? 'mesa' : 'mesas'} · $total ${total == 1 ? 'item' : 'itens'} aguardando entrega',
-                  style: GuType.caption.copyWith(
-                      color: GuColors.champagne,
-                      fontSize: 10,
-                      letterSpacing: 0.12),
-                ),
-              ],
-            ),
-          ),
-
-          // Banner de novo item pronto
-          if (_bannerMessage != null)
+      body: SafeArea(
+        bottom: false,
+        child: Column(
+          children: [
+            // Header escuro
             Container(
               width: double.infinity,
-              color: GuColors.bordeaux700,
-              padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
-              child: Text(_bannerMessage!,
-                  style: GuType.body.copyWith(
-                      color: Colors.white, fontSize: 13, fontWeight: FontWeight.w500)),
+              color: GuColors.bordeaux900,
+              padding: const EdgeInsets.fromLTRB(18, 14, 18, 14),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text('EVENTO AO VIVO',
+                      style: GuType.caption.copyWith(
+                          color: GuColors.champagne, letterSpacing: 0.18)),
+                  const SizedBox(height: 4),
+                  Text('Garçom',
+                      style: GuType.h1.copyWith(
+                          color: GuColors.cream50, fontSize: 22, letterSpacing: -0.022)),
+                  const SizedBox(height: 4),
+                  Text(
+                    '$mesas ${mesas == 1 ? 'mesa' : 'mesas'} · $total ${total == 1 ? 'item' : 'itens'} aguardando entrega',
+                    style: GuType.caption.copyWith(
+                        color: GuColors.champagne,
+                        fontSize: 10,
+                        letterSpacing: 0.12),
+                  ),
+                ],
+              ),
             ),
 
-          // Lista por mesa
-          Expanded(
-            child: prontos.isEmpty
-                ? _EmptyState()
-                : ListView.separated(
-                    padding: const EdgeInsets.all(16),
-                    itemCount: grouped.length,
-                    separatorBuilder: (_, __) => const SizedBox(height: 12),
-                    itemBuilder: (_, i) {
-                      final tableCode = grouped.keys.elementAt(i);
-                      final tableItems = grouped[tableCode]!;
-                      return _TableGroup(
-                        tableCode: tableCode,
-                        items: tableItems,
-                        checked: _checked,
-                        allChecked: _allChecked(tableItems),
-                        onCheck: (id, val) =>
-                            setState(() => _checked[id] = val),
-                        onConfirm: () {
-                          final prov = context.read<ItemsProvider>();
-                          for (final item in tableItems) {
-                            prov.markDelivered(item);
-                          }
-                          setState(() {
+            // Banner de novo item pronto
+            if (_bannerMessage != null)
+              Container(
+                width: double.infinity,
+                color: GuColors.bordeaux700,
+                padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
+                child: Text(_bannerMessage!,
+                    style: GuType.body.copyWith(
+                        color: Colors.white, fontSize: 13, fontWeight: FontWeight.w500)),
+              ),
+
+            // Lista por mesa
+            Expanded(
+              child: prontos.isEmpty
+                  ? _EmptyState()
+                  : ListView.separated(
+                      padding: const EdgeInsets.all(16),
+                      itemCount: grouped.length,
+                      separatorBuilder: (_, __) => const SizedBox(height: 12),
+                      itemBuilder: (_, i) {
+                        final tableCode = grouped.keys.elementAt(i);
+                        final tableItems = grouped[tableCode]!;
+                        return _TableGroup(
+                          tableCode: tableCode,
+                          items: tableItems,
+                          checked: _checked,
+                          allChecked: _allChecked(tableItems),
+                          onCheck: (id, val) =>
+                              setState(() => _checked[id] = val),
+                          onConfirm: () {
+                            final prov = context.read<ItemsProvider>();
                             for (final item in tableItems) {
-                              _checked.remove(item.id);
+                              prov.markDelivered(item);
                             }
-                          });
-                        },
-                      );
-                    },
-                  ),
-          ),
-        ],
+                            setState(() {
+                              for (final item in tableItems) {
+                                _checked.remove(item.id);
+                              }
+                            });
+                          },
+                        );
+                      },
+                    ),
+            ),
+          ],
+        ),
       ),
     );
   }

@@ -29,13 +29,20 @@ GoRouter buildRouter(AuthProvider auth) => GoRouter(
       ],
     );
 
-class GreetUpPrestadorApp extends StatelessWidget {
+class GreetUpPrestadorApp extends StatefulWidget {
   const GreetUpPrestadorApp({super.key});
+
+  @override
+  State<GreetUpPrestadorApp> createState() => _GreetUpPrestadorAppState();
+}
+
+class _GreetUpPrestadorAppState extends State<GreetUpPrestadorApp> {
+  GoRouter? _router;
 
   @override
   Widget build(BuildContext context) {
     final auth = context.watch<AuthProvider>();
-    final router = buildRouter(auth);
+    _router ??= buildRouter(auth);
 
     return MaterialApp.router(
       title: 'GreetUp · Prestador',
@@ -46,7 +53,7 @@ class GreetUpPrestadorApp extends StatelessWidget {
         scaffoldBackgroundColor: GuColors.cream50,
         fontFamily: 'Sora',
       ),
-      routerConfig: router,
+      routerConfig: _router!,
     );
   }
 }

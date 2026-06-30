@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import '../providers/auth_provider.dart';
 import '../tokens/gu_colors.dart';
@@ -28,17 +27,7 @@ class _LoginScreenState extends State<LoginScreen> {
   Future<void> _submit() async {
     final auth = context.read<AuthProvider>();
     await auth.login(_emailCtrl.text.trim(), _passwordCtrl.text);
-    if (!mounted) return;
-    if (auth.isLoggedIn) {
-      final fn = auth.operatorFunction;
-      if (fn == 'COZINHA') {
-        context.go('/cozinha');
-      } else if (fn == 'GARCOM') {
-        context.go('/garcom');
-      } else {
-        context.go('/display');
-      }
-    }
+    // GoRouter redirect via refreshListenable cuida da navegação
   }
 
   @override
