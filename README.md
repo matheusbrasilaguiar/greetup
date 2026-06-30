@@ -8,19 +8,45 @@ Plataforma SaaS de gestão de hospitalidade corporativa para eventos e feiras B2
 
 ---
 
+## Arquitetura
+
+```mermaid
+graph TD
+    AC["📱 App Cliente\nFlutter · Gerente de Evento"]
+    AP["📱 App Prestador\nFlutter · Cozinha / Garçom / Display"]
+    AW["🌐 App Web Operador\nNext.js"]
+
+    subgraph Cloud ["☁️ Nuvem"]
+        BE["🖥️ Backend REST\nNode.js · Express · Clean Architecture"]
+        DB[("🗄️ PostgreSQL")]
+        MOM["📨 RabbitMQ"]
+        GW["🔌 Gateway WebSocket\nSocket.IO"]
+    end
+
+    AC -- REST --> BE
+    AP -- REST --> BE
+    AW -- REST --> BE
+    BE --- DB
+    BE -- AMQP --> MOM
+    MOM -- AMQP --> GW
+    GW -- WebSocket --> AC
+    GW -- WebSocket --> AP
+    GW -- WebSocket --> AW
+```
+
 ## Estrutura do Repositório
 
 ```
 greetup/
-├── backend/          — API REST (Node.js/Express, Clean Architecture, Prisma/PostgreSQL)
-├── gateway/          — Gateway de eventos WebSocket (Node.js, Socket.IO, RabbitMQ consumer)
+├── backend/           — API REST (Node.js/Express, Clean Architecture, Prisma/PostgreSQL)
+├── gateway/           — Gateway de eventos WebSocket (Node.js, Socket.IO, RabbitMQ consumer)
 ├── flutter/
-│   ├── app-cliente/  — App Flutter para o Gerente de Evento
-│   └── app-prestador/— App Flutter para Cozinha, Garçom e Display
+│   ├── app-cliente/   — App Flutter para o Gerente de Evento
+│   └── app-prestador/ — App Flutter para Cozinha, Garçom e Display
 ├── web/
-│   ├── admin/        — Painel administrativo web (Next.js)
-│   └── app-operador/ — App web de operação para feirinha (Next.js)
-└── docs/             — Documentação e artefatos por sprint
+│   ├── admin/         — Painel administrativo web (Next.js)
+│   └── app-operador/  — App web de operação (Next.js)
+└── docs/              — Documentação e artefatos por sprint
 ```
 
 ---

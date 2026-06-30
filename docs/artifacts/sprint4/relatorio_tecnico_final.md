@@ -23,45 +23,54 @@ Este relatório descreve a arquitetura implementada ao longo das quatro sprints,
 
 ### 2.1 Visão Geral
 
-O sistema é composto por quatro camadas principais:
+O sistema é composto por cinco componentes principais conectados por dois protocolos distintos: REST para operações síncronas e WebSocket/MOM para eventos assíncronos.
 
-```
-┌──────────────────────┐     ┌──────────────────────┐
-│   App Cliente        │     │   App Prestador       │
-│   (Flutter/Dart)     │     │   (Flutter/Dart)      │
-│   Gerente de Evento  │     │   Cozinha · Garçom    │
-└────────┬─────────────┘     └──────────┬────────────┘
-         │  REST (HTTPS)                │  WebSocket (WSS)
-         │                             │
-┌────────▼─────────────────────────────▼────────────┐
-│              Backend REST (Node.js/Express)        │
-│              Clean Architecture                    │
-│              PostgreSQL via Prisma ORM             │
-└────────────────────────┬───────────────────────────┘
-                         │  AMQP
-                         │
-              ┌──────────▼──────────┐
-              │   RabbitMQ (MOM)    │
-              │   CloudAMQP         │
-              └──────────┬──────────┘
-                         │  AMQP consumer
-                         │
-              ┌──────────▼──────────┐
-              │   Gateway de        │
-              │   Eventos (Node.js) │
-              │   Socket.IO         │
-              └─────────────────────┘
+```mermaid
+graph TD
+    AC["📱 App Cliente\nFlutter · Gerente de Evento"]
+    AP["📱 App Prestador\nFlutter · Cozinha / Garçom / Display"]
+
+    subgraph Backend ["☁️ Railway"]
+        BE["🖥️ Backend REST\nNode.js · Express\nClean Architecture"]
+        DB[("🗄️ PostgreSQL\nPrisma ORM")]
+        MOM["📨 RabbitMQ\nCloudAMQP"]
+        GW["🔌 Gateway de Eventos\nNode.js · Socket.IO"]
+    end
+
+    AC -- "REST HTTPS" --> BE
+    AP -- "REST HTTPS" --> BE
+    BE -- "Prisma" --> DB
+    BE -- "AMQP publish" --> MOM
+    MOM -- "AMQP consume" --> GW
+    GW -- "WebSocket WSS" --> AC
+    GW -- "WebSocket WSS" --> AP
 ```
 
-**Fluxo de evento completo:**  
-1. O cliente (Gerente) cria um pedido pelo app Flutter → REST POST `/orders`  
-2. O backend processa o pedido, persiste no PostgreSQL e publica `order.created` no RabbitMQ  
-3. O Gateway consome a mensagem e emite o evento `order_created` via Socket.IO para todos os sockets autenticados da empresa  
-4. O app do prestador (Cozinha) recebe o evento em tempo real e exibe o novo pedido no Kanban  
-5. O operador avança o status → REST PATCH `/orders/:id/items/:itemId/status`  
-6. O backend publica `order.item_status_changed` no RabbitMQ  
-7. O Gateway emite `order_item_status_changed` via Socket.IO  
-8. O app cliente atualiza o status do item em tempo real via WebSocket
+**Fluxo de evento completo:**
+
+```mermaid
+sequenceDiagram
+    actor G as Gerente (App Cliente)
+    participant BE as Backend REST
+    participant DB as PostgreSQL
+    participant MQ as RabbitMQ
+    participant GW as Gateway
+    actor OP as Operador (App Prestador)
+
+    G->>BE: POST /orders {sessionId, items}
+    BE->>DB: INSERT Order + OrderItems
+    BE->>MQ: publish order.created
+    MQ->>GW: consume order.created
+    GW-->>OP: emit order_created (WebSocket)
+    Note over OP: Novo pedido aparece no Kanban
+
+    OP->>BE: PATCH /orders/:id/items/:itemId/status {status: "PRONTO"}
+    BE->>DB: UPDATE OrderItem.status
+    BE->>MQ: publish order.item_status_changed
+    MQ->>GW: consume order.item_status_changed
+    GW-->>G: emit order_item_status_changed (WebSocket)
+    Note over G: Status atualiza em tempo real
+```
 
 ### 2.2 Backend REST — Clean Architecture
 
