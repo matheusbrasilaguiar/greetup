@@ -8,7 +8,7 @@ import { useAuth } from "@/lib/hooks/useAuth";
 
 export default function GarcomPage() {
   const { logout } = useAuth();
-  const { data: items = [], isLoading } = useOrderItems("PRONTO");
+  const { data: items = [], isLoading } = useOrderItems("PRONTO", "active");
   const advance = useAdvanceItemStatus();
   const qc = useQueryClient();
   const [checked, setChecked] = useState<Record<string, boolean>>({});

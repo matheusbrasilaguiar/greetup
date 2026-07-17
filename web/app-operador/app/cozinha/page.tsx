@@ -15,7 +15,7 @@ const COLUMNS: { status: ItemStatus; label: string; accent: string }[] = [
 
 export default function CozinhaPage() {
   const { logout } = useAuth();
-  const { data: items = [], isLoading } = useOrderItems();
+  const { data: items = [], isLoading } = useOrderItems(undefined, "active");
   const advance = useAdvanceItemStatus();
   const qc = useQueryClient();
   const [now, setNow] = useState(Date.now());
@@ -48,10 +48,22 @@ export default function CozinhaPage() {
     const next: Record<string, ItemStatus> = {
       PENDENTE: "EM_PREPARO",
       EM_PREPARO: "PRONTO",
+      PRONTO: "ENTREGUE",
     };
     const nextStatus = next[item.status];
     if (!nextStatus) return;
     await advance(item.orderId, item.id, nextStatus);
+  }
+
+  async function handleRevert(item: OrderItem) {
+    const prev: Record<string, ItemStatus> = {
+      EM_PREPARO: "PENDENTE",
+      PRONTO: "EM_PREPARO",
+      ENTREGUE: "PRONTO",
+    };
+    const prevStatus = prev[item.status];
+    if (!prevStatus) return;
+    await advance(item.orderId, item.id, prevStatus);
   }
 
   if (isLoading) {
@@ -109,8 +121,11 @@ export default function CozinhaPage() {
                       item={item}
                       accent={accent}
                       now={now}
-                      onAction={["PENDENTE", "EM_PREPARO"].includes(item.status)
+                      onAction={item.status !== "ENTREGUE"
                         ? () => handleAdvance(item)
+                        : undefined}
+                      onRevert={item.status !== "PENDENTE"
+                        ? () => handleRevert(item)
                         : undefined}
                     />
                   ))}
@@ -129,15 +144,18 @@ function KanbanCard({
   accent,
   now,
   onAction,
+  onRevert,
 }: {
   item: OrderItem;
   accent: string;
   now: number;
   onAction?: () => void;
+  onRevert?: () => void;
 }) {
   const customer = item.order.session.customer;
   const ageMin = Math.floor((now - new Date(item.createdAt).getTime()) / 60_000);
   const late = ageMin > 8;
+  const showTimer = item.status !== "ENTREGUE";
 
   return (
     <div
@@ -145,16 +163,18 @@ function KanbanCard({
       style={{ borderLeft: `4px solid ${accent}` }}
     >
       <div className="px-2 pt-2 pb-1.5">
-        {/* Customer + ID */}
+        {/* Customer + timer */}
         <div className="flex items-start justify-between gap-1 mb-1">
           <p className="text-ink-900 font-semibold text-xs leading-tight truncate">
             {customer?.name ?? "—"}
           </p>
-          <span
-            className={`text-xs font-mono shrink-0 ${late ? "text-red-500 font-semibold" : "text-ink-500"}`}
-          >
-            {ageMin}m
-          </span>
+          {showTimer && (
+            <span
+              className={`text-xs font-mono shrink-0 ${late ? "text-red-500 font-semibold" : "text-ink-500"}`}
+            >
+              {ageMin}m
+            </span>
+          )}
         </div>
 
         {/* Product */}
@@ -174,20 +194,34 @@ function KanbanCard({
         )}
       </div>
 
-      {/* Action */}
-      {onAction && (
-        <div className="px-2 pb-2">
-          <button
-            onClick={onAction}
-            className="w-full rounded-lg py-1.5 text-xs font-semibold transition-colors"
-            style={{
-              backgroundColor: item.status === "PENDENTE" ? "transparent" : accent,
-              color: item.status === "PENDENTE" ? accent : "#FBF7EF",
-              border: item.status === "PENDENTE" ? `1.5px solid ${accent}` : "none",
-            }}
-          >
-            {item.status === "PENDENTE" ? "Iniciar preparo" : "Marcar pronto"}
-          </button>
+      {/* Actions */}
+      {(onAction || onRevert) && (
+        <div className="px-2 pb-2 flex flex-col gap-1">
+          {onAction && (
+            <button
+              onClick={onAction}
+              className="w-full rounded-lg py-1.5 text-xs font-semibold transition-colors"
+              style={{
+                backgroundColor: item.status === "PENDENTE" ? "transparent" : accent,
+                color: item.status === "PENDENTE" ? accent : "#FBF7EF",
+                border: item.status === "PENDENTE" ? `1.5px solid ${accent}` : "none",
+              }}
+            >
+              {item.status === "PENDENTE"
+                ? "Iniciar preparo"
+                : item.status === "EM_PREPARO"
+                ? "Marcar pronto"
+                : "Marcar entregue"}
+            </button>
+          )}
+          {onRevert && (
+            <button
+              onClick={onRevert}
+              className="w-full rounded-lg py-1 text-xs transition-colors text-ink-500 hover:text-ink-700"
+            >
+              ← Voltar
+            </button>
+          )}
         </div>
       )}
     </div>

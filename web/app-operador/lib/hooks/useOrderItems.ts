@@ -21,12 +21,15 @@ export interface OrderItem {
   };
 }
 
-export function useOrderItems(status?: ItemStatus) {
+export function useOrderItems(status?: ItemStatus | null, eventId?: string) {
   return useQuery<OrderItem[]>({
-    queryKey: ["order-items", status],
+    queryKey: ["order-items", status, eventId],
     queryFn: async () => {
-      const url = status ? `/orders/items?status=${status}` : "/orders/items";
-      const res = await api.get(url);
+      const params = new URLSearchParams();
+      if (status) params.set("status", status);
+      if (eventId) params.set("eventId", eventId);
+      const qs = params.toString();
+      const res = await api.get(qs ? `/orders/items?${qs}` : "/orders/items");
       return res.data;
     },
     refetchInterval: 10_000,

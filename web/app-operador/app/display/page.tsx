@@ -8,7 +8,7 @@ import { useAuth } from "@/lib/hooks/useAuth";
 
 export default function DisplayPage() {
   const { logout } = useAuth();
-  const { data: items = [] } = useOrderItems();
+  const { data: items = [] } = useOrderItems(undefined, "active");
   const qc = useQueryClient();
   const [clock, setClock] = useState("");
 
