@@ -7,7 +7,7 @@ interface PanelProps {
 
 export function Panel({ title, action, children, className = "" }: PanelProps) {
   return (
-    <div className={`bg-white border border-cream-200 rounded-xl overflow-hidden ${className}`}>
+    <div className={`bg-white border border-cream-200 rounded-xl ${className}`}>
       {(title || action) && (
         <div className="flex items-center justify-between px-5 py-4 border-b border-cream-200">
           {title && (

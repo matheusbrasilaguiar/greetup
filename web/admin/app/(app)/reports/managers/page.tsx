@@ -69,7 +69,7 @@ export default function ManagersReportPage() {
 
       <Panel title="Performance dos gerentes">
         <div className="overflow-x-auto">
-          <table className="w-full min-w-[360px]">
+          <table className="min-w-full">
             <thead>
               <tr className="border-b border-cream-200">
                 {["Gerente", "Atendimentos", "Tempo médio (min)"].map((h) => (

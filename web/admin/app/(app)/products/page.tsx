@@ -230,7 +230,7 @@ export default function ProductsPage() {
         </FiltersBar>
 
         <div className="overflow-x-auto">
-          <table className="w-full min-w-[680px]">
+          <table className="min-w-full">
             <thead>
               <tr style={{ borderBottom: "1px solid var(--gu-cream-200)" }}>
                 {["Produto", "Categoria", "Descrição", "Preço base", "Servidos · evento", "Status", ""].map((h, i) => (

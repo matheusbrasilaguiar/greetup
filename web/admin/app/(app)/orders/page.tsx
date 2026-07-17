@@ -76,7 +76,7 @@ export default function OrdersPage() {
         </div>
 
         <div className="overflow-x-auto">
-          <table className="w-full min-w-[560px]">
+          <table className="min-w-full">
             <thead>
               <tr style={{ borderBottom: "1px solid var(--gu-cream-200)" }}>
                 {["Mesa", "Cliente", "Gerente", "Itens", "Pedido", "Horário"].map((h) => (

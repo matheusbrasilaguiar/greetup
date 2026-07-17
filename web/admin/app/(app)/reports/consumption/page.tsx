@@ -53,7 +53,7 @@ export default function ConsumptionReportPage() {
 
       <Panel title="Ranking de consumo">
         <div className="overflow-x-auto">
-          <table className="w-full min-w-[400px]">
+          <table className="min-w-full">
             <thead>
               <tr className="border-b border-cream-200">
                 {["#", "Produto", "Categoria", "Quantidade"].map((h) => (

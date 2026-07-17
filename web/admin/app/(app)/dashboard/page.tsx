@@ -154,7 +154,7 @@ export default function DashboardPage() {
         {/* Últimos pedidos */}
         <Panel title="Últimos pedidos">
           <div className="overflow-x-auto">
-            <table className="w-full min-w-[480px]">
+            <table className="min-w-full">
               <thead>
                 <tr style={{ borderBottom: "1px solid var(--gu-cream-200)" }}>
                   {["Mesa", "Gerente", "Itens", "Status", "Horário"].map((h) => (

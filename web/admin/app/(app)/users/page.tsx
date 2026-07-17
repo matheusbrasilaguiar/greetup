@@ -392,7 +392,7 @@ export default function UsersPage() {
         </FiltersBar>
 
         <div className="overflow-x-auto">
-          <table className="w-full min-w-[600px]">
+          <table className="min-w-full">
             <thead>
               <tr style={{ borderBottom: "1px solid var(--gu-cream-200)" }}>
                 {["Nome", "E-mail", "Papel", "Último acesso", "Status", ""].map((h, i) => (
