@@ -23,7 +23,8 @@ const STATUS_STYLE: Record<GrEventItem["status"], string> = {
 };
 
 function formatDate(iso: string) {
-  return new Date(iso).toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit", year: "numeric" });
+  const [year, month, day] = iso.slice(0, 10).split("-");
+  return `${day}/${month}/${year}`;
 }
 
 export default function EventsPage() {
@@ -34,7 +35,10 @@ export default function EventsPage() {
 
   const [showModal, setShowModal] = useState(false);
   const [name, setName] = useState("");
-  const [date, setDate] = useState(new Date().toISOString().slice(0, 10));
+  const [date, setDate] = useState(() => {
+    const n = new Date();
+    return `${n.getFullYear()}-${String(n.getMonth() + 1).padStart(2, "0")}-${String(n.getDate()).padStart(2, "0")}`;
+  });
 
   const [confirmAction, setConfirmAction] = useState<{ type: "activate" | "close"; event: GrEventItem } | null>(null);
 
@@ -42,7 +46,8 @@ export default function EventsPage() {
     if (!name.trim()) return;
     await createEvent.mutateAsync({ name: name.trim(), date });
     setName("");
-    setDate(new Date().toISOString().slice(0, 10));
+    const n = new Date();
+    setDate(`${n.getFullYear()}-${String(n.getMonth() + 1).padStart(2, "0")}-${String(n.getDate()).padStart(2, "0")}`);
     setShowModal(false);
   }
 

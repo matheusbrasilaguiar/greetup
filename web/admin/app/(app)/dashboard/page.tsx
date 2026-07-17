@@ -109,7 +109,6 @@ export default function DashboardPage() {
   }
 
   const occupied = tables.filter((t) => t.status === "OCCUPIED").length;
-  const total = tables.length;
   const openOrders = orders.filter((o) => o.status === "OPEN").length;
   const awaitingDelivery = items.filter((i) => i.status === "PRONTO").length;
 
@@ -126,8 +125,7 @@ export default function DashboardPage() {
         <KpiCard
           label="Mesas ocupadas"
           value={occupied}
-          of={`/ ${total}`}
-          sub={total > 0 ? `${Math.round((occupied / total) * 100)}% de ocupação` : "—"}
+          sub="sessões abertas agora"
           valueColor="var(--gu-bordeaux-700)"
         />
         <KpiCard
@@ -143,9 +141,9 @@ export default function DashboardPage() {
           valueColor="var(--gu-ready-tx)"
         />
         <KpiCard
-          label="Total de mesas"
-          value={total}
-          sub="configuradas no evento"
+          label="Total de pedidos"
+          value={orders.length}
+          sub="no evento ativo"
         />
       </div>
 
