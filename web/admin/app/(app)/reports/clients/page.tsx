@@ -24,7 +24,7 @@ export default function ClientsReportPage() {
 
       <Panel title="Clientes atendidos">
         <div className="overflow-x-auto">
-          <table className="w-full">
+          <table className="w-full min-w-[500px]">
             <thead>
               <tr className="border-b border-cream-200">
                 {["Nome", "Empresa", "E-mail", "Telefone", "Cadastrado em"].map((h) => (

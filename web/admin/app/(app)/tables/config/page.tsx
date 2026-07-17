@@ -96,7 +96,7 @@ export default function TablesConfigPage() {
 
       <Panel>
         <div className="overflow-x-auto">
-          <table className="w-full">
+          <table className="w-full min-w-[360px]">
             <thead>
               <tr className="border-b border-cream-200">
                 {["Código", "Capacidade", "Status", "Ações"].map((h) => (

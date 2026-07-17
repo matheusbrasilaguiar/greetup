@@ -82,7 +82,7 @@ export default function TablesLivePage() {
     <div className="flex flex-col gap-[22px]">
       <PageHead eyebrow={`Evento ao vivo · ${activeEvent?.name ?? ""}`} title="Mapa de mesas" sub="Visualize o estado de cada mesa em tempo real" />
 
-      <div className="grid grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         <KpiCard label="Total de mesas" value={tables.length} />
         <KpiCard label="Ocupadas" value={occupied} valueColor="var(--gu-bordeaux-700)" />
         <KpiCard label="Livres" value={free} valueColor="var(--gu-ready-tx)" />
@@ -92,7 +92,7 @@ export default function TablesLivePage() {
       {isLoading ? (
         <p className="text-sm" style={{ color: "var(--gu-ink-300)" }}>Carregando mesas…</p>
       ) : (
-        <div className="grid gap-3.5" style={{ gridTemplateColumns: "repeat(6, 1fr)" }}>
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3.5">
           {tables.map((table) => {
             const busy = table.status === "OCCUPIED";
             const inactive = table.status === "CLOSED";

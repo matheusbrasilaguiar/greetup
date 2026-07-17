@@ -1,7 +1,7 @@
 "use client";
 
 import { usePathname } from "next/navigation";
-import { Search } from "lucide-react";
+import { Menu, Search } from "lucide-react";
 import { useEffect, useState } from "react";
 
 interface BreadcrumbDef {
@@ -41,18 +41,28 @@ function LiveClock() {
   return <>{time}</>;
 }
 
-export function Topbar() {
+export function Topbar({ onMenuToggle }: { onMenuToggle?: () => void }) {
   const pathname = usePathname();
   const crumb = BREADCRUMBS[pathname] ?? { section: "Admin", page: "" };
 
   return (
     <header
-      className="sticky top-0 z-10 flex items-center px-8 gap-4 bg-white"
+      className="sticky top-0 z-10 flex items-center px-4 lg:px-8 gap-3 lg:gap-4 bg-white"
       style={{
         height: 60,
         borderBottom: "1px solid var(--gu-cream-200)",
       }}
     >
+      {/* Hamburger (mobile only) */}
+      <button
+        onClick={onMenuToggle}
+        className="lg:hidden flex items-center justify-center flex-shrink-0 rounded transition-colors p-1.5"
+        style={{ color: "var(--gu-ink-500)" }}
+        aria-label="Abrir menu"
+      >
+        <Menu size={20} strokeWidth={1.6} />
+      </button>
+
       {/* Breadcrumb */}
       <div className="flex items-center gap-2 font-mono text-[10.5px] tracking-[0.14em] uppercase flex-1 min-w-0">
         <span style={{ color: "var(--gu-ink-500)" }}>Greetup</span>
@@ -66,9 +76,9 @@ export function Topbar() {
         )}
       </div>
 
-      {/* Search */}
+      {/* Search (hidden on mobile) */}
       <div
-        className="flex items-center gap-2 rounded-md px-2.5 py-[7px]"
+        className="hidden md:flex items-center gap-2 rounded-md px-2.5 py-[7px]"
         style={{
           background: "var(--gu-cream-50)",
           border: "1px solid var(--gu-cream-200)",
@@ -92,8 +102,8 @@ export function Topbar() {
         </span>
       </div>
 
-      {/* Event info */}
-      <div className="flex items-center gap-3 flex-shrink-0">
+      {/* Event info (hidden on small screens) */}
+      <div className="hidden sm:flex items-center gap-3 flex-shrink-0">
         <span className="font-mono text-[10.5px] tracking-[0.1em]" style={{ color: "var(--gu-ink-500)" }}>
           Estande · <LiveClock />
         </span>

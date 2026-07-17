@@ -15,6 +15,7 @@ import {
   FileText,
   LogOut,
   CalendarDays,
+  X,
   type LucideIcon,
 } from "lucide-react";
 import { useAuth } from "@/lib/hooks/useAuth";
@@ -66,14 +67,22 @@ function isItemActive(pathname: string, item: NavItem): boolean {
   return pathname.startsWith(item.href);
 }
 
-export function Sidebar() {
+export function Sidebar({
+  isOpen = false,
+  onClose,
+}: {
+  isOpen?: boolean;
+  onClose?: () => void;
+}) {
   const pathname = usePathname();
   const { logout } = useAuth();
   const { data: activeEvent } = useActiveEvent();
 
   return (
     <aside
-      className="fixed left-0 top-0 h-screen flex flex-col z-20"
+      className={`fixed left-0 top-0 h-screen flex flex-col z-20 transition-transform duration-300 ${
+        isOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"
+      }`}
       style={{
         width: 240,
         background: "var(--gu-bordeaux-900)",
@@ -90,7 +99,7 @@ export function Sidebar() {
           <path d="M18 102 V54 a42 42 0 0 1 84 0 V102" fill="none" stroke="#F5EEDE" strokeWidth="4.2" strokeLinecap="round" />
           <circle cx="60" cy="64" r="6.6" fill="#D9B58A" />
         </svg>
-        <div>
+        <div className="flex-1 min-w-0">
           <span
             className="font-mono uppercase tracking-[0.18em] block"
             style={{ fontSize: 9, color: "var(--gu-bordeaux-300)", lineHeight: 1.4 }}
@@ -104,6 +113,14 @@ export function Sidebar() {
             GreetUp
           </span>
         </div>
+        <button
+          onClick={onClose}
+          className="lg:hidden p-1 rounded flex-shrink-0 transition-colors"
+          style={{ color: "var(--gu-bordeaux-300)" }}
+          aria-label="Fechar menu"
+        >
+          <X size={18} strokeWidth={1.6} />
+        </button>
       </div>
 
       {/* Active event badge */}

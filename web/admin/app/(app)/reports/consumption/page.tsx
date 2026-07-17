@@ -38,14 +38,14 @@ export default function ConsumptionReportPage() {
 
   return (
     <div className="flex flex-col gap-6">
-      <div className="flex items-start justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
         <PageHead eyebrow="Relatórios · Consumo" title="Relatório de consumo" sub="Ranking de produtos mais pedidos no evento" />
-        <div className="pt-1">
+        <div className="sm:pt-1 flex-shrink-0">
           <EventSelector value={eventId ?? null} onChange={setSelectedEventId} />
         </div>
       </div>
 
-      <div className="grid grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <KpiCard label="Itens entregues" value={total} valueColor="var(--gu-ready-tx)" />
         <KpiCard label="Produtos distintos" value={ranked.length} />
         <KpiCard label="Mais pedido" value={top?.name ?? "—"} sub={top ? `${top.qty}× pedido` : undefined} />
@@ -53,7 +53,7 @@ export default function ConsumptionReportPage() {
 
       <Panel title="Ranking de consumo">
         <div className="overflow-x-auto">
-          <table className="w-full">
+          <table className="w-full min-w-[400px]">
             <thead>
               <tr className="border-b border-cream-200">
                 {["#", "Produto", "Categoria", "Quantidade"].map((h) => (

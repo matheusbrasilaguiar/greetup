@@ -57,7 +57,7 @@ export default function EventsPage() {
   }
 
   return (
-    <div className="p-6 max-w-4xl">
+    <div className="max-w-4xl">
       <PageHead
         eyebrow="Configuração · Eventos"
         title="Eventos"
@@ -81,7 +81,8 @@ export default function EventsPage() {
         </div>
       ) : (
         <div className="bg-white border border-cream-200 rounded-xl overflow-hidden">
-          <table className="w-full text-[13px]">
+          <div className="overflow-x-auto">
+          <table className="w-full min-w-[480px] text-[13px]">
             <thead>
               <tr style={{ borderBottom: "1px solid var(--gu-cream-200)" }}>
                 {["Nome", "Data", "Status", "Ações"].map((h) => (
@@ -136,6 +137,7 @@ export default function EventsPage() {
               ))}
             </tbody>
           </table>
+          </div>
         </div>
       )}
 

@@ -36,7 +36,7 @@ export default function OrdersPage() {
   if (!loadingEvent && !activeEvent) {
     return (
       <div className="flex flex-col gap-[22px]">
-        <PageHead eyebrow={`Evento ao vivo · ${activeEvent?.name ?? ""}`} title="Pedidos" sub="Acompanhe todos os pedidos do evento" />
+        <PageHead eyebrow="Evento ao vivo · Gestão de pedidos" title="Pedidos" sub="Acompanhe todos os pedidos do evento" />
         <NoActiveEvent />
       </div>
     );
@@ -51,7 +51,7 @@ export default function OrdersPage() {
     <div className="flex flex-col gap-[22px]">
       <PageHead eyebrow={`Evento ao vivo · ${activeEvent?.name ?? ""}`} title="Pedidos" sub="Acompanhe todos os pedidos do evento" />
 
-      <div className="grid grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <KpiCard label="Pedidos abertos" value={open} valueColor="var(--gu-pending-tx)" />
         <KpiCard label="Pedidos fechados" value={closed} />
         <KpiCard label="Total de itens" value={totalItems} />
@@ -76,7 +76,7 @@ export default function OrdersPage() {
         </div>
 
         <div className="overflow-x-auto">
-          <table className="w-full">
+          <table className="w-full min-w-[560px]">
             <thead>
               <tr style={{ borderBottom: "1px solid var(--gu-cream-200)" }}>
                 {["Mesa", "Cliente", "Gerente", "Itens", "Pedido", "Horário"].map((h) => (

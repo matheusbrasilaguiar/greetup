@@ -122,7 +122,7 @@ export default function DashboardPage() {
       <PageHead eyebrow={`Evento ao vivo · ${activeEvent?.name ?? ""}`} title="Painel operacional" sub="Acompanhe o evento em tempo real" />
 
       {/* KPIs */}
-      <div className="grid grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         <KpiCard
           label="Mesas ocupadas"
           value={occupied}
@@ -150,11 +150,11 @@ export default function DashboardPage() {
       </div>
 
       {/* Corpo: tabela + feed */}
-      <div className="grid grid-cols-[1fr_320px] gap-[18px]">
+      <div className="grid grid-cols-1 xl:grid-cols-[1fr_320px] gap-[18px]">
         {/* Últimos pedidos */}
         <Panel title="Últimos pedidos">
           <div className="overflow-x-auto">
-            <table className="w-full">
+            <table className="w-full min-w-[480px]">
               <thead>
                 <tr style={{ borderBottom: "1px solid var(--gu-cream-200)" }}>
                   {["Mesa", "Gerente", "Itens", "Status", "Horário"].map((h) => (

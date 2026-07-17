@@ -44,21 +44,21 @@ export default function SummaryReportPage() {
 
   return (
     <div className="flex flex-col gap-6">
-      <div className="flex items-start justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
         <PageHead eyebrow="Relatórios · Resumo" title="Resumo do evento" sub="Visão consolidada de todas as métricas" />
-        <div className="pt-1">
+        <div className="sm:pt-1 flex-shrink-0">
           <EventSelector value={eventId ?? null} onChange={setSelectedEventId} />
         </div>
       </div>
 
-      <div className="grid grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         <KpiCard label="Mesas" value={tables.length} />
         <KpiCard label="Clientes atendidos" value={clients.length} />
         <KpiCard label="Pedidos realizados" value={orders.length} />
         <KpiCard label="Itens entregues" value={totalQty} />
       </div>
 
-      <div className="grid grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Equipe */}
         <Panel title="Equipe">
           <div className="p-5 flex flex-col gap-3">

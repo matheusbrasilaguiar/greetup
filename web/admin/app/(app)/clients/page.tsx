@@ -56,7 +56,7 @@ export default function ClientsPage() {
   return (
     <div className="flex flex-col gap-[18px]">
     <PageHead eyebrow="Evento ao vivo · Clientes" title="Clientes" sub="Histórico de visitantes cadastrados" />
-    <div className="grid gap-[18px]" style={{ gridTemplateColumns: "1.55fr 0.85fr", height: "calc(100vh - 14rem)" }}>
+    <div className="grid grid-cols-1 lg:grid-cols-[1.55fr_0.85fr] gap-[18px] lg:h-[calc(100vh-14rem)]">
       {/* Lista */}
       <Panel title="Clientes" className="flex flex-col overflow-hidden">
         {/* Search */}
