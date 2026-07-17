@@ -8,10 +8,13 @@ import { KpiCard } from "@/components/ui/KpiCard";
 import { PageHead } from "@/components/ui/PageHead";
 import { useOrders } from "@/lib/hooks/useOrders";
 import { useSocketEvents } from "@/lib/hooks/useSocketEvents";
+import { useActiveEvent } from "@/lib/hooks/useActiveEvent";
+import { NoActiveEvent } from "@/components/ui/NoActiveEvent";
 
 export default function OrdersPage() {
   const qc = useQueryClient();
-  const { data: orders = [], isLoading } = useOrders();
+  const { data: activeEvent, isLoading: loadingEvent } = useActiveEvent();
+  const { data: orders = [], isLoading } = useOrders("active");
   const [filter, setFilter] = useState<"TODOS" | "OPEN" | "CLOSED">("TODOS");
 
   const invalidate = useCallback(() => {
@@ -30,6 +33,15 @@ export default function OrdersPage() {
     { value: "CLOSED" as const, label: "Fechados" },
   ];
 
+  if (!loadingEvent && !activeEvent) {
+    return (
+      <div className="flex flex-col gap-[22px]">
+        <PageHead eyebrow={`Evento ao vivo · ${activeEvent?.name ?? ""}`} title="Pedidos" sub="Acompanhe todos os pedidos do evento" />
+        <NoActiveEvent />
+      </div>
+    );
+  }
+
   const filtered = filter === "TODOS" ? orders : orders.filter((o) => o.status === filter);
   const open = orders.filter((o) => o.status === "OPEN").length;
   const closed = orders.filter((o) => o.status === "CLOSED").length;
@@ -37,7 +49,7 @@ export default function OrdersPage() {
 
   return (
     <div className="flex flex-col gap-[22px]">
-      <PageHead eyebrow="Evento ao vivo · Gestão de pedidos" title="Pedidos" sub="Acompanhe todos os pedidos do evento" />
+      <PageHead eyebrow={`Evento ao vivo · ${activeEvent?.name ?? ""}`} title="Pedidos" sub="Acompanhe todos os pedidos do evento" />
 
       <div className="grid grid-cols-3 gap-4">
         <KpiCard label="Pedidos abertos" value={open} valueColor="var(--gu-pending-tx)" />

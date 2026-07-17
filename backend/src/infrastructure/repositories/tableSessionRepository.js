@@ -46,9 +46,10 @@ class TableSessionRepository extends TableSessionRepositoryPort {
     });
   }
 
-  async listSessions({ companyId, tableId, onlyActive } = {}) {
+  async listSessions({ companyId, tableId, eventId, onlyActive } = {}) {
     const where = { companyId };
     if (tableId) where.tableId = tableId;
+    if (eventId) where.eventId = eventId;
     if (onlyActive) where.closedAt = null;
 
     return prisma.tableSession.findMany({
@@ -61,6 +62,34 @@ class TableSessionRepository extends TableSessionRepositoryPort {
       },
       orderBy: { openedAt: "desc" }
     });
+  }
+
+  async closeEventSessions(eventId, companyId) {
+    const sessions = await prisma.tableSession.findMany({
+      where: { eventId, companyId, closedAt: null },
+      select: { id: true, tableId: true }
+    });
+    if (sessions.length > 0) {
+      await prisma.tableSession.updateMany({
+        where: { eventId, companyId, closedAt: null },
+        data: { closedAt: new Date() }
+      });
+    }
+    return sessions;
+  }
+
+  async closeOrphanSessions(companyId) {
+    const sessions = await prisma.tableSession.findMany({
+      where: { companyId, eventId: null, closedAt: null },
+      select: { id: true, tableId: true }
+    });
+    if (sessions.length > 0) {
+      await prisma.tableSession.updateMany({
+        where: { companyId, eventId: null, closedAt: null },
+        data: { closedAt: new Date() }
+      });
+    }
+    return sessions;
   }
 }
 

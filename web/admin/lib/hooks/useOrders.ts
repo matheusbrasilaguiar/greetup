@@ -25,22 +25,24 @@ export interface Order {
   items: OrderItem[];
 }
 
-export function useOrders() {
+export function useOrders(eventId?: string) {
   return useQuery<Order[]>({
-    queryKey: ["orders"],
+    queryKey: ["orders", eventId],
     queryFn: async () => {
-      const res = await api.get("/orders");
+      const params = eventId ? `?eventId=${eventId}` : "";
+      const res = await api.get(`/orders${params}`);
       return res.data;
     },
     refetchInterval: 8_000,
   });
 }
 
-export function useOrderItems() {
+export function useOrderItems(eventId?: string) {
   return useQuery<(OrderItem & { order: { session: { table: { code: string } } } })[]>({
-    queryKey: ["order-items"],
+    queryKey: ["order-items", eventId],
     queryFn: async () => {
-      const res = await api.get("/orders/items");
+      const params = eventId ? `?eventId=${eventId}` : "";
+      const res = await api.get(`/orders/items${params}`);
       return res.data;
     },
     refetchInterval: 8_000,

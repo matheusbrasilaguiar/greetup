@@ -6,6 +6,8 @@ import { KpiCard } from "@/components/ui/KpiCard";
 import { PageHead } from "@/components/ui/PageHead";
 import { useTables } from "@/lib/hooks/useTables";
 import { useSocketEvents } from "@/lib/hooks/useSocketEvents";
+import { useActiveEvent } from "@/lib/hooks/useActiveEvent";
+import { NoActiveEvent } from "@/components/ui/NoActiveEvent";
 
 function ElapsedBadge({ openedAt }: { openedAt: string }) {
   const calc = () =>
@@ -51,6 +53,7 @@ function FreeBadge() {
 
 export default function TablesLivePage() {
   const qc = useQueryClient();
+  const { data: activeEvent, isLoading: loadingEvent } = useActiveEvent();
   const { data: tables = [], isLoading } = useTables();
 
   const invalidate = useCallback(() => {
@@ -66,9 +69,18 @@ export default function TablesLivePage() {
   const free = tables.filter((t) => t.status === "OPEN").length;
   const closed = tables.filter((t) => t.status === "CLOSED").length;
 
+  if (!loadingEvent && !activeEvent) {
+    return (
+      <div className="flex flex-col gap-[22px]">
+        <PageHead eyebrow="Evento ao vivo · Mesas" title="Mapa de mesas" sub="Visualize o estado de cada mesa em tempo real" />
+        <NoActiveEvent />
+      </div>
+    );
+  }
+
   return (
     <div className="flex flex-col gap-[22px]">
-      <PageHead eyebrow="Evento ao vivo · Mesas" title="Mapa de mesas" sub="Visualize o estado de cada mesa em tempo real" />
+      <PageHead eyebrow={`Evento ao vivo · ${activeEvent?.name ?? ""}`} title="Mapa de mesas" sub="Visualize o estado de cada mesa em tempo real" />
 
       <div className="grid grid-cols-4 gap-4">
         <KpiCard label="Total de mesas" value={tables.length} />

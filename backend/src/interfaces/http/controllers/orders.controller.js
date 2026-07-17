@@ -32,9 +32,9 @@ async function getById(req, res, next) {
 
 async function list(req, res, next) {
   try {
-    const { sessionId, status } = req.query;
+    const { sessionId, status, eventId } = req.query;
     const orders = await listOrders(
-      { sessionId, status, companyId: req.user.companyId },
+      { sessionId, status, eventId, companyId: req.user.companyId },
       buildOrderDeps()
     );
     return res.json(orders);
@@ -74,9 +74,9 @@ async function close(req, res, next) {
 
 async function listItems(req, res, next) {
   try {
-    const { status } = req.query;
+    const { status, eventId } = req.query;
     const items = await listOrderItems(
-      { companyId: req.user.companyId, status },
+      { companyId: req.user.companyId, status, eventId },
       buildOrderDeps()
     );
     return res.json(items);

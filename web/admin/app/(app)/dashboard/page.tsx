@@ -9,6 +9,8 @@ import { Badge, itemStatusToBadge } from "@/components/ui/Badge";
 import { useTables } from "@/lib/hooks/useTables";
 import { useOrders, useOrderItems } from "@/lib/hooks/useOrders";
 import { useSocketEvents } from "@/lib/hooks/useSocketEvents";
+import { useActiveEvent } from "@/lib/hooks/useActiveEvent";
+import { NoActiveEvent } from "@/components/ui/NoActiveEvent";
 
 interface FeedItem {
   id: string;
@@ -33,9 +35,10 @@ function FeedDot({ color }: { color: string }) {
 
 export default function DashboardPage() {
   const qc = useQueryClient();
+  const { data: activeEvent, isLoading: loadingEvent } = useActiveEvent();
   const { data: tables = [] } = useTables();
-  const { data: orders = [] } = useOrders();
-  const { data: items = [] } = useOrderItems();
+  const { data: orders = [] } = useOrders("active");
+  const { data: items = [] } = useOrderItems("active");
   const [feed, setFeed] = useState<FeedItem[]>([]);
 
   const addFeed = useCallback((text: string, dotColor: string) => {
@@ -96,6 +99,15 @@ export default function DashboardPage() {
     ),
   });
 
+  if (!loadingEvent && !activeEvent) {
+    return (
+      <div className="flex flex-col gap-[22px]">
+        <PageHead eyebrow="Evento ao vivo" title="Painel operacional" sub="Acompanhe o evento em tempo real" />
+        <NoActiveEvent />
+      </div>
+    );
+  }
+
   const occupied = tables.filter((t) => t.status === "OCCUPIED").length;
   const total = tables.length;
   const openOrders = orders.filter((o) => o.status === "OPEN").length;
@@ -107,7 +119,7 @@ export default function DashboardPage() {
 
   return (
     <div className="flex flex-col gap-[22px]">
-      <PageHead eyebrow="Evento ao vivo · Dia 1" title="Painel operacional" sub="Acompanhe o evento em tempo real" />
+      <PageHead eyebrow={`Evento ao vivo · ${activeEvent?.name ?? ""}`} title="Painel operacional" sub="Acompanhe o evento em tempo real" />
 
       {/* KPIs */}
       <div className="grid grid-cols-4 gap-4">

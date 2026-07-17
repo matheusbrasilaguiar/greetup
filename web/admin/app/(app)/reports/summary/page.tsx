@@ -1,17 +1,25 @@
 "use client";
 
+import { useState } from "react";
 import { KpiCard } from "@/components/ui/KpiCard";
 import { Panel } from "@/components/ui/Panel";
 import { PageHead } from "@/components/ui/PageHead";
+import { EventSelector } from "@/components/ui/EventSelector";
 import { useTables } from "@/lib/hooks/useTables";
 import { useOrders, useOrderItems } from "@/lib/hooks/useOrders";
 import { useClients } from "@/lib/hooks/useClients";
 import { useUsers } from "@/lib/hooks/useUsers";
+import { useEvents } from "@/lib/hooks/useEvents";
 
 export default function SummaryReportPage() {
+  const { data: events = [] } = useEvents();
+  const [selectedEventId, setSelectedEventId] = useState<string | null>(null);
+
+  const eventId = selectedEventId ?? events[0]?.id ?? undefined;
+
   const { data: tables = [] } = useTables();
-  const { data: orders = [] } = useOrders();
-  const { data: items = [] } = useOrderItems();
+  const { data: orders = [] } = useOrders(eventId);
+  const { data: items = [] } = useOrderItems(eventId);
   const { data: clients = [] } = useClients();
   const { data: users = [] } = useUsers();
 
@@ -36,7 +44,12 @@ export default function SummaryReportPage() {
 
   return (
     <div className="flex flex-col gap-6">
-      <PageHead eyebrow="Relatórios · Resumo" title="Resumo do evento" sub="Visão consolidada de todas as métricas" />
+      <div className="flex items-start justify-between">
+        <PageHead eyebrow="Relatórios · Resumo" title="Resumo do evento" sub="Visão consolidada de todas as métricas" />
+        <div className="pt-1">
+          <EventSelector value={eventId ?? null} onChange={setSelectedEventId} />
+        </div>
+      </div>
 
       <div className="grid grid-cols-4 gap-4">
         <KpiCard label="Mesas" value={tables.length} />

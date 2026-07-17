@@ -44,6 +44,7 @@ class OrderRepository extends OrderRepositoryPort {
     if (filters.companyId) where.companyId = filters.companyId;
     if (filters.sessionId) where.sessionId = filters.sessionId;
     if (filters.status) where.status = filters.status;
+    if (filters.eventId) where.session = { eventId: filters.eventId };
 
     return prisma.order.findMany({
       where,
@@ -71,10 +72,10 @@ class OrderRepository extends OrderRepositoryPort {
     });
   }
 
-  async listItems({ companyId, status }) {
-    const where = {
-      order: { companyId, status: "OPEN" }
-    };
+  async listItems({ companyId, status, eventId }) {
+    const orderFilter = { companyId, status: "OPEN" };
+    if (eventId) orderFilter.session = { eventId };
+    const where = { order: orderFilter };
     if (status) where.status = status;
 
     return prisma.orderItem.findMany({

@@ -1,12 +1,19 @@
 "use client";
 
+import { useState } from "react";
 import { Panel } from "@/components/ui/Panel";
 import { KpiCard } from "@/components/ui/KpiCard";
 import { PageHead } from "@/components/ui/PageHead";
+import { EventSelector } from "@/components/ui/EventSelector";
 import { useOrderItems } from "@/lib/hooks/useOrders";
+import { useEvents } from "@/lib/hooks/useEvents";
 
 export default function ConsumptionReportPage() {
-  const { data: items = [], isLoading } = useOrderItems();
+  const { data: events = [] } = useEvents();
+  const [selectedEventId, setSelectedEventId] = useState<string | null>(null);
+  const eventId = selectedEventId ?? events[0]?.id ?? undefined;
+
+  const { data: items = [], isLoading } = useOrderItems(eventId);
 
   const delivered = items.filter((i) => i.status === "ENTREGUE");
 
@@ -31,7 +38,12 @@ export default function ConsumptionReportPage() {
 
   return (
     <div className="flex flex-col gap-6">
-      <PageHead eyebrow="Relatórios · Consumo" title="Relatório de consumo" sub="Ranking de produtos mais pedidos no evento" />
+      <div className="flex items-start justify-between">
+        <PageHead eyebrow="Relatórios · Consumo" title="Relatório de consumo" sub="Ranking de produtos mais pedidos no evento" />
+        <div className="pt-1">
+          <EventSelector value={eventId ?? null} onChange={setSelectedEventId} />
+        </div>
+      </div>
 
       <div className="grid grid-cols-3 gap-4">
         <KpiCard label="Itens entregues" value={total} valueColor="var(--gu-ready-tx)" />

@@ -4,7 +4,7 @@ const { Events } = require("../../domain/constants/events");
 
 async function openTableSession(
   { tableId, customerId, attendantId, companyId },
-  { tableSessionRepository, tableRepository, userRepository, customerRepository, eventPublisher }
+  { tableSessionRepository, tableRepository, userRepository, customerRepository, eventPublisher, eventRepository }
 ) {
   const table = await tableRepository.getTableById(tableId, companyId);
   if (!table) {
@@ -48,13 +48,24 @@ async function openTableSession(
     }
   }
 
+  const activeEvent = eventRepository
+    ? await eventRepository.getActiveEvent(companyId)
+    : null;
+
+  if (!activeEvent) {
+    const error = new Error("Nenhum evento ativo. Ative um evento antes de abrir sessões.");
+    error.status = 409;
+    throw error;
+  }
+
   const sessionEntity = TableSession.create({ tableId, customerId, attendantId, companyId });
 
   const session = await tableSessionRepository.createSession({
-    tableId: sessionEntity.tableId,
+    tableId:    sessionEntity.tableId,
     customerId: sessionEntity.customerId,
     attendantId: sessionEntity.attendantId,
-    companyId: sessionEntity.companyId
+    companyId:  sessionEntity.companyId,
+    eventId:    activeEvent.id,
   });
 
   await tableRepository.updateStatus(tableId, TableStatus.OCCUPIED, companyId);

@@ -18,6 +18,14 @@ class TableSessionRepository {
   async listSessions(filters) {
     throw new Error("TableSessionRepository#listSessions not implemented");
   }
+
+  async closeEventSessions(eventId, companyId) {
+    throw new Error("TableSessionRepository#closeEventSessions not implemented");
+  }
+
+  async closeOrphanSessions(companyId) {
+    throw new Error("TableSessionRepository#closeOrphanSessions not implemented");
+  }
 }
 
 module.exports = TableSessionRepository;

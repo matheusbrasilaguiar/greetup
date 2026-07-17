@@ -10,6 +10,7 @@ const createTablesRouter = require("./interfaces/http/routes/tables.routes");
 const createUsersRouter = require("./interfaces/http/routes/users.routes");
 const createCustomersRouter = require("./interfaces/http/routes/customers.routes");
 const createOrdersRouter = require("./interfaces/http/routes/orders.routes");
+const createEventsRouter = require("./interfaces/http/routes/events.routes");
 
 const app = express();
 
@@ -28,6 +29,7 @@ app.use("/tables", createTablesRouter(authMiddleware));
 app.use("/users", createUsersRouter(authMiddleware));
 app.use("/customers", createCustomersRouter(authMiddleware));
 app.use("/orders", createOrdersRouter(authMiddleware));
+app.use("/events", createEventsRouter(authMiddleware));
 
 app.use((err, req, res, next) => {
   const status = err.status || 500;

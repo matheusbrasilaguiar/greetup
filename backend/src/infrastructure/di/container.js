@@ -5,6 +5,7 @@ const TableSessionRepositoryPort = require("../../application/ports/TableSession
 const CustomerRepositoryPort     = require("../../application/ports/CustomerRepository");
 const OrderRepositoryPort        = require("../../application/ports/OrderRepository");
 const CompanyRepositoryPort      = require("../../application/ports/CompanyRepository");
+const EventRepositoryPort        = require("../../application/ports/EventRepository");
 const HashServicePort            = require("../../application/ports/HashService");
 const TokenServicePort           = require("../../application/ports/TokenService");
 const EventPublisherPort         = require("../../application/ports/EventPublisher");
@@ -16,6 +17,7 @@ const tableSessionRepository = require("../repositories/tableSessionRepository")
 const customerRepository     = require("../repositories/customerRepository");
 const orderRepository        = require("../repositories/orderRepository");
 const companyRepository      = require("../repositories/companyRepository");
+const eventRepository        = require("../repositories/eventRepository");
 const hashService            = require("../security/hashService");
 const tokenService           = require("../security/tokenService");
 const eventPublisher         = require("../messaging/rabbitmqEventPublisher");
@@ -28,6 +30,7 @@ const bindings = [
   [customerRepository,     CustomerRepositoryPort,      "CustomerRepository"],
   [orderRepository,        OrderRepositoryPort,         "OrderRepository"],
   [companyRepository,      CompanyRepositoryPort,       "CompanyRepository"],
+  [eventRepository,        EventRepositoryPort,         "EventRepository"],
   [hashService,            HashServicePort,             "HashService"],
   [tokenService,           TokenServicePort,            "TokenService"],
   [eventPublisher,         EventPublisherPort,          "EventPublisher"]
@@ -61,7 +64,8 @@ function buildTableSessionDeps() {
     tableRepository,
     userRepository,
     customerRepository,
-    eventPublisher
+    eventPublisher,
+    eventRepository,
   };
 }
 
@@ -70,7 +74,11 @@ function buildCustomerDeps() {
 }
 
 function buildOrderDeps() {
-  return { orderRepository, tableSessionRepository, eventPublisher };
+  return { orderRepository, tableSessionRepository, eventPublisher, eventRepository };
+}
+
+function buildEventDeps() {
+  return { eventRepository, tableSessionRepository, tableRepository };
 }
 
 module.exports = {
@@ -81,5 +89,6 @@ module.exports = {
   buildTableSessionDeps,
   buildCustomerDeps,
   buildOrderDeps,
+  buildEventDeps,
   tokenService
 };

@@ -14,9 +14,11 @@ import {
   Award,
   FileText,
   LogOut,
+  CalendarDays,
   type LucideIcon,
 } from "lucide-react";
 import { useAuth } from "@/lib/hooks/useAuth";
+import { useActiveEvent } from "@/lib/hooks/useActiveEvent";
 
 interface NavItem {
   label: string;
@@ -34,6 +36,7 @@ const NAV: NavGroup[] = [
   {
     title: "Configuração",
     items: [
+      { label: "Eventos", href: "/events", icon: CalendarDays },
       { label: "Usuários", href: "/users", icon: Users },
       { label: "Produtos", href: "/products", icon: Package },
       { label: "Mesas", href: "/tables/config", icon: LayoutGrid },
@@ -66,6 +69,7 @@ function isItemActive(pathname: string, item: NavItem): boolean {
 export function Sidebar() {
   const pathname = usePathname();
   const { logout } = useAuth();
+  const { data: activeEvent } = useActiveEvent();
 
   return (
     <aside
@@ -101,6 +105,24 @@ export function Sidebar() {
           </span>
         </div>
       </div>
+
+      {/* Active event badge */}
+      <Link
+        href="/events"
+        className="mx-3 my-2 px-3 py-2 rounded-lg flex items-center gap-2"
+        style={{ background: "var(--gu-bordeaux-800)" }}
+      >
+        <span
+          className="w-2 h-2 rounded-full flex-shrink-0"
+          style={{
+            background: activeEvent ? "#22C55E" : "var(--gu-bordeaux-400)",
+            boxShadow: activeEvent ? "0 0 0 3px rgba(34,197,94,.2)" : "none",
+          }}
+        />
+        <span className="text-[11.5px] truncate" style={{ color: activeEvent ? "var(--gu-cream-100)" : "var(--gu-bordeaux-400)" }}>
+          {activeEvent ? activeEvent.name : "Sem evento ativo"}
+        </span>
+      </Link>
 
       {/* Nav */}
       <nav className="flex-1 overflow-y-auto py-3 px-2 flex flex-col gap-0.5">
