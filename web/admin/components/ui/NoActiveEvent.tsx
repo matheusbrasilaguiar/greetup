@@ -5,9 +5,9 @@ export function NoActiveEvent() {
     <div className="flex flex-col items-center justify-center gap-4 py-24">
       <div
         className="w-14 h-14 rounded-full flex items-center justify-center"
-        style={{ background: "var(--gu-bordeaux-100)" }}
+        style={{ background: "var(--gu-cream-100)" }}
       >
-        <svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" strokeWidth="1.6" style={{ color: "var(--gu-bordeaux-600)" }}>
+        <svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" strokeWidth="1.6" style={{ color: "var(--gu-bordeaux-700)" }}>
           <rect x="3" y="4" width="18" height="18" rx="2" />
           <path d="M16 2v4M8 2v4M3 10h18" />
         </svg>

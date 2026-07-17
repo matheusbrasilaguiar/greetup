@@ -37,7 +37,7 @@ interface SearchFieldProps {
 export function SearchField({ value, onChange, placeholder }: SearchFieldProps) {
   return (
     <div
-      className="flex items-center gap-1.5 rounded-[6px] border"
+      className="flex items-center gap-1.5 rounded-[6px] border flex-1 sm:flex-none"
       style={{
         background: "white",
         borderColor: "var(--gu-cream-200)",
@@ -53,6 +53,7 @@ export function SearchField({ value, onChange, placeholder }: SearchFieldProps) 
         value={value}
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder ?? "Buscar…"}
+        className="min-w-0 w-full sm:w-auto sm:min-w-[160px]"
         style={{
           fontFamily: "var(--font-sora)",
           fontSize: 12.5,
@@ -60,7 +61,6 @@ export function SearchField({ value, onChange, placeholder }: SearchFieldProps) 
           background: "transparent",
           border: "none",
           outline: "none",
-          minWidth: 160,
         }}
       />
     </div>

@@ -74,7 +74,7 @@ export default function EventsPage() {
       />
 
       {isLoading ? (
-        <p className="text-[13px]" style={{ color: "var(--gu-ink-400)" }}>Carregando...</p>
+        <p className="text-[13px]" style={{ color: "var(--gu-ink-500)" }}>Carregando...</p>
       ) : events.length === 0 ? (
         <div className="text-center py-16">
           <p className="text-[14px]" style={{ color: "var(--gu-ink-500)" }}>Nenhum evento criado ainda.</p>
@@ -89,7 +89,7 @@ export default function EventsPage() {
                   <th
                     key={h}
                     className="text-left px-5 py-3 font-mono text-[10.5px] uppercase tracking-widest"
-                    style={{ color: "var(--gu-ink-400)" }}
+                    style={{ color: "var(--gu-ink-500)" }}
                   >
                     {h}
                   </th>
@@ -102,7 +102,7 @@ export default function EventsPage() {
                   <td className="px-5 py-3.5 font-medium" style={{ color: "var(--gu-ink-900)" }}>
                     {ev.name}
                   </td>
-                  <td className="px-5 py-3.5" style={{ color: "var(--gu-ink-600)" }}>
+                  <td className="px-5 py-3.5" style={{ color: "var(--gu-ink-500)" }}>
                     {formatDate(ev.date)}
                   </td>
                   <td className="px-5 py-3.5">
@@ -148,23 +148,23 @@ export default function EventsPage() {
             <h2 className="font-semibold text-[16px] mb-4" style={{ color: "var(--gu-ink-900)" }}>Novo evento</h2>
             <div className="flex flex-col gap-3">
               <div>
-                <label className="block text-[11px] font-mono uppercase tracking-wider mb-1" style={{ color: "var(--gu-ink-400)" }}>Nome</label>
+                <label className="block text-[11px] font-mono uppercase tracking-wider mb-1" style={{ color: "var(--gu-ink-500)" }}>Nome</label>
                 <input
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   placeholder="Ex: Evento 17/07"
                   className="w-full border rounded-lg px-3 py-2 text-[13px] outline-none"
-                  style={{ borderColor: "var(--gu-bordeaux-200)", color: "var(--gu-ink-900)" }}
+                  style={{ borderColor: "var(--gu-bordeaux-300)", color: "var(--gu-ink-900)" }}
                 />
               </div>
               <div>
-                <label className="block text-[11px] font-mono uppercase tracking-wider mb-1" style={{ color: "var(--gu-ink-400)" }}>Data</label>
+                <label className="block text-[11px] font-mono uppercase tracking-wider mb-1" style={{ color: "var(--gu-ink-500)" }}>Data</label>
                 <input
                   type="date"
                   value={date}
                   onChange={(e) => setDate(e.target.value)}
                   className="w-full border rounded-lg px-3 py-2 text-[13px] outline-none"
-                  style={{ borderColor: "var(--gu-bordeaux-200)", color: "var(--gu-ink-900)" }}
+                  style={{ borderColor: "var(--gu-bordeaux-300)", color: "var(--gu-ink-900)" }}
                 />
               </div>
             </div>
@@ -172,7 +172,7 @@ export default function EventsPage() {
               <button
                 onClick={() => setShowModal(false)}
                 className="flex-1 py-2 rounded-lg text-[13px] border"
-                style={{ borderColor: "var(--gu-bordeaux-200)", color: "var(--gu-ink-600)" }}
+                style={{ borderColor: "var(--gu-bordeaux-300)", color: "var(--gu-ink-500)" }}
               >
                 Cancelar
               </button>
@@ -196,7 +196,7 @@ export default function EventsPage() {
             <h2 className="font-semibold text-[16px] mb-2" style={{ color: "var(--gu-ink-900)" }}>
               {confirmAction.type === "activate" ? "Ativar evento?" : "Encerrar evento?"}
             </h2>
-            <p className="text-[13px] mb-5" style={{ color: "var(--gu-ink-600)" }}>
+            <p className="text-[13px] mb-5" style={{ color: "var(--gu-ink-500)" }}>
               {confirmAction.type === "activate"
                 ? `Ativar "${confirmAction.event.name}" vai encerrar o evento ativo atual (se houver) e fechar todas as sessões abertas.`
                 : `Encerrar "${confirmAction.event.name}" vai fechar todas as sessões abertas e liberar as mesas.`}
@@ -205,7 +205,7 @@ export default function EventsPage() {
               <button
                 onClick={() => setConfirmAction(null)}
                 className="flex-1 py-2 rounded-lg text-[13px] border"
-                style={{ borderColor: "var(--gu-bordeaux-200)", color: "var(--gu-ink-600)" }}
+                style={{ borderColor: "var(--gu-bordeaux-300)", color: "var(--gu-ink-500)" }}
               >
                 Cancelar
               </button>

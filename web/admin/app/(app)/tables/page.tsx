@@ -92,7 +92,7 @@ export default function TablesLivePage() {
       {isLoading ? (
         <p className="text-sm" style={{ color: "var(--gu-ink-300)" }}>Carregando mesas…</p>
       ) : (
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3.5">
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3">
           {tables.map((table) => {
             const busy = table.status === "OCCUPIED";
             const inactive = table.status === "CLOSED";
@@ -102,9 +102,9 @@ export default function TablesLivePage() {
             return (
               <div
                 key={table.id}
-                className="rounded-[10px] flex flex-col gap-2 p-4 transition-all"
+                className="rounded-[10px] flex flex-col gap-1.5 p-3 sm:p-4 transition-all"
                 style={{
-                  minHeight: 130,
+                  minHeight: 110,
                   border: busy
                     ? "1.5px solid var(--gu-bordeaux-300)"
                     : inactive

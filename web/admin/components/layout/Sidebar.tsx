@@ -127,16 +127,16 @@ export function Sidebar({
       <Link
         href="/events"
         className="mx-3 my-2 px-3 py-2 rounded-lg flex items-center gap-2"
-        style={{ background: "var(--gu-bordeaux-800)" }}
+        style={{ background: "var(--gu-bordeaux-800)", color: "inherit" }}
       >
         <span
           className="w-2 h-2 rounded-full flex-shrink-0"
           style={{
-            background: activeEvent ? "#22C55E" : "var(--gu-bordeaux-400)",
+            background: activeEvent ? "#22C55E" : "var(--gu-bordeaux-300)",
             boxShadow: activeEvent ? "0 0 0 3px rgba(34,197,94,.2)" : "none",
           }}
         />
-        <span className="text-[11.5px] truncate" style={{ color: activeEvent ? "var(--gu-cream-100)" : "var(--gu-bordeaux-400)" }}>
+        <span className="text-[11.5px] truncate" style={{ color: activeEvent ? "var(--gu-cream-100)" : "var(--gu-cream-200)" }}>
           {activeEvent ? activeEvent.name : "Sem evento ativo"}
         </span>
       </Link>

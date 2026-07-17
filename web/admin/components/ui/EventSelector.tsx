@@ -19,7 +19,7 @@ export function EventSelector({ value, onChange }: Props) {
   if (isLoading) return null;
   if (events.length === 0) {
     return (
-      <p className="text-[13px]" style={{ color: "var(--gu-bordeaux-400)" }}>
+      <p className="text-[13px]" style={{ color: "var(--gu-ink-500)" }}>
         Nenhum evento encontrado.
       </p>
     );
@@ -27,7 +27,7 @@ export function EventSelector({ value, onChange }: Props) {
 
   return (
     <div className="flex items-center gap-2">
-      <label className="text-[12px] font-mono uppercase tracking-wider" style={{ color: "var(--gu-bordeaux-400)" }}>
+      <label className="text-[12px] font-mono uppercase tracking-wider" style={{ color: "var(--gu-bordeaux-500)" }}>
         Evento
       </label>
       <select
@@ -36,7 +36,7 @@ export function EventSelector({ value, onChange }: Props) {
         className="text-[13px] rounded-lg px-3 py-1.5 border outline-none"
         style={{
           background: "var(--gu-cream-50)",
-          borderColor: "var(--gu-bordeaux-200)",
+          borderColor: "var(--gu-bordeaux-300)",
           color: "var(--gu-bordeaux-900)",
         }}
       >
