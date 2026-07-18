@@ -16,8 +16,10 @@ export default function ConsumptionReportPage() {
   const { data: items = [], isLoading } = useOrderItems(eventId);
 
   const delivered = items.filter((i) => i.status === "ENTREGUE");
+  const paidDelivered = delivered.filter((i) => !i.courtesy);
+  const courtesyCount = delivered.filter((i) => i.courtesy).length;
 
-  const byProduct = delivered.reduce<Record<string, { name: string; category: string; qty: number }>>(
+  const byProduct = paidDelivered.reduce<Record<string, { name: string; category: string; qty: number }>>(
     (acc, item) => {
       const id = item.product.id;
       if (!acc[id]) {
@@ -45,9 +47,10 @@ export default function ConsumptionReportPage() {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
         <KpiCard label="Itens entregues" value={total} valueColor="var(--gu-ready-tx)" />
         <KpiCard label="Produtos distintos" value={ranked.length} />
+        <KpiCard label="Cortesias" value={courtesyCount} sub="não contam no ranking" />
         <KpiCard label="Mais pedido" value={top?.name ?? "—"} sub={top ? `${top.qty}× pedido` : undefined} />
       </div>
 

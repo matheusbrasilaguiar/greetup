@@ -14,6 +14,8 @@ interface CartItem {
   product: Product;
   quantity: number;
   notes: string;
+  withCheese: boolean | null;
+  courtesy: boolean;
 }
 
 export default function PedidoPage() {
@@ -22,6 +24,7 @@ export default function PedidoPage() {
   const [stage, setStage] = useState<Stage>("idle");
   const [cart, setCart] = useState<Record<string, CartItem>>({});
   const [customerName, setCustomerName] = useState("");
+  const [toGo, setToGo] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
 
@@ -33,7 +36,8 @@ export default function PedidoPage() {
   const total = useMemo(
     () =>
       Object.values(cart).reduce(
-        (sum, { product, quantity }) => sum + Number(product.price ?? 0) * quantity,
+        (sum, { product, quantity, courtesy }) =>
+          courtesy ? sum : sum + Number(product.price ?? 0) * quantity,
         0
       ),
     [cart]
@@ -48,7 +52,23 @@ export default function PedidoPage() {
         product,
         quantity: (prev[product.id]?.quantity ?? 0) + 1,
         notes: prev[product.id]?.notes ?? "",
+        withCheese: prev[product.id]?.withCheese ?? null,
+        courtesy: prev[product.id]?.courtesy ?? false,
       },
+    }));
+  }
+
+  function setWithCheese(productId: string, value: boolean | null) {
+    setCart((prev) => ({
+      ...prev,
+      [productId]: { ...prev[productId], withCheese: value },
+    }));
+  }
+
+  function setCourtesy(productId: string, value: boolean) {
+    setCart((prev) => ({
+      ...prev,
+      [productId]: { ...prev[productId], courtesy: value },
     }));
   }
 
@@ -74,6 +94,7 @@ export default function PedidoPage() {
   function resetAll() {
     setCart({});
     setCustomerName("");
+    setToGo(false);
     setSubmitError(null);
     setStage("idle");
   }
@@ -99,13 +120,15 @@ export default function PedidoPage() {
       const sessionId = sessionRes.data.id;
       console.log("[pedido] sessão:", sessionId);
 
-      const items = Object.values(cart).map(({ product, quantity, notes }) => ({
+      const items = Object.values(cart).map(({ product, quantity, notes, withCheese, courtesy }) => ({
         productId: product.id,
         quantity,
         ...(notes.trim() ? { notes: notes.trim() } : {}),
+        ...(withCheese !== null ? { withCheese } : {}),
+        ...(courtesy ? { courtesy: true } : {}),
       }));
-      console.log("[pedido] 4. criando pedido...", { sessionId, items });
-      await api.post("/orders", { sessionId, items });
+      console.log("[pedido] 4. criando pedido...", { sessionId, items, toGo });
+      await api.post("/orders", { sessionId, toGo, items });
 
       setStage("success");
     } catch (err: unknown) {
@@ -245,14 +268,51 @@ export default function PedidoPage() {
                         )}
                       </div>
                       {qty > 0 && (
-                        <input
-                          type="text"
-                          value={notes}
-                          onChange={(e) => setNotes(product.id, e.target.value)}
-                          placeholder="Observação (opcional)"
-                          className="mt-2 w-full rounded-lg bg-bordeaux-900 border border-bordeaux-700 px-3 py-1.5 text-cream-50 placeholder:text-ink-500 focus:outline-none focus:border-champagne transition-colors"
-                          style={{ fontSize: "16px" }}
-                        />
+                        <div className="mt-2 flex flex-col gap-2">
+                          {/* Com/Sem queijo — só para MASSA */}
+                          {product.category === "MASSA" && (
+                            <div className="flex gap-2">
+                              {([true, false] as const).map((val) => {
+                                const active = cart[product.id]?.withCheese === val;
+                                return (
+                                  <button
+                                    key={String(val)}
+                                    onClick={() => setWithCheese(product.id, active ? null : val)}
+                                    className="flex-1 rounded-lg py-1.5 text-xs font-semibold transition-colors"
+                                    style={{
+                                      background: active ? "#D9B58A" : "transparent",
+                                      color: active ? "#4A1A24" : "#B0AAA5",
+                                      border: `1.5px solid ${active ? "#D9B58A" : "#4A1A24"}`,
+                                    }}
+                                  >
+                                    {val ? "Com queijo" : "Sem queijo"}
+                                  </button>
+                                );
+                              })}
+                            </div>
+                          )}
+
+                          {/* Cortesia */}
+                          <label className="flex items-center gap-2 cursor-pointer">
+                            <input
+                              type="checkbox"
+                              checked={cart[product.id]?.courtesy ?? false}
+                              onChange={(e) => setCourtesy(product.id, e.target.checked)}
+                              className="w-4 h-4 accent-champagne"
+                            />
+                            <span className="text-xs text-ink-300">Cortesia (gratuito)</span>
+                          </label>
+
+                          {/* Observação */}
+                          <input
+                            type="text"
+                            value={notes}
+                            onChange={(e) => setNotes(product.id, e.target.value)}
+                            placeholder="Observação (opcional)"
+                            className="w-full rounded-lg bg-bordeaux-900 border border-bordeaux-700 px-3 py-1.5 text-cream-50 placeholder:text-ink-500 focus:outline-none focus:border-champagne transition-colors"
+                            style={{ fontSize: "16px" }}
+                          />
+                        </div>
                       )}
                     </div>
                   );
@@ -268,6 +328,19 @@ export default function PedidoPage() {
         <div className="px-4 pb-8 pt-3 border-t border-bordeaux-800">
           {stage === "confirm" ? (
             <div className="flex flex-col gap-3">
+              {/* Pra levar toggle */}
+              <button
+                onClick={() => setToGo((v) => !v)}
+                className="w-full rounded-xl py-3 text-sm font-semibold transition-colors flex items-center justify-center gap-2"
+                style={{
+                  background: toGo ? "#D9B58A" : "transparent",
+                  color: toGo ? "#4A1A24" : "#7A736E",
+                  border: `1.5px solid ${toGo ? "#D9B58A" : "#4A1A24"}`,
+                }}
+              >
+                🛍 {toGo ? "Pra levar ✓" : "Pra levar"}
+              </button>
+
               <input
                 type="text"
                 value={customerName}

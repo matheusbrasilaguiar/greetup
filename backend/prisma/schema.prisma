@@ -111,6 +111,7 @@ model Event {
 model Order {
   id        String       @id @default(cuid())
   status    OrderStatus  @default(OPEN)
+  toGo      Boolean      @default(false)
   createdAt DateTime     @default(now())
   updatedAt DateTime     @updatedAt
   companyId String
@@ -121,16 +122,18 @@ model Order {
 }
 
 model OrderItem {
-  id        String     @id @default(cuid())
-  orderId   String
-  productId String
-  quantity  Int        @default(1)
-  notes     String?
-  status    ItemStatus @default(PENDENTE)
-  createdAt DateTime   @default(now())
-  updatedAt DateTime   @updatedAt
-  order     Order      @relation(fields: [orderId], references: [id])
-  product   Product    @relation(fields: [productId], references: [id])
+  id         String     @id @default(cuid())
+  orderId    String
+  productId  String
+  quantity   Int        @default(1)
+  notes      String?
+  withCheese Boolean?
+  courtesy   Boolean    @default(false)
+  status     ItemStatus @default(PENDENTE)
+  createdAt  DateTime   @default(now())
+  updatedAt  DateTime   @updatedAt
+  order      Order      @relation(fields: [orderId], references: [id])
+  product    Product    @relation(fields: [productId], references: [id])
 }
 
 enum Role {
@@ -148,6 +151,7 @@ enum OperatorFunction {
 enum ProductCategory {
   COMIDA
   BEBIDA
+  MASSA
 }
 
 enum TableStatus {

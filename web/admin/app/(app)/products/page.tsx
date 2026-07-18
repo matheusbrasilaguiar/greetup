@@ -15,8 +15,8 @@ import {
 } from "@/lib/hooks/useProducts";
 import { useOrders } from "@/lib/hooks/useOrders";
 
-const CATEGORIES = ["COMIDA", "BEBIDA"] as const;
-const CAT_LABEL: Record<string, string> = { COMIDA: "Comidas", BEBIDA: "Bebidas" };
+const CATEGORIES = ["COMIDA", "BEBIDA", "MASSA"] as const;
+const CAT_LABEL: Record<string, string> = { COMIDA: "Comidas", BEBIDA: "Bebidas", MASSA: "Massas" };
 
 const inputClass =
   "w-full px-3 py-2 rounded-lg border text-sm outline-none transition" +
@@ -26,7 +26,14 @@ const labelClass = "font-mono text-[10px] tracking-widest text-ink-500 uppercase
 
 // ─── CategoryBadge ─────────────────────────────────────────────────────────
 
+const CAT_STYLE: Record<string, { border: string; background: string; color: string }> = {
+  COMIDA: { border: "var(--gu-delivered-br)", background: "var(--gu-delivered-bg)", color: "var(--gu-delivered-tx)" },
+  BEBIDA: { border: "var(--gu-pending-br)",   background: "var(--gu-pending-bg)",   color: "var(--gu-pending-tx)"   },
+  MASSA:  { border: "#C49A6C",                background: "#FEF3E2",                color: "#7C4A1E"                },
+};
+
 function CategoryBadge({ category }: { category: string }) {
+  const style = CAT_STYLE[category] ?? CAT_STYLE.COMIDA;
   return (
     <span
       style={{
@@ -37,9 +44,9 @@ function CategoryBadge({ category }: { category: string }) {
         textTransform: "uppercase",
         padding: "3px 9px",
         borderRadius: 99,
-        border: "1px solid var(--gu-delivered-br)",
-        background: "var(--gu-delivered-bg)",
-        color: "var(--gu-delivered-tx)",
+        border: `1px solid ${style.border}`,
+        background: style.background,
+        color: style.color,
       }}
     >
       {CAT_LABEL[category] ?? category}
@@ -148,7 +155,7 @@ export default function ProductsPage() {
   const { data: products = [], isLoading } = useProducts();
   const { data: orders = [] } = useOrders();
   const { mutate: update } = useUpdateProduct();
-  const [activeTab, setActiveTab] = useState<"COMIDA" | "BEBIDA">("COMIDA");
+  const [activeTab, setActiveTab] = useState<"COMIDA" | "BEBIDA" | "MASSA">("COMIDA");
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("TODOS");
   const [catFilter, setCatFilter] = useState("TODOS");

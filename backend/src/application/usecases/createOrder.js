@@ -4,7 +4,7 @@ const { OrderStatus } = require("../../domain/constants/orderStatus");
 const { Events } = require("../../domain/constants/events");
 
 async function createOrder(
-  { sessionId, items, companyId },
+  { sessionId, items, toGo = false, companyId },
   { orderRepository, tableSessionRepository, eventPublisher }
 ) {
   const session = await tableSessionRepository.getSessionById(sessionId, companyId);
@@ -20,18 +20,26 @@ async function createOrder(
     throw error;
   }
 
-  const orderEntity = Order.create({ sessionId, items });
+  const orderEntity = Order.create({ sessionId, items, toGo });
 
   const itemEntities = orderEntity.items.map(item =>
-    OrderItem.create({ productId: item.productId, quantity: item.quantity, notes: item.notes })
+    OrderItem.create({
+      productId: item.productId,
+      quantity: item.quantity,
+      notes: item.notes,
+      withCheese: item.withCheese,
+      courtesy: item.courtesy
+    })
   );
 
   const order = await orderRepository.createOrder(
-    { sessionId: orderEntity.sessionId, status: orderEntity.status, companyId },
+    { sessionId: orderEntity.sessionId, status: orderEntity.status, toGo: orderEntity.toGo, companyId },
     itemEntities.map(item => ({
       productId: item.productId,
       quantity: item.quantity,
       notes: item.notes,
+      withCheese: item.withCheese,
+      courtesy: item.courtesy,
       status: item.status
     }))
   );

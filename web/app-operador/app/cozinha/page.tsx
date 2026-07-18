@@ -139,6 +139,17 @@ export default function CozinhaPage() {
   );
 }
 
+function OptionBadge({ label, bg, color }: { label: string; bg: string; color: string }) {
+  return (
+    <span
+      className="font-mono text-[9px] font-semibold uppercase px-1.5 py-0.5 rounded"
+      style={{ background: bg, color }}
+    >
+      {label}
+    </span>
+  );
+}
+
 function KanbanCard({
   item,
   accent,
@@ -182,6 +193,16 @@ function KanbanCard({
           <span className="font-mono text-bordeaux-700 mr-1">{item.quantity}×</span>
           {item.product.name}
         </p>
+
+        {/* Option badges */}
+        {(item.withCheese !== null || item.courtesy || item.order?.toGo) && (
+          <div className="flex gap-1 flex-wrap mt-1">
+            {item.withCheese === true  && <OptionBadge label="COM QUEIJO" bg="#FEF3C7" color="#92400E" />}
+            {item.withCheese === false && <OptionBadge label="SEM QUEIJO" bg="#F3F4F6" color="#4B5563" />}
+            {item.courtesy             && <OptionBadge label="CORTESIA"   bg="#DCFCE7" color="#166534" />}
+            {item.order?.toGo          && <OptionBadge label="LEVAR"      bg="#EFF6FF" color="#1D4ED8" />}
+          </div>
+        )}
 
         {/* Notes */}
         {item.notes && (

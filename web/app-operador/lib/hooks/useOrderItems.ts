@@ -10,11 +10,14 @@ export interface OrderItem {
   orderId: string;
   quantity: number;
   notes: string | null;
+  withCheese: boolean | null;
+  courtesy: boolean;
   status: ItemStatus;
   createdAt: string;
   product: { id: string; name: string; category: string; price: number | null };
   order: {
     id: string;
+    toGo: boolean;
     session: {
       customer: { id: string; name: string } | null;
     };

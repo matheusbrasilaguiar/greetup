@@ -7,14 +7,17 @@ export interface OrderItem {
   id: string;
   quantity: number;
   notes: string | null;
+  withCheese: boolean | null;
+  courtesy: boolean;
   status: "PENDENTE" | "EM_PREPARO" | "PRONTO" | "ENTREGUE" | "CANCELADO";
-  product: { id: string; name: string; category: string };
+  product: { id: string; name: string; category: string; price: number | null };
 }
 
 export interface Order {
   id: string;
   /** "OPEN" = em aberto, "CLOSED" = fechado */
   status: "OPEN" | "CLOSED";
+  toGo: boolean;
   createdAt: string;
   session: {
     id: string;

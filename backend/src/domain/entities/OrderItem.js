@@ -1,18 +1,20 @@
 const { ItemStatus } = require("../constants/itemStatus");
 
 class OrderItem {
-  constructor({ id, orderId, productId, quantity, notes, status, createdAt, updatedAt }) {
+  constructor({ id, orderId, productId, quantity, notes, withCheese, courtesy, status, createdAt, updatedAt }) {
     this.id = id;
     this.orderId = orderId;
     this.productId = productId;
     this.quantity = quantity;
     this.notes = notes;
+    this.withCheese = withCheese ?? null;
+    this.courtesy = courtesy ?? false;
     this.status = status;
     this.createdAt = createdAt;
     this.updatedAt = updatedAt;
   }
 
-  static create({ productId, quantity, notes }) {
+  static create({ productId, quantity, notes, withCheese, courtesy }) {
     if (!productId) {
       const error = new Error("productId is required for each item");
       error.status = 400;
@@ -30,6 +32,8 @@ class OrderItem {
       productId,
       quantity: qty,
       notes: notes || null,
+      withCheese: withCheese ?? null,
+      courtesy: Boolean(courtesy),
       status: ItemStatus.PENDENTE
     });
   }

@@ -1,16 +1,17 @@
 const { OrderStatus } = require("../constants/orderStatus");
 
 class Order {
-  constructor({ id, sessionId, status, items, createdAt, updatedAt }) {
+  constructor({ id, sessionId, status, toGo, items, createdAt, updatedAt }) {
     this.id = id;
     this.sessionId = sessionId;
     this.status = status;
+    this.toGo = toGo ?? false;
     this.items = items;
     this.createdAt = createdAt;
     this.updatedAt = updatedAt;
   }
 
-  static create({ sessionId, items }) {
+  static create({ sessionId, items, toGo = false }) {
     if (!sessionId) {
       const error = new Error("sessionId is required");
       error.status = 400;
@@ -26,6 +27,7 @@ class Order {
     return new Order({
       sessionId,
       status: OrderStatus.OPEN,
+      toGo: Boolean(toGo),
       items
     });
   }
