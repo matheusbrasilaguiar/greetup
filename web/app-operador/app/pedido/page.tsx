@@ -268,40 +268,39 @@ export default function PedidoPage() {
                         )}
                       </div>
                       {qty > 0 && (
-                        <div className="mt-2 flex flex-col gap-2">
-                          {/* Com/Sem queijo — só para MASSA */}
-                          {product.subcategory === "MASSA" && (
-                            <div className="flex gap-2">
-                              {([true, false] as const).map((val) => {
-                                const active = cart[product.id]?.withCheese === val;
-                                return (
-                                  <button
-                                    key={String(val)}
-                                    onClick={() => setWithCheese(product.id, active ? null : val)}
-                                    className="flex-1 rounded-lg py-1.5 text-xs font-semibold transition-colors"
-                                    style={{
-                                      background: active ? "#D9B58A" : "transparent",
-                                      color: active ? "#4A1A24" : "#B0AAA5",
-                                      border: `1.5px solid ${active ? "#D9B58A" : "#4A1A24"}`,
-                                    }}
-                                  >
-                                    {val ? "Com queijo" : "Sem queijo"}
-                                  </button>
-                                );
-                              })}
-                            </div>
-                          )}
-
-                          {/* Cortesia */}
-                          <label className="flex items-center gap-2 cursor-pointer">
-                            <input
-                              type="checkbox"
-                              checked={cart[product.id]?.courtesy ?? false}
-                              onChange={(e) => setCourtesy(product.id, e.target.checked)}
-                              className="w-4 h-4 accent-champagne"
-                            />
-                            <span className="text-xs text-ink-300">Cortesia (gratuito)</span>
-                          </label>
+                        <div className="mt-3 flex flex-col gap-2">
+                          {/* Opções rápidas: queijo + cortesia na mesma linha */}
+                          <div className="flex flex-wrap items-center gap-2">
+                            {product.subcategory === "MASSA" && (
+                              <div className="flex rounded-lg overflow-hidden border border-bordeaux-700">
+                                {([true, false] as const).map((val) => {
+                                  const active = cart[product.id]?.withCheese === val;
+                                  return (
+                                    <button
+                                      key={String(val)}
+                                      onClick={() => setWithCheese(product.id, active ? null : val)}
+                                      className="px-3 py-1.5 text-xs font-semibold transition-colors whitespace-nowrap"
+                                      style={{
+                                        background: active ? "#D9B58A" : "transparent",
+                                        color: active ? "#4A1A24" : "#7A6A60",
+                                      }}
+                                    >
+                                      {val ? "Com queijo" : "Sem queijo"}
+                                    </button>
+                                  );
+                                })}
+                              </div>
+                            )}
+                            <label className="flex items-center gap-1.5 cursor-pointer">
+                              <input
+                                type="checkbox"
+                                checked={cart[product.id]?.courtesy ?? false}
+                                onChange={(e) => setCourtesy(product.id, e.target.checked)}
+                                className="w-3.5 h-3.5 accent-champagne"
+                              />
+                              <span className="text-xs text-ink-400">Cortesia</span>
+                            </label>
+                          </div>
 
                           {/* Observação */}
                           <input
