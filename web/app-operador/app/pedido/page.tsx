@@ -269,20 +269,24 @@ export default function PedidoPage() {
                       </div>
                       {qty > 0 && (
                         <div className="mt-3 flex flex-col gap-2">
-                          {/* Opções rápidas: queijo + cortesia na mesma linha */}
-                          <div className="flex flex-wrap items-center gap-2">
+                          {/* Opções: queijo + cortesia */}
+                          <div className="flex flex-wrap gap-2">
                             {product.subcategory === "MASSA" && (
-                              <div className="flex rounded-lg overflow-hidden border border-bordeaux-700">
-                                {([true, false] as const).map((val) => {
+                              <div
+                                className="flex rounded-lg overflow-hidden"
+                                style={{ border: "1.5px solid #5C3040" }}
+                              >
+                                {([true, false] as const).map((val, i) => {
                                   const active = cart[product.id]?.withCheese === val;
                                   return (
                                     <button
                                       key={String(val)}
                                       onClick={() => setWithCheese(product.id, active ? null : val)}
-                                      className="px-3 py-1.5 text-xs font-semibold transition-colors whitespace-nowrap"
+                                      className="px-4 py-2 text-xs font-semibold transition-all whitespace-nowrap"
                                       style={{
-                                        background: active ? "#D9B58A" : "transparent",
-                                        color: active ? "#4A1A24" : "#7A6A60",
+                                        background: active ? "#D9B58A" : "#3D1825",
+                                        color: active ? "#3D1020" : "#C9B8B0",
+                                        borderRight: i === 0 ? "1.5px solid #5C3040" : "none",
                                       }}
                                     >
                                       {val ? "Com queijo" : "Sem queijo"}
@@ -291,15 +295,17 @@ export default function PedidoPage() {
                                 })}
                               </div>
                             )}
-                            <label className="flex items-center gap-1.5 cursor-pointer">
-                              <input
-                                type="checkbox"
-                                checked={cart[product.id]?.courtesy ?? false}
-                                onChange={(e) => setCourtesy(product.id, e.target.checked)}
-                                className="w-3.5 h-3.5 accent-champagne"
-                              />
-                              <span className="text-xs text-ink-400">Cortesia</span>
-                            </label>
+                            <button
+                              onClick={() => setCourtesy(product.id, !(cart[product.id]?.courtesy ?? false))}
+                              className="px-4 py-2 rounded-lg text-xs font-semibold transition-all whitespace-nowrap"
+                              style={
+                                cart[product.id]?.courtesy
+                                  ? { background: "#166534", color: "#DCFCE7", border: "1.5px solid #15803D" }
+                                  : { background: "#3D1825", color: "#C9B8B0", border: "1.5px solid #5C3040" }
+                              }
+                            >
+                              {cart[product.id]?.courtesy ? "Cortesia ✓" : "Cortesia"}
+                            </button>
                           </div>
 
                           {/* Observação */}
@@ -308,7 +314,7 @@ export default function PedidoPage() {
                             value={notes}
                             onChange={(e) => setNotes(product.id, e.target.value)}
                             placeholder="Observação (opcional)"
-                            className="w-full rounded-lg bg-bordeaux-900 border border-bordeaux-700 px-3 py-1.5 text-cream-50 placeholder:text-ink-500 focus:outline-none focus:border-champagne transition-colors"
+                            className="w-full rounded-lg bg-bordeaux-900 border border-bordeaux-700 px-3 py-2 text-cream-50 placeholder:text-ink-500 focus:outline-none focus:border-champagne transition-colors"
                             style={{ fontSize: "16px" }}
                           />
                         </div>
