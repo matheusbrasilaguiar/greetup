@@ -8,6 +8,7 @@ export interface Product {
   name: string;
   description: string | null;
   category: string;
+  subcategory: string | null;
   price: number | null;
   active: boolean;
 }

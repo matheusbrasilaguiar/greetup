@@ -15,8 +15,9 @@ import {
 } from "@/lib/hooks/useProducts";
 import { useOrders } from "@/lib/hooks/useOrders";
 
-const CATEGORIES = ["COMIDA", "BEBIDA", "MASSA"] as const;
-const CAT_LABEL: Record<string, string> = { COMIDA: "Comidas", BEBIDA: "Bebidas", MASSA: "Massas" };
+const CATEGORIES = ["COMIDA", "BEBIDA"] as const;
+const CAT_LABEL: Record<string, string> = { COMIDA: "Comidas", BEBIDA: "Bebidas" };
+const SUBCATEGORIES_BY_CAT: Record<string, string[]> = { COMIDA: ["MASSA"] };
 
 const inputClass =
   "w-full px-3 py-2 rounded-lg border text-sm outline-none transition" +
@@ -29,27 +30,46 @@ const labelClass = "font-mono text-[10px] tracking-widest text-ink-500 uppercase
 const CAT_STYLE: Record<string, { border: string; background: string; color: string }> = {
   COMIDA: { border: "var(--gu-delivered-br)", background: "var(--gu-delivered-bg)", color: "var(--gu-delivered-tx)" },
   BEBIDA: { border: "var(--gu-pending-br)",   background: "var(--gu-pending-bg)",   color: "var(--gu-pending-tx)"   },
-  MASSA:  { border: "#C49A6C",                background: "#FEF3E2",                color: "#7C4A1E"                },
 };
 
-function CategoryBadge({ category }: { category: string }) {
+function CategoryBadge({ category, subcategory }: { category: string; subcategory?: string | null }) {
   const style = CAT_STYLE[category] ?? CAT_STYLE.COMIDA;
   return (
-    <span
-      style={{
-        display: "inline-flex",
-        fontFamily: "var(--font-jetbrains)",
-        fontSize: 10,
-        letterSpacing: "0.12em",
-        textTransform: "uppercase",
-        padding: "3px 9px",
-        borderRadius: 99,
-        border: `1px solid ${style.border}`,
-        background: style.background,
-        color: style.color,
-      }}
-    >
-      {CAT_LABEL[category] ?? category}
+    <span className="inline-flex items-center gap-1">
+      <span
+        style={{
+          display: "inline-flex",
+          fontFamily: "var(--font-jetbrains)",
+          fontSize: 10,
+          letterSpacing: "0.12em",
+          textTransform: "uppercase",
+          padding: "3px 9px",
+          borderRadius: 99,
+          border: `1px solid ${style.border}`,
+          background: style.background,
+          color: style.color,
+        }}
+      >
+        {CAT_LABEL[category] ?? category}
+      </span>
+      {subcategory && (
+        <span
+          style={{
+            display: "inline-flex",
+            fontFamily: "var(--font-jetbrains)",
+            fontSize: 10,
+            letterSpacing: "0.12em",
+            textTransform: "uppercase",
+            padding: "3px 9px",
+            borderRadius: 99,
+            border: "1px solid #C49A6C",
+            background: "#FEF3E2",
+            color: "#7C4A1E",
+          }}
+        >
+          {subcategory}
+        </span>
+      )}
     </span>
   );
 }
@@ -63,6 +83,7 @@ function ProductModal({ initial, onClose }: { initial?: Product; onClose: () => 
     name: initial?.name ?? "",
     description: initial?.description ?? "",
     category: initial?.category ?? "COMIDA",
+    subcategory: initial?.subcategory ?? null,
     price: initial?.price ?? null,
   });
   const [error, setError] = useState<string | null>(null);
@@ -103,10 +124,25 @@ function ProductModal({ initial, onClose }: { initial?: Product; onClose: () => 
           </div>
           <div className="flex flex-col gap-1.5">
             <label className={labelClass}>Categoria</label>
-            <select className={inputClass} value={form.category} onChange={(e) => setForm((f) => ({ ...f, category: e.target.value }))}>
+            <select className={inputClass} value={form.category} onChange={(e) => setForm((f) => ({ ...f, category: e.target.value, subcategory: null }))}>
               {CATEGORIES.map((c) => <option key={c} value={c}>{CAT_LABEL[c]}</option>)}
             </select>
           </div>
+          {SUBCATEGORIES_BY_CAT[form.category]?.length > 0 && (
+            <div className="flex flex-col gap-1.5">
+              <label className={labelClass}>Subcategoria</label>
+              <select
+                className={inputClass}
+                value={form.subcategory ?? ""}
+                onChange={(e) => setForm((f) => ({ ...f, subcategory: e.target.value || null }))}
+              >
+                <option value="">Nenhuma</option>
+                {SUBCATEGORIES_BY_CAT[form.category].map((s) => (
+                  <option key={s} value={s}>{s.charAt(0) + s.slice(1).toLowerCase()}</option>
+                ))}
+              </select>
+            </div>
+          )}
           <div className="flex flex-col gap-1.5">
             <label className={labelClass}>Preço base (R$)</label>
             <input
@@ -155,7 +191,7 @@ export default function ProductsPage() {
   const { data: products = [], isLoading } = useProducts();
   const { data: orders = [] } = useOrders();
   const { mutate: update } = useUpdateProduct();
-  const [activeTab, setActiveTab] = useState<"COMIDA" | "BEBIDA" | "MASSA">("COMIDA");
+  const [activeTab, setActiveTab] = useState<"COMIDA" | "BEBIDA">("COMIDA");
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("TODOS");
   const [catFilter, setCatFilter] = useState("TODOS");
@@ -264,7 +300,7 @@ export default function ProductsPage() {
                     {product.name}
                   </td>
                   <td className="px-5 py-3">
-                    <CategoryBadge category={product.category} />
+                    <CategoryBadge category={product.category} subcategory={product.subcategory} />
                   </td>
                   <td className="px-5 py-3 text-[13px]" style={{ color: "var(--gu-ink-700)" }}>
                     {product.description ?? "—"}

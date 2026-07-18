@@ -42,6 +42,7 @@ model Product {
   name        String
   description String?
   category    ProductCategory
+  subcategory String?
   price       Decimal?
   active      Boolean         @default(true)
   createdAt   DateTime        @default(now())
@@ -151,7 +152,6 @@ enum OperatorFunction {
 enum ProductCategory {
   COMIDA
   BEBIDA
-  MASSA
 }
 
 enum TableStatus {

@@ -270,7 +270,7 @@ export default function PedidoPage() {
                       {qty > 0 && (
                         <div className="mt-2 flex flex-col gap-2">
                           {/* Com/Sem queijo — só para MASSA */}
-                          {product.category === "MASSA" && (
+                          {product.subcategory === "MASSA" && (
                             <div className="flex gap-2">
                               {([true, false] as const).map((val) => {
                                 const active = cart[product.id]?.withCheese === val;
