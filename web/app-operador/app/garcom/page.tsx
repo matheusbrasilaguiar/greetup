@@ -13,6 +13,8 @@ export default function GarcomPage() {
   const qc = useQueryClient();
   const [checked, setChecked] = useState<Record<string, boolean>>({});
   const [banner, setBanner] = useState<string | null>(null);
+  // Set de chaves de grupo em processamento — impede confirmar entrega duas vezes
+  const [deliveringGroups, setDeliveringGroups] = useState<Set<string>>(new Set());
 
   const socketHandlers = useCallback(
     () => ({
@@ -32,11 +34,11 @@ export default function GarcomPage() {
   useSocketEvents(socketHandlers());
 
   const byCustomer = useMemo(() => {
-    const map = new Map<string, { name: string; items: OrderItem[] }>();
+    const map = new Map<string, { key: string; name: string; items: OrderItem[] }>();
     for (const item of items) {
       const name = item.order.session.customer?.name ?? "Sem nome";
       const key = item.order.session.customer?.id ?? name;
-      if (!map.has(key)) map.set(key, { name, items: [] });
+      if (!map.has(key)) map.set(key, { key, name, items: [] });
       map.get(key)!.items.push(item);
     }
     return Array.from(map.values());
@@ -46,15 +48,25 @@ export default function GarcomPage() {
     setChecked((prev) => ({ ...prev, [itemId]: !prev[itemId] }));
   }
 
-  async function confirmDelivery(groupItems: OrderItem[]) {
-    await Promise.all(
-      groupItems.map((item) => advance(item.orderId, item.id, "ENTREGUE"))
-    );
-    setChecked((prev) => {
-      const next = { ...prev };
-      for (const item of groupItems) delete next[item.id];
-      return next;
-    });
+  async function confirmDelivery(groupKey: string, groupItems: OrderItem[]) {
+    if (deliveringGroups.has(groupKey)) return;
+    setDeliveringGroups((prev) => new Set(prev).add(groupKey));
+    try {
+      await Promise.all(
+        groupItems.map((item) => advance(item.orderId, item.id, "ENTREGUE"))
+      );
+      setChecked((prev) => {
+        const next = { ...prev };
+        for (const item of groupItems) delete next[item.id];
+        return next;
+      });
+    } finally {
+      setDeliveringGroups((prev) => {
+        const next = new Set(prev);
+        next.delete(groupKey);
+        return next;
+      });
+    }
   }
 
   return (
@@ -92,11 +104,12 @@ export default function GarcomPage() {
           <EmptyState />
         ) : (
           <div className="flex flex-col gap-4">
-            {byCustomer.map(({ name, items: groupItems }) => {
+            {byCustomer.map(({ key: groupKey, name, items: groupItems }) => {
               const allChecked = groupItems.every((i) => checked[i.id]);
+              const delivering = deliveringGroups.has(groupKey);
               return (
                 <div
-                  key={name}
+                  key={groupKey}
                   className="bg-white rounded-xl overflow-hidden border border-cream-200"
                 >
                   {/* Group header */}
@@ -170,15 +183,15 @@ export default function GarcomPage() {
                   {/* Confirm button */}
                   <div className="px-4 py-3 border-t border-cream-200">
                     <button
-                      disabled={!allChecked}
-                      onClick={() => confirmDelivery(groupItems)}
-                      className="w-full rounded-lg py-3 text-sm font-semibold transition-colors"
+                      disabled={!allChecked || delivering}
+                      onClick={() => confirmDelivery(groupKey, groupItems)}
+                      className="w-full rounded-lg py-3 text-sm font-semibold transition-colors disabled:cursor-not-allowed"
                       style={{
-                        backgroundColor: allChecked ? "#6B2331" : "#ECE2CC",
-                        color: allChecked ? "#FBF7EF" : "#7A736E",
+                        backgroundColor: allChecked && !delivering ? "#6B2331" : "#ECE2CC",
+                        color: allChecked && !delivering ? "#FBF7EF" : "#7A736E",
                       }}
                     >
-                      Confirmar entrega
+                      {delivering ? "Confirmando..." : "Confirmar entrega"}
                     </button>
                   </div>
                 </div>

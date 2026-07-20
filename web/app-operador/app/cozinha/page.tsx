@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useMemo, useState, useEffect } from "react";
+import { useCallback, useMemo, useState, useEffect, useRef } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useOrderItems, OrderItem, ItemStatus, useAdvanceItemStatus, useCancelOrder } from "@/lib/hooks/useOrderItems";
 import { useSocketEvents } from "@/lib/hooks/useSocketEvents";
@@ -20,6 +20,8 @@ export default function CozinhaPage() {
   const cancelOrder = useCancelOrder();
   const qc = useQueryClient();
   const [now, setNow] = useState(Date.now());
+  // Set de item IDs em processamento — impede ações duplicadas
+  const [pendingItems, setPendingItems] = useState<Set<string>>(new Set());
 
   useEffect(() => {
     const t = setInterval(() => setNow(Date.now()), 30_000);
@@ -44,6 +46,22 @@ export default function CozinhaPage() {
     }
     return map;
   }, [items]);
+
+  function withItemGuard(item: OrderItem, fn: () => Promise<void>) {
+    return async () => {
+      if (pendingItems.has(item.id)) return;
+      setPendingItems((prev) => new Set(prev).add(item.id));
+      try {
+        await fn();
+      } finally {
+        setPendingItems((prev) => {
+          const next = new Set(prev);
+          next.delete(item.id);
+          return next;
+        });
+      }
+    };
+  }
 
   async function handleAdvance(item: OrderItem) {
     const next: Record<string, ItemStatus> = {
@@ -97,40 +115,35 @@ export default function CozinhaPage() {
             const col = byStatus[status] ?? [];
             return (
               <div key={status} className="flex-1 min-w-0 flex flex-col gap-2">
-                {/* Column header */}
                 <div className="flex items-center gap-2 px-1">
-                  <span
-                    className="w-2 h-2 rounded-full shrink-0"
-                    style={{ backgroundColor: accent }}
-                  />
-                  <span className="text-xs font-mono text-ink-300 uppercase tracking-wider">
-                    {label}
-                  </span>
+                  <span className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: accent }} />
+                  <span className="text-xs font-mono text-ink-300 uppercase tracking-wider">{label}</span>
                   <span className="ml-auto text-xs font-mono text-ink-500">{col.length}</span>
                 </div>
 
-                {/* Cards */}
                 <div className="flex-1 overflow-y-auto flex flex-col gap-2 pb-2">
                   {col.length === 0 && (
-                    <div className="text-ink-700 text-xs text-center py-6 font-mono">
-                      —
-                    </div>
+                    <div className="text-ink-700 text-xs text-center py-6 font-mono">—</div>
                   )}
-                  {col.map((item) => (
-                    <KanbanCard
-                      key={item.id}
-                      item={item}
-                      accent={accent}
-                      now={now}
-                      onAction={item.status !== "ENTREGUE"
-                        ? () => handleAdvance(item)
-                        : undefined}
-                      onRevert={item.status !== "PENDENTE"
-                        ? () => handleRevert(item)
-                        : undefined}
-                      onCancel={() => cancelOrder(item.orderId)}
-                    />
-                  ))}
+                  {col.map((item) => {
+                    const isPending = pendingItems.has(item.id);
+                    return (
+                      <KanbanCard
+                        key={item.id}
+                        item={item}
+                        accent={accent}
+                        now={now}
+                        pending={isPending}
+                        onAction={item.status !== "ENTREGUE"
+                          ? withItemGuard(item, () => handleAdvance(item))
+                          : undefined}
+                        onRevert={item.status !== "PENDENTE"
+                          ? withItemGuard(item, () => handleRevert(item))
+                          : undefined}
+                        onCancel={withItemGuard(item, () => cancelOrder(item.orderId))}
+                      />
+                    );
+                  })}
                 </div>
               </div>
             );
@@ -156,6 +169,7 @@ function KanbanCard({
   item,
   accent,
   now,
+  pending,
   onAction,
   onRevert,
   onCancel,
@@ -163,6 +177,7 @@ function KanbanCard({
   item: OrderItem;
   accent: string;
   now: number;
+  pending: boolean;
   onAction?: () => void;
   onRevert?: () => void;
   onCancel?: () => void;
@@ -176,7 +191,7 @@ function KanbanCard({
   return (
     <div
       className="bg-cream-50 rounded-xl overflow-hidden"
-      style={{ borderLeft: `4px solid ${accent}` }}
+      style={{ borderLeft: `4px solid ${accent}`, opacity: pending ? 0.6 : 1 }}
     >
       <div className="px-2 pt-2 pb-1.5">
         {/* Customer + timer */}
@@ -185,9 +200,7 @@ function KanbanCard({
             {customer?.name ?? "—"}
           </p>
           {showTimer && (
-            <span
-              className={`text-xs font-mono shrink-0 ${late ? "text-red-500 font-semibold" : "text-ink-500"}`}
-            >
+            <span className={`text-xs font-mono shrink-0 ${late ? "text-red-500 font-semibold" : "text-ink-500"}`}>
               {ageMin}m
             </span>
           )}
@@ -225,29 +238,33 @@ function KanbanCard({
         {onAction && (
           <button
             onClick={onAction}
-            className="w-full rounded-lg py-1.5 text-xs font-semibold transition-colors"
+            disabled={pending}
+            className="w-full rounded-lg py-1.5 text-xs font-semibold transition-colors disabled:cursor-not-allowed"
             style={{
               backgroundColor: item.status === "PENDENTE" ? "transparent" : accent,
               color: item.status === "PENDENTE" ? accent : "#FBF7EF",
               border: item.status === "PENDENTE" ? `1.5px solid ${accent}` : "none",
             }}
           >
-            {item.status === "PENDENTE"
+            {pending
+              ? "Aguarde..."
+              : item.status === "PENDENTE"
               ? "Iniciar preparo"
               : item.status === "EM_PREPARO"
               ? "Marcar pronto"
               : "Marcar entregue"}
           </button>
         )}
-        {onRevert && (
+        {onRevert && !confirmCancel && (
           <button
             onClick={onRevert}
-            className="w-full rounded-lg py-1 text-xs transition-colors text-ink-500 hover:text-ink-700"
+            disabled={pending}
+            className="w-full rounded-lg py-1 text-xs transition-colors text-ink-500 hover:text-ink-700 disabled:opacity-40 disabled:cursor-not-allowed"
           >
             ← Voltar
           </button>
         )}
-        {onCancel && !confirmCancel && (
+        {onCancel && !confirmCancel && !pending && (
           <button
             onClick={() => setConfirmCancel(true)}
             className="w-full rounded-lg py-1 text-xs transition-colors"
@@ -256,21 +273,23 @@ function KanbanCard({
             Cancelar pedido
           </button>
         )}
-        {onCancel && confirmCancel && (
+        {confirmCancel && (
           <div className="flex gap-1 mt-0.5">
             <button
               onClick={() => setConfirmCancel(false)}
-              className="flex-1 rounded-lg py-1.5 text-xs font-medium"
+              disabled={pending}
+              className="flex-1 rounded-lg py-1.5 text-xs font-medium disabled:opacity-40"
               style={{ background: "#3D1825", color: "#C9B8B0" }}
             >
               Não
             </button>
             <button
-              onClick={() => { onCancel(); setConfirmCancel(false); }}
-              className="flex-1 rounded-lg py-1.5 text-xs font-semibold"
+              onClick={() => { setConfirmCancel(false); onCancel?.(); }}
+              disabled={pending}
+              className="flex-1 rounded-lg py-1.5 text-xs font-semibold disabled:opacity-40 disabled:cursor-not-allowed"
               style={{ background: "#EF4444", color: "#fff" }}
             >
-              Confirmar
+              {pending ? "Cancelando..." : "Confirmar"}
             </button>
           </div>
         )}
