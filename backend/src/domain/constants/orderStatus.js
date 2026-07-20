@@ -1,6 +1,7 @@
 const OrderStatus = {
   OPEN: "OPEN",
-  CLOSED: "CLOSED"
+  CLOSED: "CLOSED",
+  CANCELED: "CANCELED"
 };
 
 module.exports = { OrderStatus };

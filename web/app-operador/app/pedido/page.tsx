@@ -1,8 +1,6 @@
 "use client";
 
-"use client";
-
-import { useState, useMemo } from "react";
+import { useState, useMemo, useRef } from "react";
 import api from "@/lib/api";
 import { getUser } from "@/lib/auth";
 import { useAuth } from "@/lib/hooks/useAuth";
@@ -27,6 +25,8 @@ export default function PedidoPage() {
   const [toGo, setToGo] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
+  const [pendingSessionId, setPendingSessionId] = useState<string | null>(null);
+  const submittingRef = useRef(false);
 
   const activeProducts = useMemo(
     () => products.filter((p) => p.active),
@@ -96,29 +96,29 @@ export default function PedidoPage() {
     setCustomerName("");
     setToGo(false);
     setSubmitError(null);
+    setPendingSessionId(null);
     setStage("idle");
   }
 
   async function handleConfirm() {
-    if (!customerName.trim() || totalItems === 0) return;
+    if (submittingRef.current || !customerName.trim() || totalItems === 0) return;
+    submittingRef.current = true;
     setSubmitting(true);
     setSubmitError(null);
     try {
-      console.log("[pedido] 1. criando mesa...");
-      const tableRes = await api.post("/tables", { code: `P-${Date.now()}` });
-      const tableId = tableRes.data.id;
-      console.log("[pedido] mesa:", tableId);
+      let sessionId = pendingSessionId;
 
-      console.log("[pedido] 2. criando cliente...");
-      const customerRes = await api.post("/customers", { name: customerName.trim() });
-      const customerId = customerRes.data.id;
-      console.log("[pedido] cliente:", customerId);
-
-      console.log("[pedido] 3. abrindo sessão...");
-      const attendantId = getUser<{ id: string }>()?.id;
-      const sessionRes = await api.post(`/tables/${tableId}/sessions`, { customerId, attendantId });
-      const sessionId = sessionRes.data.id;
-      console.log("[pedido] sessão:", sessionId);
+      if (!sessionId) {
+        const tableRes = await api.post("/tables", { code: `P-${Date.now()}` });
+        const customerRes = await api.post("/customers", { name: customerName.trim() });
+        const attendantId = getUser<{ id: string }>()?.id;
+        const sessionRes = await api.post(`/tables/${tableRes.data.id}/sessions`, {
+          customerId: customerRes.data.id,
+          attendantId,
+        });
+        sessionId = sessionRes.data.id;
+        setPendingSessionId(sessionId);
+      }
 
       const items = Object.values(cart).map(({ product, quantity, notes, withCheese, courtesy }) => ({
         productId: product.id,
@@ -127,7 +127,6 @@ export default function PedidoPage() {
         ...(withCheese !== null ? { withCheese } : {}),
         ...(courtesy ? { courtesy: true } : {}),
       }));
-      console.log("[pedido] 4. criando pedido...", { sessionId, items, toGo });
       await api.post("/orders", { sessionId, toGo, items });
 
       setStage("success");
@@ -136,9 +135,9 @@ export default function PedidoPage() {
         (err as { response?: { data?: { message?: string } } })?.response?.data?.message ??
         (err as { message?: string })?.message ??
         "Erro desconhecido";
-      console.error("[pedido] erro:", err);
       setSubmitError(`Erro: ${msg}`);
     } finally {
+      submittingRef.current = false;
       setSubmitting(false);
     }
   }
@@ -369,7 +368,8 @@ export default function PedidoPage() {
               </button>
               <button
                 onClick={() => setStage("building")}
-                className="text-ink-500 text-sm text-center active:opacity-60"
+                disabled={submitting}
+                className="text-ink-500 text-sm text-center active:opacity-60 disabled:opacity-30"
               >
                 ← Voltar ao cardápio
               </button>

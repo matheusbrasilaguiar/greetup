@@ -163,6 +163,7 @@ enum TableStatus {
 enum OrderStatus {
   OPEN
   CLOSED
+  CANCELED
 }
 
 enum ItemStatus {

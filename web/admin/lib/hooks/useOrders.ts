@@ -1,6 +1,6 @@
 "use client";
 
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import api from "@/lib/api";
 
 export interface OrderItem {
@@ -15,8 +15,7 @@ export interface OrderItem {
 
 export interface Order {
   id: string;
-  /** "OPEN" = em aberto, "CLOSED" = fechado */
-  status: "OPEN" | "CLOSED";
+  status: "OPEN" | "CLOSED" | "CANCELED";
   toGo: boolean;
   createdAt: string;
   session: {
@@ -37,6 +36,14 @@ export function useOrders(eventId?: string) {
       return res.data;
     },
     refetchInterval: 8_000,
+  });
+}
+
+export function useCancelOrder() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) => api.delete(`/orders/${id}`),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["orders"] }),
   });
 }
 

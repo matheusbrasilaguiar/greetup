@@ -4,6 +4,7 @@ const listOrders       = require("../../../application/usecases/listOrders");
 const listOrderItems   = require("../../../application/usecases/listOrderItems");
 const updateItemStatus = require("../../../application/usecases/updateItemStatus");
 const closeOrder       = require("../../../application/usecases/closeOrder");
+const cancelOrder      = require("../../../application/usecases/cancelOrder");
 const { buildOrderDeps } = require("../../../infrastructure/di/container");
 
 async function create(req, res, next) {
@@ -85,11 +86,24 @@ async function listItems(req, res, next) {
   }
 }
 
+async function cancel(req, res, next) {
+  try {
+    const order = await cancelOrder(
+      { id: req.params.id, companyId: req.user.companyId },
+      buildOrderDeps()
+    );
+    return res.json(order);
+  } catch (err) {
+    return next(err);
+  }
+}
+
 module.exports = {
   create,
   getById,
   list,
   listItems,
   patchItemStatus,
-  close
+  close,
+  cancel
 };
