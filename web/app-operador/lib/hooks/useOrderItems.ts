@@ -46,3 +46,11 @@ export function useAdvanceItemStatus() {
     qc.invalidateQueries({ queryKey: ["order-items"] });
   };
 }
+
+export function useCancelOrder() {
+  const qc = useQueryClient();
+  return async (orderId: string) => {
+    await api.delete(`/orders/${orderId}`);
+    qc.invalidateQueries({ queryKey: ["order-items"] });
+  };
+}

@@ -2,7 +2,7 @@
 
 import { useCallback, useMemo, useState, useEffect } from "react";
 import { useQueryClient } from "@tanstack/react-query";
-import { useOrderItems, OrderItem, ItemStatus, useAdvanceItemStatus } from "@/lib/hooks/useOrderItems";
+import { useOrderItems, OrderItem, ItemStatus, useAdvanceItemStatus, useCancelOrder } from "@/lib/hooks/useOrderItems";
 import { useSocketEvents } from "@/lib/hooks/useSocketEvents";
 import { useAuth } from "@/lib/hooks/useAuth";
 
@@ -17,6 +17,7 @@ export default function CozinhaPage() {
   const { logout } = useAuth();
   const { data: items = [], isLoading } = useOrderItems(undefined, "active");
   const advance = useAdvanceItemStatus();
+  const cancelOrder = useCancelOrder();
   const qc = useQueryClient();
   const [now, setNow] = useState(Date.now());
 
@@ -127,6 +128,7 @@ export default function CozinhaPage() {
                       onRevert={item.status !== "PENDENTE"
                         ? () => handleRevert(item)
                         : undefined}
+                      onCancel={() => cancelOrder(item.orderId)}
                     />
                   ))}
                 </div>
@@ -156,17 +158,20 @@ function KanbanCard({
   now,
   onAction,
   onRevert,
+  onCancel,
 }: {
   item: OrderItem;
   accent: string;
   now: number;
   onAction?: () => void;
   onRevert?: () => void;
+  onCancel?: () => void;
 }) {
   const customer = item.order.session.customer;
   const ageMin = Math.floor((now - new Date(item.createdAt).getTime()) / 60_000);
   const late = ageMin > 8;
   const showTimer = item.status !== "ENTREGUE";
+  const [confirmCancel, setConfirmCancel] = useState(false);
 
   return (
     <div
@@ -216,35 +221,60 @@ function KanbanCard({
       </div>
 
       {/* Actions */}
-      {(onAction || onRevert) && (
-        <div className="px-2 pb-2 flex flex-col gap-1">
-          {onAction && (
+      <div className="px-2 pb-2 flex flex-col gap-1">
+        {onAction && (
+          <button
+            onClick={onAction}
+            className="w-full rounded-lg py-1.5 text-xs font-semibold transition-colors"
+            style={{
+              backgroundColor: item.status === "PENDENTE" ? "transparent" : accent,
+              color: item.status === "PENDENTE" ? accent : "#FBF7EF",
+              border: item.status === "PENDENTE" ? `1.5px solid ${accent}` : "none",
+            }}
+          >
+            {item.status === "PENDENTE"
+              ? "Iniciar preparo"
+              : item.status === "EM_PREPARO"
+              ? "Marcar pronto"
+              : "Marcar entregue"}
+          </button>
+        )}
+        {onRevert && (
+          <button
+            onClick={onRevert}
+            className="w-full rounded-lg py-1 text-xs transition-colors text-ink-500 hover:text-ink-700"
+          >
+            ← Voltar
+          </button>
+        )}
+        {onCancel && !confirmCancel && (
+          <button
+            onClick={() => setConfirmCancel(true)}
+            className="w-full rounded-lg py-1 text-xs transition-colors"
+            style={{ color: "#EF4444" }}
+          >
+            Cancelar pedido
+          </button>
+        )}
+        {onCancel && confirmCancel && (
+          <div className="flex gap-1 mt-0.5">
             <button
-              onClick={onAction}
-              className="w-full rounded-lg py-1.5 text-xs font-semibold transition-colors"
-              style={{
-                backgroundColor: item.status === "PENDENTE" ? "transparent" : accent,
-                color: item.status === "PENDENTE" ? accent : "#FBF7EF",
-                border: item.status === "PENDENTE" ? `1.5px solid ${accent}` : "none",
-              }}
+              onClick={() => setConfirmCancel(false)}
+              className="flex-1 rounded-lg py-1.5 text-xs font-medium"
+              style={{ background: "#3D1825", color: "#C9B8B0" }}
             >
-              {item.status === "PENDENTE"
-                ? "Iniciar preparo"
-                : item.status === "EM_PREPARO"
-                ? "Marcar pronto"
-                : "Marcar entregue"}
+              Não
             </button>
-          )}
-          {onRevert && (
             <button
-              onClick={onRevert}
-              className="w-full rounded-lg py-1 text-xs transition-colors text-ink-500 hover:text-ink-700"
+              onClick={() => { onCancel(); setConfirmCancel(false); }}
+              className="flex-1 rounded-lg py-1.5 text-xs font-semibold"
+              style={{ background: "#EF4444", color: "#fff" }}
             >
-              ← Voltar
+              Confirmar
             </button>
-          )}
-        </div>
-      )}
+          </div>
+        )}
+      </div>
     </div>
   );
 }
