@@ -9,8 +9,8 @@ const STATUS_LABEL: Record<GrEventItem["status"], string> = {
 };
 
 interface Props {
-  value: string | null;
-  onChange: (id: string) => void;
+  value: string | null;           // null = todos os eventos
+  onChange: (id: string | null) => void;
 }
 
 export function EventSelector({ value, onChange }: Props) {
@@ -32,7 +32,7 @@ export function EventSelector({ value, onChange }: Props) {
       </label>
       <select
         value={value ?? ""}
-        onChange={(e) => onChange(e.target.value)}
+        onChange={(e) => onChange(e.target.value || null)}
         className="text-[13px] rounded-lg px-3 py-1.5 border outline-none"
         style={{
           background: "var(--gu-cream-50)",
@@ -40,6 +40,7 @@ export function EventSelector({ value, onChange }: Props) {
           color: "var(--gu-bordeaux-900)",
         }}
       >
+        <option value="">Todos os eventos</option>
         {events.map((ev) => (
           <option key={ev.id} value={ev.id}>
             {ev.name} — {STATUS_LABEL[ev.status]}

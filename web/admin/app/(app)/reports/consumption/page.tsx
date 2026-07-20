@@ -6,12 +6,10 @@ import { KpiCard } from "@/components/ui/KpiCard";
 import { PageHead } from "@/components/ui/PageHead";
 import { EventSelector } from "@/components/ui/EventSelector";
 import { useOrderItems } from "@/lib/hooks/useOrders";
-import { useEvents } from "@/lib/hooks/useEvents";
 
 export default function ConsumptionReportPage() {
-  const { data: events = [] } = useEvents();
   const [selectedEventId, setSelectedEventId] = useState<string | null>(null);
-  const eventId = selectedEventId ?? events[0]?.id ?? undefined;
+  const eventId = selectedEventId ?? undefined;
 
   const { data: items = [], isLoading } = useOrderItems(eventId);
 

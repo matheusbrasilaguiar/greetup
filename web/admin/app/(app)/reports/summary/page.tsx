@@ -9,13 +9,10 @@ import { useTables } from "@/lib/hooks/useTables";
 import { useOrders, useOrderItems } from "@/lib/hooks/useOrders";
 import { useClients } from "@/lib/hooks/useClients";
 import { useUsers } from "@/lib/hooks/useUsers";
-import { useEvents } from "@/lib/hooks/useEvents";
 
 export default function SummaryReportPage() {
-  const { data: events = [] } = useEvents();
   const [selectedEventId, setSelectedEventId] = useState<string | null>(null);
-
-  const eventId = selectedEventId ?? events[0]?.id ?? undefined;
+  const eventId = selectedEventId ?? undefined;
 
   const { data: tables = [] } = useTables();
   const { data: orders = [] } = useOrders(eventId);
