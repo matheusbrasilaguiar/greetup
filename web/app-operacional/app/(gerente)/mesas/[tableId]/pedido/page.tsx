@@ -62,13 +62,11 @@ function PedidoContent({ tableId, sessionId }: { tableId: string; sessionId: str
             ))}
           </div>
         )}
-        {/* Bottom padding for floating bar */}
-        <div className="h-24" />
       </div>
 
       {/* Floating action bar */}
       {totalItems > 0 && (
-        <div className="fixed bottom-0 left-0 right-0 pb-safe px-4 pt-4 bg-cream-50 border-t border-cream-200">
+        <div className="pb-safe px-4 pt-4 bg-cream-50 border-t border-cream-200">
           <button
             onClick={() => router.push(`/mesas/${tableId}/confirmar?sessionId=${sessionId}`)}
             className="w-full rounded-xl py-4 bg-bordeaux-700 text-cream-50 text-base font-semibold flex items-center justify-between px-5 active:scale-95 transition-transform"

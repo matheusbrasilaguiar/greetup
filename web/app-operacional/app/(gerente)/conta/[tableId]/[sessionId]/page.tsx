@@ -157,11 +157,10 @@ export default function ContaPage() {
           </div>
         )}
 
-        <div className="h-28" />
       </div>
 
       {/* CTA buttons */}
-      <div className="fixed bottom-0 left-0 right-0 pb-safe px-4 pt-4 bg-cream-50 border-t border-cream-200 flex flex-col gap-2">
+      <div className="pb-safe px-4 pt-4 bg-cream-50 border-t border-cream-200 flex flex-col gap-2">
         <button
           onClick={() => router.push(`/mesas/${tableId}/pedido?sessionId=${sessionId}`)}
           className="w-full rounded-xl py-3 text-sm font-semibold border-2 border-bordeaux-700 text-bordeaux-700 transition-colors active:bg-bordeaux-50"

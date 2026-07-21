@@ -3,6 +3,7 @@
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { getToken, getUser } from "@/lib/auth";
+import { GerenteNav } from "@/components/GerenteNav";
 
 // CartProvider is applied per-page where tableId is available from params.
 // This layout only enforces GERENTE role.
@@ -24,5 +25,10 @@ export default function GerenteLayout({ children }: { children: React.ReactNode 
     }
   }, [router]);
 
-  return <>{children}</>;
+  return (
+    <div className="h-full flex flex-col">
+      <div className="flex-1 min-h-0">{children}</div>
+      <GerenteNav />
+    </div>
+  );
 }
