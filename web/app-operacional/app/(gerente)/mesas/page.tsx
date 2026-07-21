@@ -34,12 +34,12 @@ export default function MesasPage() {
     if (table.activeSession && table.activeSession.attendantId === user?.id) {
       router.push(`/conta/${table.id}/${table.activeSession.id}`);
     } else {
-      router.push(`/mesas/${table.id}/abrir`);
+      router.push(`/mesas/${table.id}/abrir?code=${encodeURIComponent(table.code)}`);
     }
   }
 
   return (
-    <div className="min-h-screen flex flex-col bg-cream-50">
+    <div className="h-full flex flex-col bg-cream-50">
       {/* Header */}
       <div className="bg-bordeaux-900 px-4 pt-10 pb-5">
         <p className="text-xs font-mono text-champagne tracking-widest uppercase mb-1">
@@ -64,7 +64,7 @@ export default function MesasPage() {
       </div>
 
       {/* Grid */}
-      <div className="flex-1 p-4">
+      <div className="flex-1 overflow-y-auto p-4">
         {isLoading ? (
           <p className="text-ink-500 text-sm text-center py-16 font-mono">Carregando mesas...</p>
         ) : tables.length === 0 ? (

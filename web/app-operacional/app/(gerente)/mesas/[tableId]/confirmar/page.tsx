@@ -39,7 +39,7 @@ function ConfirmarContent({ tableId, sessionId }: { tableId: string; sessionId: 
   }
 
   return (
-    <div className="min-h-screen flex flex-col bg-cream-50">
+    <div className="h-full flex flex-col bg-cream-50">
       {/* Header */}
       <div className="bg-bordeaux-900 px-4 pt-10 pb-5">
         <button
@@ -56,7 +56,7 @@ function ConfirmarContent({ tableId, sessionId }: { tableId: string; sessionId: 
       </div>
 
       {/* Items list */}
-      <div className="flex-1 p-4 flex flex-col gap-3">
+      <div className="flex-1 overflow-y-auto p-4 flex flex-col gap-3">
         <div className="bg-white rounded-2xl overflow-hidden border border-cream-200">
           {items.map((item, i) => (
             <div

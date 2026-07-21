@@ -30,7 +30,7 @@ export const viewport: Viewport = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="pt-BR" className={`${sora.variable} ${jetbrains.variable} h-full`}>
-      <body className="min-h-full">
+      <body className="h-full overflow-hidden">
         <QueryProvider>{children}</QueryProvider>
       </body>
     </html>

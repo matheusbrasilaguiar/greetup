@@ -29,14 +29,33 @@
   --gu-delivered-bg: #F5EEDE;  --gu-delivered-tx: #4A423E;  --gu-delivered-br: #B0AAA5;
 }
 
+* {
+  -webkit-tap-highlight-color: transparent;
+}
+
 html {
+  height: 100%;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  -webkit-text-size-adjust: 100%;
 }
 
 body {
+  height: 100%;
+  overflow: hidden;
+  overscroll-behavior: none;
   background-color: #FBF7EF;
   color: #1F1A18;
   font-size: 15px;
   line-height: 1.55;
+}
+
+/* Prevent iOS zoom on input focus */
+input, select, textarea {
+  font-size: 16px;
+}
+
+/* Safe area for iOS notch */
+.pb-safe {
+  padding-bottom: max(1rem, env(safe-area-inset-bottom));
 }

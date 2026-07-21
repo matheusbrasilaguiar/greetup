@@ -53,7 +53,7 @@ export default function DisplayPage() {
   }, []);
 
   return (
-    <div className="min-h-screen flex flex-col bg-bordeaux-900 landscape:flex-row">
+    <div className="h-full flex flex-col bg-bordeaux-900 landscape:flex-row">
       {/* Left: Pronto para entrega */}
       <div className="flex-1 flex flex-col p-4">
         <div className="flex items-center gap-3 mb-4">

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useRef, useCallback, useEffect } from "react";
-import { useRouter, useParams } from "next/navigation";
+import { useRouter, useParams, useSearchParams } from "next/navigation";
 import { useCustomerSearch, useCreateCustomer, type Customer } from "@/lib/hooks/useCustomers";
 import { useOpenSession } from "@/lib/hooks/useSessions";
 
@@ -17,6 +17,8 @@ function useDebounce(value: string, ms: number) {
 export default function AbrirSessaoPage() {
   const router = useRouter();
   const { tableId } = useParams<{ tableId: string }>();
+  const searchParams = useSearchParams();
+  const tableCode = searchParams.get("code") ?? tableId.slice(-4).toUpperCase();
 
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
@@ -80,7 +82,7 @@ export default function AbrirSessaoPage() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col bg-cream-50">
+    <div className="h-full flex flex-col bg-cream-50">
       {/* Header */}
       <div className="bg-bordeaux-900 px-4 pt-10 pb-5">
         <button
@@ -90,12 +92,12 @@ export default function AbrirSessaoPage() {
           ← Voltar
         </button>
         <p className="text-xs font-mono text-champagne tracking-widest uppercase mb-1">
-          Mesa {tableId.slice(-4).toUpperCase()}
+          Mesa {tableCode}
         </p>
         <h1 className="text-xl font-semibold text-cream-50">Novo atendimento</h1>
       </div>
 
-      <div className="flex-1 p-4 flex flex-col gap-5">
+      <div className="flex-1 overflow-y-auto p-4 flex flex-col gap-5">
         {/* Opção A: Buscar cliente */}
         <div className="bg-white rounded-2xl p-4 border border-cream-200">
           <p className="text-xs font-mono text-ink-500 uppercase tracking-wider mb-3">
@@ -193,7 +195,7 @@ export default function AbrirSessaoPage() {
       </div>
 
       {/* Sticky CTA */}
-      <div className="sticky bottom-0 p-4 bg-cream-50 border-t border-cream-200">
+      <div className="sticky bottom-0 pb-safe px-4 pt-4 bg-cream-50 border-t border-cream-200">
         <button
           onClick={handleSubmit}
           disabled={!canSubmit || loading}

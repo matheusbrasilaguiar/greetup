@@ -87,9 +87,15 @@ export default function ContaPage() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col bg-cream-50">
+    <div className="h-full flex flex-col bg-cream-50">
       {/* Header */}
       <div className="bg-bordeaux-900 px-4 pt-10 pb-5">
+        <button
+          onClick={() => router.push("/mesas")}
+          className="text-xs text-ink-400 mb-3 flex items-center gap-1"
+        >
+          ← Mesas
+        </button>
         <div className="flex items-start justify-between mb-2">
           <div>
             <p className="text-xs font-mono text-champagne tracking-widest uppercase mb-1">
@@ -155,7 +161,7 @@ export default function ContaPage() {
       </div>
 
       {/* CTA buttons */}
-      <div className="fixed bottom-0 left-0 right-0 p-4 bg-cream-50 border-t border-cream-200 flex flex-col gap-2">
+      <div className="fixed bottom-0 left-0 right-0 pb-safe px-4 pt-4 bg-cream-50 border-t border-cream-200 flex flex-col gap-2">
         <button
           onClick={() => router.push(`/mesas/${tableId}/pedido?sessionId=${sessionId}`)}
           className="w-full rounded-xl py-3 text-sm font-semibold border-2 border-bordeaux-700 text-bordeaux-700 transition-colors active:bg-bordeaux-50"

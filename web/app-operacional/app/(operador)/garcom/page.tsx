@@ -68,7 +68,7 @@ export default function GarcomPage() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col bg-cream-50">
+    <div className="h-full flex flex-col bg-cream-50">
       {/* Header */}
       <div className="bg-bordeaux-900 px-4 pt-10 pb-5">
         <p className="text-xs font-mono text-champagne tracking-widest uppercase mb-1">

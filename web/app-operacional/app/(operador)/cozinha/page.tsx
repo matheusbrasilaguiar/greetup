@@ -75,7 +75,7 @@ export default function CozinhaPage() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-bordeaux-900">
+      <div className="h-full flex items-center justify-center bg-bordeaux-900">
         <p className="text-ink-500 font-mono text-sm">Carregando pedidos...</p>
       </div>
     );
@@ -84,7 +84,7 @@ export default function CozinhaPage() {
   const pendingCount = items.filter((i) => i.status !== "ENTREGUE").length;
 
   return (
-    <div className="min-h-screen flex flex-col bg-bordeaux-900">
+    <div className="h-full flex flex-col bg-bordeaux-900">
       {/* Header */}
       <div className="flex items-center gap-3 px-4 pt-8 pb-4 border-b border-bordeaux-800">
         <span className="text-xs font-mono text-champagne tracking-widest uppercase">

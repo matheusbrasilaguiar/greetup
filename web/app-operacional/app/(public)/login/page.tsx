@@ -14,7 +14,7 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center px-6 bg-bordeaux-900">
+    <div className="h-full flex flex-col items-center justify-center overflow-y-auto px-6 bg-bordeaux-900">
       <div className="mb-10 text-center">
         <div className="mb-3 flex justify-center">
           <Arch />
