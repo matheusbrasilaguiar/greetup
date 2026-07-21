@@ -1,0 +1,42 @@
+@import "tailwindcss";
+
+@theme {
+  --color-bordeaux-300: #D6A8B0;
+  --color-bordeaux-500: #92465A;
+  --color-bordeaux-700: #6B2331;
+  --color-bordeaux-800: #4A1A24;
+  --color-bordeaux-900: #2E1116;
+
+  --color-cream-50:  #FBF7EF;
+  --color-cream-100: #F5EEDE;
+  --color-cream-200: #ECE2CC;
+
+  --color-ink-300: #B0AAA5;
+  --color-ink-500: #7A736E;
+  --color-ink-700: #4A423E;
+  --color-ink-900: #1F1A18;
+
+  --color-champagne: #D9B58A;
+
+  --font-family-sans: var(--font-sora), system-ui, sans-serif;
+  --font-family-mono: var(--font-jetbrains), ui-monospace, monospace;
+}
+
+:root {
+  --gu-pending-bg:   #FFF8E7;  --gu-pending-tx:   #92610A;  --gu-pending-br:   #D9B58A;
+  --gu-preparing-bg: #EEF2FF;  --gu-preparing-tx: #3730A3;  --gu-preparing-br: #6366F1;
+  --gu-ready-bg:     #F0FDF4;  --gu-ready-tx:     #15803D;  --gu-ready-br:     #22C55E;
+  --gu-delivered-bg: #F5EEDE;  --gu-delivered-tx: #4A423E;  --gu-delivered-br: #B0AAA5;
+}
+
+html {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  background-color: #FBF7EF;
+  color: #1F1A18;
+  font-size: 15px;
+  line-height: 1.55;
+}
