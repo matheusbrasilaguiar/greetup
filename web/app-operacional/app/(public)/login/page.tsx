@@ -5,7 +5,7 @@ import { useAuth } from "@/lib/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Card, CardContent } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 
 export default function LoginPage() {
   const { login, loading, error } = useAuth();
@@ -30,7 +30,13 @@ export default function LoginPage() {
       </div>
 
       <Card className="w-full max-w-sm bg-bordeaux-800 border-bordeaux-700 shadow-xl">
-        <CardContent className="pt-6">
+        <CardHeader>
+          <CardTitle className="text-cream-50">Acesso ao sistema</CardTitle>
+          <CardDescription className="text-ink-300">
+            Entre com suas credenciais de Gerente ou Operador.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
           <form onSubmit={handleSubmit} className="flex flex-col gap-4">
             <div className="flex flex-col gap-1.5">
               <Label className="text-xs text-ink-300 uppercase tracking-wider font-mono">

@@ -8,7 +8,7 @@ import { PageHeader } from "@/components/PageHeader";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Card, CardContent } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { X, UserPlus, Search } from "lucide-react";
 
 type Mode = "search" | "create";
@@ -116,20 +116,14 @@ export default function AbrirSessaoPage() {
 
         {mode === "search" ? (
           <>
-            <div>
-              {selectedCustomer ? (
-                <p className="text-sm text-muted-foreground">Cliente selecionado para este atendimento.</p>
-              ) : (
-                <p className="text-sm text-muted-foreground">
-                  Busque pelo nome ou e-mail do visitante. Caso seja a primeira visita, cadastre um novo abaixo.
-                </p>
-              )}
-            </div>
-
             {selectedCustomer ? (
               /* Cliente selecionado */
               <Card>
-                <CardContent className="py-3 flex items-center justify-between gap-3">
+                <CardHeader className="pb-2">
+                  <CardTitle>Visitante selecionado</CardTitle>
+                  <CardDescription>Cliente vinculado a este atendimento.</CardDescription>
+                </CardHeader>
+                <CardContent className="flex items-center justify-between gap-3">
                   <div className="min-w-0">
                     <p className="text-sm font-semibold text-foreground truncate">{selectedCustomer.name}</p>
                     {selectedCustomer.employer && (
@@ -149,10 +143,13 @@ export default function AbrirSessaoPage() {
             ) : (
               /* Campo de busca */
               <Card className="overflow-visible">
-                <CardContent className="pt-4 pb-4">
-                  <p className="text-[10px] font-mono text-muted-foreground uppercase tracking-wider mb-3">
-                    Buscar cliente cadastrado
-                  </p>
+                <CardHeader className="pb-3">
+                  <CardTitle>Buscar visitante</CardTitle>
+                  <CardDescription>
+                    Encontre pelo nome ou e-mail. Caso seja a primeira visita, cadastre um novo abaixo.
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
                   <div className="relative">
                     <Input
                       type="text"
@@ -168,7 +165,7 @@ export default function AbrirSessaoPage() {
                           <p className="text-xs text-muted-foreground px-4 py-3 font-mono">Buscando...</p>
                         )}
                         {!isFetching && searchResults.length === 0 && (
-                          <p className="text-xs text-muted-foreground px-4 py-3">Nenhum resultado.</p>
+                          <p className="text-xs text-muted-foreground px-4 py-3">Nenhum resultado encontrado.</p>
                         )}
                         {searchResults.slice(0, 5).map((c) => (
                           <button
@@ -199,12 +196,6 @@ export default function AbrirSessaoPage() {
         ) : (
           <>
             {/* Modo de cadastro */}
-            <div>
-              <p className="text-sm text-muted-foreground">
-                Preencha os dados do visitante para abrir o atendimento. Apenas o nome é obrigatório.
-              </p>
-            </div>
-
             <Button
               variant="ghost"
               onClick={switchToSearch}
@@ -215,10 +206,13 @@ export default function AbrirSessaoPage() {
             </Button>
 
             <Card className="overflow-visible">
-              <CardContent className="pt-4 flex flex-col gap-3">
-                <p className="text-[10px] font-mono text-muted-foreground uppercase tracking-wider">
-                  Novo visitante
-                </p>
+              <CardHeader className="pb-3">
+                <CardTitle>Novo visitante</CardTitle>
+                <CardDescription>
+                  Preencha os dados para cadastro e abertura do atendimento. Apenas o nome é obrigatório.
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="flex flex-col gap-3">
                 {[
                   { label: "Nome *", value: newName, set: setNewName, placeholder: "Nome completo", type: "text" },
                   { label: "Empresa", value: newEmployer, set: setNewEmployer, placeholder: "Empresa ou organização", type: "text" },

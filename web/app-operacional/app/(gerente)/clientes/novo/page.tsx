@@ -7,7 +7,7 @@ import { PageHeader } from "@/components/PageHeader";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Card, CardContent } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { CheckCircle } from "lucide-react";
 
 export default function NovoClientePage() {
@@ -88,14 +88,14 @@ export default function NovoClientePage() {
       <PageHeader title="Novo cliente" back={{ href: "/mesas" }} />
 
       <div className="flex-1 overflow-y-auto p-4 flex flex-col gap-4">
-        <div>
-          <p className="text-sm text-muted-foreground">
-            Registre um novo visitante. Apenas o nome é obrigatório — os demais campos facilitam buscas futuras.
-          </p>
-        </div>
-
         <Card className="overflow-visible">
-          <CardContent className="pt-4 flex flex-col gap-3">
+          <CardHeader>
+            <CardTitle>Dados do visitante</CardTitle>
+            <CardDescription>
+              Registre um novo visitante para atendimentos futuros. Apenas o nome é obrigatório — os demais campos facilitam buscas.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="flex flex-col gap-3">
             {[
               { label: "Nome *", value: name, set: setName, placeholder: "Nome completo", type: "text" },
               { label: "Empresa", value: employer, set: setEmployer, placeholder: "Empresa ou organização", type: "text" },
