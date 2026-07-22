@@ -94,7 +94,7 @@ export default function AbrirSessaoPage() {
 
       <div className="flex-1 overflow-y-auto p-4 flex flex-col gap-4">
         {/* Buscar cliente */}
-        <Card>
+        <Card className="overflow-visible">
           <CardContent className="pt-4">
             <p className="text-xs font-mono text-muted-foreground uppercase tracking-wider mb-3">
               Buscar cliente cadastrado
@@ -160,7 +160,7 @@ export default function AbrirSessaoPage() {
         </div>
 
         {/* Novo cliente */}
-        <Card>
+        <Card className="overflow-visible">
           <CardContent className="pt-4 flex flex-col gap-3">
             <p className="text-xs font-mono text-muted-foreground uppercase tracking-wider">
               Novo visitante

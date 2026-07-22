@@ -43,19 +43,17 @@ export function TableCard({ table, myUserId, onClick }: Props) {
     return (
       <button
         onClick={onClick}
-        className="rounded-2xl bg-white border-2 border-bordeaux-700 p-4 flex flex-col gap-2 min-h-[110px] text-left w-full shadow-sm active:scale-95 transition-transform"
+        className="rounded-2xl bg-white border-2 border-bordeaux-700 p-4 flex flex-col gap-1 min-h-[110px] text-left w-full shadow-sm active:scale-95 transition-transform"
       >
+        <span className="font-mono text-[10px] text-ink-500 self-end">{code}</span>
+        <p className="text-sm font-semibold text-ink-900 truncate flex-1">
+          {activeSession.customer?.name ?? "—"}
+        </p>
         <div className="flex items-center justify-between">
-          <span className="font-mono text-[10px] text-bordeaux-700 uppercase tracking-wider font-semibold bg-bordeaux-700/8 px-1.5 py-0.5 rounded">
-            Minha mesa
+          <span className="text-[10px] font-mono text-bordeaux-700 uppercase tracking-wider font-semibold">
+            ● Minha mesa
           </span>
-          <span className="font-mono text-xs text-bordeaux-700 font-bold">{code}</span>
-        </div>
-        <div>
-          <p className="text-sm font-semibold text-ink-900 truncate">
-            {activeSession.customer?.name ?? "—"}
-          </p>
-          <p className="text-xs text-ink-500 mt-0.5">{activeSession.durationMinutes}min em atendimento</p>
+          <span className="text-[10px] text-ink-500">{activeSession.durationMinutes}min</span>
         </div>
       </button>
     );

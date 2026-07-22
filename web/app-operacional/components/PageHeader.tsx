@@ -22,14 +22,14 @@ export function PageHeader({ title, subtitle, back }: PageHeaderProps) {
   }
 
   return (
-    <div className="bg-bordeaux-900 px-4 pt-safe pb-5">
-      <div className="flex items-center gap-2 mb-4">
+    <div className="bg-bordeaux-900 px-4 pt-safe pb-4">
+      <div className="flex items-center gap-3">
         {back ? (
           <Button
             variant="ghost"
             size="icon"
             onClick={handleBack}
-            className="text-cream-50/60 hover:text-cream-50 hover:bg-bordeaux-800 -ml-2 h-8 w-8"
+            className="text-cream-50/60 hover:text-cream-50 hover:bg-bordeaux-800 -ml-1 h-8 w-8 shrink-0"
           >
             <ChevronLeft className="w-5 h-5" />
           </Button>
@@ -38,22 +38,21 @@ export function PageHeader({ title, subtitle, back }: PageHeaderProps) {
             variant="ghost"
             size="icon"
             onClick={() => setOpen(true)}
-            className="text-cream-50/60 hover:text-cream-50 hover:bg-bordeaux-800 -ml-2 h-8 w-8"
+            className="text-cream-50/60 hover:text-cream-50 hover:bg-bordeaux-800 -ml-1 h-8 w-8 shrink-0"
           >
             <Menu className="w-5 h-5" />
           </Button>
         )}
-      </div>
-
-      <div className="min-w-0">
-        {subtitle && (
-          <p className="text-xs font-mono tracking-widest uppercase mb-0.5 text-champagne">
-            {subtitle}
-          </p>
-        )}
-        <h1 className="text-xl font-semibold tracking-tight text-cream-50 truncate">
-          {title}
-        </h1>
+        <div className="min-w-0 flex-1">
+          {subtitle && (
+            <p className="text-[10px] font-mono tracking-widest uppercase text-champagne leading-none mb-0.5">
+              {subtitle}
+            </p>
+          )}
+          <h1 className="text-lg font-semibold tracking-tight text-cream-50 truncate leading-tight">
+            {title}
+          </h1>
+        </div>
       </div>
     </div>
   );
