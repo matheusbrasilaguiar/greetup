@@ -9,8 +9,9 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent } from "@/components/ui/card";
-import { Separator } from "@/components/ui/separator";
-import { X } from "lucide-react";
+import { X, UserPlus, Search } from "lucide-react";
+
+type Mode = "search" | "create";
 
 function useDebounce(value: string, ms: number) {
   const [debounced, setDebounced] = useState(value);
@@ -27,9 +28,10 @@ export default function AbrirSessaoPage() {
   const searchParams = useSearchParams();
   const tableCode = searchParams.get("code") ?? tableId.slice(-4).toUpperCase();
 
-  const [searchQuery, setSearchQuery] = useState("");
+  const [mode, setMode] = useState<Mode>("search");
   const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
-  const [showSearch, setShowSearch] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [showResults, setShowResults] = useState(false);
 
   const [newName, setNewName] = useState("");
   const [newEmployer, setNewEmployer] = useState("");
@@ -45,13 +47,31 @@ export default function AbrirSessaoPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const canSubmit = selectedCustomer !== null || newName.trim().length > 0;
+  const canSubmit =
+    mode === "search" ? selectedCustomer !== null : newName.trim().length > 0;
 
   const handleSelectCustomer = useCallback((customer: Customer) => {
     setSelectedCustomer(customer);
     setSearchQuery("");
-    setShowSearch(false);
+    setShowResults(false);
   }, []);
+
+  function switchToCreate() {
+    setMode("create");
+    setSelectedCustomer(null);
+    setSearchQuery("");
+    setShowResults(false);
+    setError(null);
+  }
+
+  function switchToSearch() {
+    setMode("search");
+    setNewName("");
+    setNewEmployer("");
+    setNewEmail("");
+    setNewPhone("");
+    setError(null);
+  }
 
   async function handleSubmit() {
     if (submittingRef.current || !canSubmit) return;
@@ -60,7 +80,7 @@ export default function AbrirSessaoPage() {
     setError(null);
     try {
       let customerId: string;
-      if (selectedCustomer) {
+      if (mode === "search" && selectedCustomer) {
         customerId = selectedCustomer.id;
       } else {
         const customer = await createCustomer.mutateAsync({
@@ -92,98 +112,116 @@ export default function AbrirSessaoPage() {
         back={{ label: "Mesas", href: "/mesas" }}
       />
 
-      <div className="flex-1 overflow-y-auto p-4 flex flex-col gap-4">
-        {/* Buscar cliente */}
-        <Card className="overflow-visible">
-          <CardContent className="pt-4">
-            <p className="text-xs font-mono text-muted-foreground uppercase tracking-wider mb-3">
-              Buscar cliente cadastrado
-            </p>
+      <div className="flex-1 overflow-y-auto p-4 flex flex-col gap-3">
 
+        {mode === "search" ? (
+          <>
             {selectedCustomer ? (
-              <div className="flex items-center justify-between bg-bordeaux-900 rounded-xl px-4 py-3">
-                <div>
-                  <p className="text-sm font-semibold text-cream-50">{selectedCustomer.name}</p>
-                  {selectedCustomer.employer && (
-                    <p className="text-xs text-ink-300">{selectedCustomer.employer}</p>
-                  )}
-                </div>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={() => setSelectedCustomer(null)}
-                  className="text-ink-400 hover:text-red-400 hover:bg-transparent h-8 w-8"
-                >
-                  <X className="w-4 h-4" />
-                </Button>
-              </div>
-            ) : (
-              <div className="relative">
-                <Input
-                  type="text"
-                  value={searchQuery}
-                  onChange={(e) => { setSearchQuery(e.target.value); setShowSearch(true); }}
-                  onFocus={() => setShowSearch(true)}
-                  placeholder="Nome ou email..."
-                />
-                {showSearch && searchQuery.length >= 2 && (
-                  <div className="absolute top-full left-0 right-0 mt-1 bg-white rounded-xl border border-border shadow-lg z-10 overflow-hidden">
-                    {isFetching && (
-                      <p className="text-xs text-muted-foreground px-4 py-3 font-mono">Buscando...</p>
+              /* Cliente selecionado */
+              <Card>
+                <CardContent className="py-3 flex items-center justify-between gap-3">
+                  <div className="min-w-0">
+                    <p className="text-sm font-semibold text-foreground truncate">{selectedCustomer.name}</p>
+                    {selectedCustomer.employer && (
+                      <p className="text-xs text-muted-foreground truncate">{selectedCustomer.employer}</p>
                     )}
-                    {!isFetching && searchResults.length === 0 && (
-                      <p className="text-xs text-muted-foreground px-4 py-3">Nenhum resultado.</p>
-                    )}
-                    {searchResults.slice(0, 5).map((c) => (
-                      <button
-                        key={c.id}
-                        onClick={() => handleSelectCustomer(c)}
-                        className="w-full text-left px-4 py-3 border-b border-border last:border-0 hover:bg-secondary transition-colors"
-                      >
-                        <p className="text-sm font-medium">{c.name}</p>
-                        {c.employer && <p className="text-xs text-muted-foreground">{c.employer}</p>}
-                      </button>
-                    ))}
                   </div>
-                )}
-              </div>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => setSelectedCustomer(null)}
+                    className="text-muted-foreground hover:text-destructive hover:bg-destructive/10 h-8 w-8 shrink-0"
+                  >
+                    <X className="w-4 h-4" />
+                  </Button>
+                </CardContent>
+              </Card>
+            ) : (
+              /* Campo de busca */
+              <Card className="overflow-visible">
+                <CardContent className="pt-4 pb-4">
+                  <p className="text-[10px] font-mono text-muted-foreground uppercase tracking-wider mb-3">
+                    Buscar cliente cadastrado
+                  </p>
+                  <div className="relative">
+                    <Input
+                      type="text"
+                      value={searchQuery}
+                      onChange={(e) => { setSearchQuery(e.target.value); setShowResults(true); }}
+                      onFocus={() => setShowResults(true)}
+                      placeholder="Nome ou email..."
+                      autoComplete="off"
+                    />
+                    {showResults && searchQuery.length >= 2 && (
+                      <div className="absolute top-full left-0 right-0 mt-1 bg-white rounded-xl border border-border shadow-lg z-10 overflow-hidden">
+                        {isFetching && (
+                          <p className="text-xs text-muted-foreground px-4 py-3 font-mono">Buscando...</p>
+                        )}
+                        {!isFetching && searchResults.length === 0 && (
+                          <p className="text-xs text-muted-foreground px-4 py-3">Nenhum resultado.</p>
+                        )}
+                        {searchResults.slice(0, 5).map((c) => (
+                          <button
+                            key={c.id}
+                            onClick={() => handleSelectCustomer(c)}
+                            className="w-full text-left px-4 py-3 border-b border-border last:border-0 hover:bg-secondary transition-colors"
+                          >
+                            <p className="text-sm font-medium">{c.name}</p>
+                            {c.employer && <p className="text-xs text-muted-foreground">{c.employer}</p>}
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
             )}
-          </CardContent>
-        </Card>
 
-        <div className="flex items-center gap-3">
-          <Separator className="flex-1" />
-          <span className="text-xs text-muted-foreground font-mono uppercase tracking-wider">
-            ou cadastrar novo
-          </span>
-          <Separator className="flex-1" />
-        </div>
+            <Button
+              variant="outline"
+              onClick={switchToCreate}
+              className="w-full h-10 gap-2 text-sm"
+            >
+              <UserPlus className="w-4 h-4" />
+              Cadastrar novo cliente
+            </Button>
+          </>
+        ) : (
+          <>
+            {/* Modo de cadastro */}
+            <button
+              onClick={switchToSearch}
+              className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors font-mono py-1"
+            >
+              <Search className="w-3.5 h-3.5" />
+              Buscar cliente existente
+            </button>
 
-        {/* Novo cliente */}
-        <Card className="overflow-visible">
-          <CardContent className="pt-4 flex flex-col gap-3">
-            <p className="text-xs font-mono text-muted-foreground uppercase tracking-wider">
-              Novo visitante
-            </p>
-
-            {[
-              { label: "Nome *", value: newName, set: setNewName, placeholder: "Nome completo" },
-              { label: "Empresa", value: newEmployer, set: setNewEmployer, placeholder: "Empresa ou organização" },
-              { label: "E-mail", value: newEmail, set: setNewEmail, placeholder: "email@empresa.com" },
-              { label: "Telefone", value: newPhone, set: setNewPhone, placeholder: "(11) 99999-9999" },
-            ].map(({ label, value, set, placeholder }) => (
-              <div key={label} className="flex flex-col gap-1.5">
-                <Label className="text-xs text-muted-foreground font-mono">{label}</Label>
-                <Input
-                  value={value}
-                  onChange={(e) => set(e.target.value)}
-                  placeholder={placeholder}
-                  disabled={!!selectedCustomer}
-                />
-              </div>
-            ))}
-          </CardContent>
-        </Card>
+            <Card className="overflow-visible">
+              <CardContent className="pt-4 flex flex-col gap-3">
+                <p className="text-[10px] font-mono text-muted-foreground uppercase tracking-wider">
+                  Novo visitante
+                </p>
+                {[
+                  { label: "Nome *", value: newName, set: setNewName, placeholder: "Nome completo", type: "text" },
+                  { label: "Empresa", value: newEmployer, set: setNewEmployer, placeholder: "Empresa ou organização", type: "text" },
+                  { label: "E-mail", value: newEmail, set: setNewEmail, placeholder: "email@empresa.com", type: "email" },
+                  { label: "Telefone", value: newPhone, set: setNewPhone, placeholder: "(11) 99999-9999", type: "tel" },
+                ].map(({ label, value, set, placeholder, type }) => (
+                  <div key={label} className="flex flex-col gap-1.5">
+                    <Label className="text-xs text-muted-foreground font-mono">{label}</Label>
+                    <Input
+                      type={type}
+                      value={value}
+                      onChange={(e) => set(e.target.value)}
+                      placeholder={placeholder}
+                    />
+                  </div>
+                ))}
+              </CardContent>
+            </Card>
+          </>
+        )}
 
         {error && (
           <p className="text-sm text-destructive bg-destructive/10 rounded-xl px-4 py-3">{error}</p>

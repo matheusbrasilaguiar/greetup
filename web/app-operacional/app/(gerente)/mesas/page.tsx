@@ -7,7 +7,9 @@ import { useTables } from "@/lib/hooks/useTables";
 import { useSocketEvents } from "@/lib/hooks/useSocket";
 import { TableCard } from "@/components/TableCard";
 import { PageHeader } from "@/components/PageHeader";
+import { Button } from "@/components/ui/button";
 import { getUser } from "@/lib/auth";
+import { UserPlus } from "lucide-react";
 
 export default function MesasPage() {
   const router = useRouter();
@@ -41,6 +43,16 @@ export default function MesasPage() {
       <PageHeader
         title={`Olá, ${user?.name?.split(" ")[0] ?? "Gerente"}`}
         subtitle={`${livres} ${livres === 1 ? "mesa livre" : "mesas livres"} de ${tables.length}`}
+        action={
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => router.push("/clientes/novo")}
+            className="text-cream-50/60 hover:text-cream-50 hover:bg-bordeaux-800 h-8 w-8"
+          >
+            <UserPlus className="w-4 h-4" />
+          </Button>
+        }
       />
 
       <div className="flex-1 overflow-y-auto p-4">

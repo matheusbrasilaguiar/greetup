@@ -7,11 +7,12 @@ import { Button } from "@/components/ui/button";
 import { useSidebarContext } from "@/lib/sidebar-context";
 import { useAuth } from "@/lib/hooks/useAuth";
 import { getUser } from "@/lib/auth";
-import { LayoutGrid, LogOut } from "lucide-react";
+import { LayoutGrid, LogOut, UserPlus } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const NAV_ITEMS = [
   { label: "Mesas", href: "/mesas", icon: LayoutGrid },
+  { label: "Cadastrar cliente", href: "/clientes/novo", icon: UserPlus },
 ];
 
 export function AppSidebar() {

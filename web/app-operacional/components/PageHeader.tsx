@@ -1,5 +1,6 @@
 "use client";
 
+import React from "react";
 import { useRouter } from "next/navigation";
 import { useSidebarContext } from "@/lib/sidebar-context";
 import { Button } from "@/components/ui/button";
@@ -9,9 +10,10 @@ interface PageHeaderProps {
   title: string;
   subtitle?: string;
   back?: { label?: string; href: string } | true;
+  action?: React.ReactNode;
 }
 
-export function PageHeader({ title, subtitle, back }: PageHeaderProps) {
+export function PageHeader({ title, subtitle, back, action }: PageHeaderProps) {
   const router = useRouter();
   const { setOpen } = useSidebarContext();
 
@@ -53,6 +55,7 @@ export function PageHeader({ title, subtitle, back }: PageHeaderProps) {
             {title}
           </h1>
         </div>
+        {action && <div className="shrink-0">{action}</div>}
       </div>
     </div>
   );
