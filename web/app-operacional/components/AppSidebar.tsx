@@ -33,7 +33,7 @@ export function AppSidebar() {
 
   return (
     <Sheet open={open} onOpenChange={setOpen}>
-      <SheetContent side="left" className="w-72 flex flex-col p-0">
+      <SheetContent side="left" className="w-72 flex flex-col p-0 border-r-0">
         {/* User info */}
         <SheetHeader className="px-5 pt-8 pb-5 bg-bordeaux-900">
           <div className="flex items-center gap-1 mb-3">

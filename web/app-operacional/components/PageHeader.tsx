@@ -22,14 +22,14 @@ export function PageHeader({ title, subtitle, back }: PageHeaderProps) {
   }
 
   return (
-    <div className="bg-bordeaux-900 px-4 pt-safe-or-10 pb-5 pt-10">
+    <div className="bg-bordeaux-900 px-4 pt-safe pb-5">
       <div className="flex items-center gap-2 mb-4">
         {back ? (
           <Button
             variant="ghost"
             size="icon"
             onClick={handleBack}
-            className="text-ink-400 hover:text-cream-50 hover:bg-bordeaux-800 -ml-2 h-8 w-8"
+            className="text-cream-50/60 hover:text-cream-50 hover:bg-bordeaux-800 -ml-2 h-8 w-8"
           >
             <ChevronLeft className="w-5 h-5" />
           </Button>
@@ -38,7 +38,7 @@ export function PageHeader({ title, subtitle, back }: PageHeaderProps) {
             variant="ghost"
             size="icon"
             onClick={() => setOpen(true)}
-            className="text-ink-400 hover:text-cream-50 hover:bg-bordeaux-800 -ml-2 h-8 w-8"
+            className="text-cream-50/60 hover:text-cream-50 hover:bg-bordeaux-800 -ml-2 h-8 w-8"
           >
             <Menu className="w-5 h-5" />
           </Button>
