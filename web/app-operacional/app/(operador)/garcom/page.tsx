@@ -5,6 +5,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { useOrderItems, type KanbanItem, useAdvanceItemStatus } from "@/lib/hooks/useOrderItems";
 import { useSocketEvents } from "@/lib/hooks/useSocket";
 import { useAuth } from "@/lib/hooks/useAuth";
+import { Button } from "@/components/ui/button";
 import { Banner } from "@/components/Banner";
 
 export default function GarcomPage() {
@@ -31,12 +32,14 @@ export default function GarcomPage() {
   useSocketEvents(socketHandlers());
 
   const byCustomer = useMemo(() => {
-    const map = new Map<string, { key: string; name: string; items: KanbanItem[] }>();
+    const map = new Map<string, { key: string; name: string; tableCode: string; attendantName?: string; items: KanbanItem[] }>();
     for (const item of items) {
       const customer = item.order.session.customer;
       const name = customer?.name ?? "Sem nome";
       const key = customer?.id ?? name;
-      if (!map.has(key)) map.set(key, { key, name, items: [] });
+      const tableCode = item.order.session.table.code;
+      const attendantName = item.order.session.attendant?.name;
+      if (!map.has(key)) map.set(key, { key, name, tableCode, attendantName, items: [] });
       map.get(key)!.items.push(item);
     }
     return Array.from(map.values());
@@ -70,7 +73,7 @@ export default function GarcomPage() {
   return (
     <div className="h-full flex flex-col bg-cream-50">
       {/* Header */}
-      <div className="bg-bordeaux-900 px-4 pt-10 pb-5">
+      <div className="bg-bordeaux-900 px-4 pt-safe pb-5">
         <p className="text-xs font-mono text-champagne tracking-widest uppercase mb-1">
           GreetUp · Garçom
         </p>
@@ -96,20 +99,32 @@ export default function GarcomPage() {
           <EmptyState />
         ) : (
           <div className="flex flex-col gap-4">
-            {byCustomer.map(({ key: groupKey, name, items: groupItems }) => {
+            {byCustomer.map(({ key: groupKey, name, tableCode, attendantName, items: groupItems }) => {
               const allChecked = groupItems.every((i) => checked[i.id]);
               const delivering = deliveringGroups.has(groupKey);
               return (
                 <div key={groupKey} className="bg-white rounded-xl overflow-hidden border border-cream-200">
                   {/* Group header */}
-                  <div className="bg-cream-100 px-4 py-3 flex items-center justify-between">
-                    <div>
-                      <p className="font-semibold text-ink-900 text-sm">{name}</p>
-                      <p className="text-xs text-ink-500 mt-0.5">
-                        {groupItems.length} {groupItems.length === 1 ? "item" : "itens"}
-                      </p>
+                  <div className="bg-cream-100 px-4 py-3 flex items-center justify-between gap-3">
+                    <div className="min-w-0 flex-1">
+                      <p className="font-semibold text-ink-900 text-sm truncate">{name}</p>
+                      <div className="flex items-center gap-1.5 mt-0.5 flex-wrap">
+                        <span className="text-[10px] font-mono text-bordeaux-700 uppercase font-semibold tracking-wide">
+                          Mesa {tableCode}
+                        </span>
+                        {attendantName && (
+                          <>
+                            <span className="text-ink-300 text-[10px]">·</span>
+                            <span className="text-[10px] text-ink-500">{attendantName}</span>
+                          </>
+                        )}
+                        <span className="text-ink-300 text-[10px]">·</span>
+                        <span className="text-[10px] text-ink-500">
+                          {groupItems.length} {groupItems.length === 1 ? "item" : "itens"}
+                        </span>
+                      </div>
                     </div>
-                    <span className="text-xs font-mono bg-bordeaux-700 text-cream-50 px-2.5 py-1 rounded-full">
+                    <span className="text-xs font-mono bg-bordeaux-700 text-cream-50 px-2.5 py-1 rounded-full shrink-0">
                       {groupItems.length}
                     </span>
                   </div>
@@ -153,17 +168,13 @@ export default function GarcomPage() {
 
                   {/* Confirm button */}
                   <div className="px-4 py-3 border-t border-cream-200">
-                    <button
+                    <Button
                       disabled={!allChecked || delivering}
                       onClick={() => confirmDelivery(groupKey, groupItems)}
-                      className="w-full rounded-lg py-3 text-sm font-semibold transition-colors disabled:cursor-not-allowed"
-                      style={{
-                        backgroundColor: allChecked && !delivering ? "#6B2331" : "#ECE2CC",
-                        color: allChecked && !delivering ? "#FBF7EF" : "#7A736E",
-                      }}
+                      className="w-full h-11"
                     >
                       {delivering ? "Confirmando..." : "Confirmar entrega"}
-                    </button>
+                    </Button>
                   </div>
                 </div>
               );

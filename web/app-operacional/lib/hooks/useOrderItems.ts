@@ -22,6 +22,7 @@ export interface KanbanItem {
     session: {
       table: { id: string; code: string };
       customer: { id: string; name: string } | null;
+      attendant?: { id: string; name: string };
     };
   };
 }

@@ -87,7 +87,8 @@ class OrderRepository extends OrderRepositoryPort {
             session: {
               include: {
                 table:    { select: { id: true, code: true } },
-                customer: { select: { name: true } }
+                customer: { select: { id: true, name: true } },
+                attendant: { select: { id: true, name: true } }
               }
             }
           }
