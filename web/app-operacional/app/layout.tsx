@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { Sora, JetBrains_Mono, Geist } from "next/font/google";
 import "./globals.css";
 import { QueryProvider } from "@/components/QueryProvider";
+import { Toaster } from "@/components/ui/sonner";
 import { cn } from "@/lib/utils";
 
 const geist = Geist({subsets:['latin'],variable:'--font-sans'});
@@ -35,6 +36,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="pt-BR" className={cn("h-full", sora.variable, jetbrains.variable, "font-sans", geist.variable)}>
       <body className="h-full overflow-hidden">
         <QueryProvider>{children}</QueryProvider>
+        <Toaster position="top-center" richColors />
       </body>
     </html>
   );

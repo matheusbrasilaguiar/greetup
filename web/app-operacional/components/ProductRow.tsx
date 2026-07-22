@@ -3,6 +3,9 @@
 import { useState } from "react";
 import type { Product } from "@/lib/hooks/useProducts";
 import { useCart } from "@/lib/cart-context";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Minus, Plus } from "lucide-react";
 
 interface Props {
   product: Product;
@@ -18,33 +21,36 @@ export function ProductRow({ product }: Props) {
   function decrement() { if (qty > 0) setQty(product.id, qty - 1); }
 
   return (
-    <div className="bg-white border-b border-cream-100 last:border-0 px-4 py-3">
+    <div className="bg-card border-b border-border last:border-0 px-4 py-3">
       <div className="flex items-center justify-between gap-3">
         <div className="flex-1 min-w-0">
-          <p className="text-sm font-medium text-ink-900 truncate">{product.name}</p>
+          <p className="text-sm font-medium text-foreground truncate">{product.name}</p>
           {product.description && (
-            <p className="text-xs text-ink-400 truncate mt-0.5">{product.description}</p>
+            <p className="text-xs text-muted-foreground truncate mt-0.5">{product.description}</p>
           )}
         </div>
 
         {/* Stepper */}
         <div className="flex items-center gap-2 shrink-0">
-          <button
+          <Button
+            variant="outline"
+            size="icon"
             onClick={decrement}
             disabled={qty === 0}
-            className="w-8 h-8 rounded-full border-2 border-bordeaux-700 flex items-center justify-center text-bordeaux-700 font-semibold disabled:opacity-30 active:scale-90 transition-transform text-lg leading-none"
+            className="rounded-full border-primary text-primary hover:bg-primary/10"
           >
-            −
-          </button>
-          <span className="font-mono text-sm font-semibold text-ink-900 w-4 text-center">
+            <Minus />
+          </Button>
+          <span className="font-mono text-sm font-semibold text-foreground w-4 text-center">
             {qty > 0 ? qty : ""}
           </span>
-          <button
+          <Button
+            size="icon"
             onClick={increment}
-            className="w-8 h-8 rounded-full bg-bordeaux-700 flex items-center justify-center text-cream-50 font-semibold active:scale-90 transition-transform text-lg leading-none"
+            className="rounded-full"
           >
-            +
-          </button>
+            <Plus />
+          </Button>
         </div>
       </div>
 
@@ -52,21 +58,23 @@ export function ProductRow({ product }: Props) {
       {qty > 0 && (
         <div className="mt-2">
           {!showNotes && !notes ? (
-            <button
+            <Button
+              variant="link"
+              size="sm"
               onClick={() => setShowNotes(true)}
-              className="text-xs text-bordeaux-500 underline-offset-2 underline"
+              className="h-auto p-0 text-xs"
             >
               + Observação
-            </button>
+            </Button>
           ) : (
-            <input
+            <Input
               type="text"
               value={notes}
               onChange={(e) => setNotes(product.id, e.target.value)}
               onBlur={() => { if (!notes) setShowNotes(false); }}
               autoFocus={showNotes && !notes}
               placeholder="Ex: sem cebola, bem gelado..."
-              className="w-full rounded-lg bg-cream-50 border border-cream-200 px-3 py-2 text-xs text-ink-700 placeholder:text-ink-300 focus:outline-none focus:border-bordeaux-700 transition-colors"
+              className="text-xs"
             />
           )}
         </div>

@@ -1,10 +1,18 @@
 import type { Table } from "@/lib/hooks/useTables";
+import { Card } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { cn } from "@/lib/utils";
 
 interface Props {
   table: Table;
   myUserId: string;
   onClick: () => void;
 }
+
+const clickableCardClasses = cn(
+  "rounded-xl bg-card ring-1 ring-foreground/10 p-4 flex flex-col min-h-27.5 w-full text-left",
+  "outline-none transition-all active:scale-95 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+);
 
 export function TableCard({ table, myUserId, onClick }: Props) {
   const { status, code, activeSession } = table;
@@ -15,27 +23,27 @@ export function TableCard({ table, myUserId, onClick }: Props) {
 
   if (isClosed) {
     return (
-      <div className="rounded-2xl bg-cream-100 border border-cream-200 p-4 opacity-50 flex flex-col items-center justify-center min-h-[110px]">
-        <span className="font-mono text-xs text-ink-500 uppercase tracking-wider">Fora de serviço</span>
-        <span className="text-2xl font-bold text-ink-300 mt-1">{code}</span>
-      </div>
+      <Card className="bg-muted p-4 opacity-50 flex flex-col items-center justify-center min-h-27.5">
+        <Badge variant="secondary" className="font-mono uppercase tracking-wider">Fora de serviço</Badge>
+        <span className="text-2xl font-bold text-muted-foreground mt-1">{code}</span>
+      </Card>
     );
   }
 
   if (isOccupied && !isMine) {
     return (
-      <div className="rounded-2xl border border-rose-200 bg-rose-50 p-4 flex flex-col gap-1 min-h-[110px]">
+      <Card className="bg-status-occupied-bg border-status-occupied-br p-4 flex flex-col gap-1 min-h-27.5">
         <div className="flex items-center justify-between">
-          <span className="font-mono text-xs text-rose-400 uppercase tracking-wider">Ocupada</span>
-          <span className="font-mono text-xs text-rose-500 font-semibold">{code}</span>
+          <Badge variant="occupied" className="font-mono uppercase tracking-wider">Ocupada</Badge>
+          <span className="font-mono text-xs text-status-occupied-fg font-semibold">{code}</span>
         </div>
-        <p className="text-sm font-semibold text-ink-900 truncate">
+        <p className="text-sm font-semibold text-foreground truncate">
           {activeSession?.customer?.name ?? "—"}
         </p>
-        <p className="text-xs text-ink-500">
+        <p className="text-xs text-muted-foreground">
           {activeSession?.attendant?.name} · {activeSession?.durationMinutes}min
         </p>
-      </div>
+      </Card>
     );
   }
 
@@ -43,17 +51,15 @@ export function TableCard({ table, myUserId, onClick }: Props) {
     return (
       <button
         onClick={onClick}
-        className="rounded-2xl bg-white border-2 border-bordeaux-700 p-4 flex flex-col gap-1 min-h-[110px] text-left w-full shadow-sm active:scale-95 transition-transform"
+        className={cn(clickableCardClasses, "border-2 border-primary gap-1")}
       >
-        <span className="font-mono text-[10px] text-ink-500 self-end">{code}</span>
-        <p className="text-sm font-semibold text-ink-900 truncate flex-1">
+        <span className="font-mono text-[10px] text-muted-foreground self-end">{code}</span>
+        <p className="text-sm font-semibold text-foreground truncate flex-1">
           {activeSession.customer?.name ?? "—"}
         </p>
         <div className="flex items-center justify-between">
-          <span className="text-[10px] font-mono text-bordeaux-700 uppercase tracking-wider font-semibold">
-            ● Minha mesa
-          </span>
-          <span className="text-[10px] text-ink-500">{activeSession.durationMinutes}min</span>
+          <Badge variant="default" className="font-mono uppercase tracking-wider">Minha mesa</Badge>
+          <span className="text-[10px] text-muted-foreground">{activeSession.durationMinutes}min</span>
         </div>
       </button>
     );
@@ -63,10 +69,10 @@ export function TableCard({ table, myUserId, onClick }: Props) {
   return (
     <button
       onClick={onClick}
-      className="rounded-2xl bg-emerald-50 border border-emerald-200 p-4 flex flex-col items-center justify-center min-h-[110px] w-full active:scale-95 transition-transform"
+      className={cn(clickableCardClasses, "bg-status-success-bg border border-status-success-br items-center justify-center")}
     >
-      <span className="font-mono text-xs text-emerald-600 uppercase tracking-wider mb-1">Livre</span>
-      <span className="text-3xl font-bold text-emerald-700">{code}</span>
+      <Badge variant="success" className="font-mono uppercase tracking-wider mb-1">Livre</Badge>
+      <span className="text-3xl font-bold text-status-success-fg">{code}</span>
     </button>
   );
 }

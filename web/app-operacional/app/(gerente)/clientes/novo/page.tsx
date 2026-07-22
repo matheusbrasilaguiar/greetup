@@ -60,11 +60,11 @@ export default function NovoClientePage() {
 
   if (createdName) {
     return (
-      <div className="h-full flex flex-col bg-cream-50">
+      <div className="h-full flex flex-col bg-background">
         <PageHeader title="Novo cliente" back={{ href: "/mesas" }} />
         <div className="flex-1 flex flex-col items-center justify-center p-8 gap-5">
-          <div className="w-14 h-14 rounded-full bg-emerald-100 flex items-center justify-center">
-            <CheckCircle className="w-7 h-7 text-emerald-600" />
+          <div className="w-14 h-14 rounded-full bg-status-success-bg flex items-center justify-center">
+            <CheckCircle className="w-7 h-7 text-status-success-fg" />
           </div>
           <div className="text-center">
             <p className="text-base font-semibold text-foreground">{createdName}</p>
@@ -84,7 +84,7 @@ export default function NovoClientePage() {
   }
 
   return (
-    <div className="h-full flex flex-col bg-cream-50">
+    <div className="h-full flex flex-col bg-background">
       <PageHeader title="Novo cliente" back={{ href: "/mesas" }} />
 
       <div className="flex-1 overflow-y-auto p-4 flex flex-col gap-4">
@@ -120,7 +120,7 @@ export default function NovoClientePage() {
         )}
       </div>
 
-      <div className="pb-safe px-4 pt-4 bg-cream-50 border-t border-border">
+      <div className="pb-safe px-4 pt-4 bg-background border-t border-border">
         <Button
           onClick={handleSubmit}
           disabled={!canSubmit || loading}

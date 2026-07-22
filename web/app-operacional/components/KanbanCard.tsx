@@ -1,27 +1,31 @@
 "use client";
 
-import { useState } from "react";
 import type { KanbanItem, ItemStatus } from "@/lib/hooks/useOrderItems";
+import { ITEM_STATUS_META } from "@/lib/itemStatus";
+import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
+import { OrderOptionBadges } from "@/components/OrderOptionBadge";
+import { cn } from "@/lib/utils";
+import { ArrowLeft } from "lucide-react";
 
 interface Props {
   item: KanbanItem;
-  accent: string;
   now: number;
   pending: boolean;
   onAdvance?: () => void;
   onRevert?: () => void;
   onCancel?: () => void;
-}
-
-function OptionBadge({ label, bg, color }: { label: string; bg: string; color: string }) {
-  return (
-    <span
-      className="font-mono text-[9px] font-semibold uppercase px-1.5 py-0.5 rounded"
-      style={{ background: bg, color }}
-    >
-      {label}
-    </span>
-  );
 }
 
 const ACTION_LABEL: Partial<Record<ItemStatus, string>> = {
@@ -30,8 +34,14 @@ const ACTION_LABEL: Partial<Record<ItemStatus, string>> = {
   PRONTO: "Marcar entregue",
 };
 
-export function KanbanCard({ item, accent, now, pending, onAdvance, onRevert, onCancel }: Props) {
-  const [confirmCancel, setConfirmCancel] = useState(false);
+const ADVANCE_BUTTON_CLASS: Partial<Record<ItemStatus, string>> = {
+  PENDENTE: "border-status-warning-br text-status-warning-fg bg-transparent hover:bg-status-warning-bg",
+  EM_PREPARO: "bg-status-info-br text-white hover:bg-status-info-br/90 border-transparent",
+  PRONTO: "bg-status-success-br text-white hover:bg-status-success-br/90 border-transparent",
+};
+
+export function KanbanCard({ item, now, pending, onAdvance, onRevert, onCancel }: Props) {
+  const meta = ITEM_STATUS_META[item.status];
   const customer = item.order.session.customer;
   const tableCode = item.order.session.table.code;
   const ageMin = Math.floor((now - new Date(item.createdAt).getTime()) / 60_000);
@@ -39,111 +49,103 @@ export function KanbanCard({ item, accent, now, pending, onAdvance, onRevert, on
   const showTimer = item.status !== "ENTREGUE";
 
   return (
-    <div
-      className="bg-cream-50 rounded-xl overflow-hidden"
-      style={{ borderLeft: `4px solid ${accent}`, opacity: pending ? 0.6 : 1 }}
+    <Card
+      className={cn("border-l-4 py-0 gap-0", meta.borderClass)}
+      style={{ opacity: pending ? 0.6 : 1 }}
     >
-      <div className="px-2 pt-2 pb-1.5">
+      <CardContent className="px-2 pt-2 pb-1.5">
         {/* Header row */}
         <div className="flex items-start justify-between gap-1 mb-1">
           <div className="min-w-0">
-            <p className="text-ink-900 font-semibold text-xs leading-tight truncate">
+            <p className="text-foreground font-semibold text-xs leading-tight truncate">
               {customer?.name ?? "—"}
             </p>
-            <p className="text-[10px] text-ink-400 font-mono">{tableCode}</p>
+            <p className="text-[10px] text-muted-foreground font-mono">{tableCode}</p>
           </div>
           {showTimer && (
-            <span className={`text-xs font-mono shrink-0 ${late ? "text-red-500 font-semibold" : "text-ink-500"}`}>
+            <span className={cn("text-xs font-mono shrink-0", late ? "text-destructive font-semibold" : "text-muted-foreground")}>
               {ageMin}m
             </span>
           )}
         </div>
 
         {/* Product */}
-        <p className="text-ink-700 text-xs">
-          <span className="font-mono text-bordeaux-700 mr-1">{item.quantity}×</span>
+        <p className="text-foreground/80 text-xs">
+          <span className="font-mono text-primary mr-1">{item.quantity}×</span>
           {item.product.name}
         </p>
 
-        {/* Option badges */}
-        {(item.withCheese !== null || item.courtesy || item.order?.toGo) && (
-          <div className="flex gap-1 flex-wrap mt-1">
-            {item.withCheese === true  && <OptionBadge label="COM QUEIJO" bg="#FEF3C7" color="#92400E" />}
-            {item.withCheese === false && <OptionBadge label="SEM QUEIJO" bg="#F3F4F6" color="#4B5563" />}
-            {item.courtesy             && <OptionBadge label="CORTESIA"   bg="#DCFCE7" color="#166534" />}
-            {item.order?.toGo          && <OptionBadge label="LEVAR"      bg="#EFF6FF" color="#1D4ED8" />}
-          </div>
-        )}
+        <OrderOptionBadges withCheese={item.withCheese} courtesy={item.courtesy} toGo={item.order?.toGo ?? false} />
 
         {/* Notes */}
         {item.notes && (
-          <div className="mt-1.5 bg-amber-50 border border-amber-200 rounded-lg px-2 py-1">
-            <p className="text-amber-800 text-[10px]">
+          <div className="mt-1.5 bg-status-warning-bg border border-status-warning-br/40 rounded-lg px-2 py-1">
+            <p className="text-status-warning-fg text-[10px]">
               <span className="font-semibold font-mono">OBS </span>
               {item.notes}
             </p>
           </div>
         )}
-      </div>
+      </CardContent>
 
       {/* Actions */}
-      <div className="px-2 pb-2 flex flex-col gap-1">
+      <CardContent className="px-2 pb-2 flex flex-col gap-1">
         {pending && (
-          <p className="text-center text-xs text-ink-400 font-mono py-1">Aguarde...</p>
+          <p className="text-center text-xs text-muted-foreground font-mono py-1">Aguarde...</p>
         )}
 
         {!pending && onAdvance && item.status !== "ENTREGUE" && (
-          <button
+          <Button
             onClick={onAdvance}
-            className="w-full rounded-lg py-1.5 text-xs font-semibold transition-colors"
-            style={{
-              backgroundColor: item.status === "PENDENTE" ? "transparent" : accent,
-              color: item.status === "PENDENTE" ? accent : "#FBF7EF",
-              border: item.status === "PENDENTE" ? `1.5px solid ${accent}` : "none",
-            }}
+            variant="outline"
+            className={cn("w-full text-xs font-semibold", ADVANCE_BUTTON_CLASS[item.status])}
           >
             {ACTION_LABEL[item.status as ItemStatus]}
-          </button>
+          </Button>
         )}
 
-        {!pending && onRevert && !confirmCancel && (
-          <button
+        {!pending && onRevert && (
+          <Button
             onClick={onRevert}
-            className="w-full rounded-lg py-1 text-xs transition-colors text-ink-500 hover:text-ink-700"
+            variant="ghost"
+            size="sm"
+            className="w-full text-xs text-muted-foreground hover:text-foreground"
           >
-            ← Voltar
-          </button>
+            <ArrowLeft />
+            Voltar
+          </Button>
         )}
 
-        {!pending && onCancel && !confirmCancel && (
-          <button
-            onClick={() => setConfirmCancel(true)}
-            className="w-full rounded-lg py-1 text-xs"
-            style={{ color: "#EF4444" }}
-          >
-            Cancelar pedido
-          </button>
-        )}
-
-        {confirmCancel && (
-          <div className="flex gap-1 mt-0.5">
-            <button
-              onClick={() => setConfirmCancel(false)}
-              className="flex-1 rounded-lg py-1.5 text-xs font-medium"
-              style={{ background: "#3D1825", color: "#C9B8B0" }}
+        {!pending && onCancel && (
+          <AlertDialog>
+            <AlertDialogTrigger
+              render={
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="w-full text-xs text-destructive hover:text-destructive hover:bg-destructive/10"
+                />
+              }
             >
-              Não
-            </button>
-            <button
-              onClick={() => { setConfirmCancel(false); onCancel?.(); }}
-              className="flex-1 rounded-lg py-1.5 text-xs font-semibold"
-              style={{ background: "#EF4444", color: "#fff" }}
-            >
-              Confirmar
-            </button>
-          </div>
+              Cancelar pedido
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Cancelar pedido?</AlertDialogTitle>
+                <AlertDialogDescription>
+                  O item de {customer?.name ?? "cliente"} será removido e não poderá ser recuperado.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>Não</AlertDialogCancel>
+                <AlertDialogAction variant="destructive" onClick={onCancel}>
+                  Confirmar
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
         )}
-      </div>
-    </div>
+      </CardContent>
+    </Card>
   );
 }

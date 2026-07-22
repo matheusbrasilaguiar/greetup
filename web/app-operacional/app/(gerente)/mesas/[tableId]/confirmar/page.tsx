@@ -43,7 +43,7 @@ function ConfirmarContent({ tableId, sessionId, tableCode }: { tableId: string; 
   }
 
   return (
-    <div className="h-full flex flex-col bg-cream-50">
+    <div className="h-full flex flex-col bg-background">
       <PageHeader
         title="Revisar pedido"
         subtitle={`Mesa ${tableCode}`}
@@ -89,7 +89,7 @@ function ConfirmarContent({ tableId, sessionId, tableCode }: { tableId: string; 
         )}
       </div>
 
-      <div className="pb-safe px-4 pt-4 bg-cream-50 border-t border-border">
+      <div className="pb-safe px-4 pt-4 bg-background border-t border-border">
         <Button
           onClick={handleConfirm}
           disabled={loading || items.length === 0}

@@ -2,15 +2,31 @@
 
 import { useState } from "react";
 import { useRouter, useParams, useSearchParams } from "next/navigation";
-import { useProducts } from "@/lib/hooks/useProducts";
+import { useProducts, type Product } from "@/lib/hooks/useProducts";
 import { CartProvider, useCart } from "@/lib/cart-context";
 import { ProductRow } from "@/components/ProductRow";
 import { PageHeader } from "@/components/PageHeader";
+import { LoadingState, EmptyState } from "@/components/EmptyState";
 import { Button } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { ShoppingCart } from "lucide-react";
 
 type Tab = "COMIDA" | "BEBIDA";
+
+const tabTriggerClass =
+  "rounded-full h-auto px-4 py-1.5 text-xs font-semibold border-none text-chrome-subtle-foreground hover:text-chrome-muted-foreground data-active:bg-chrome-accent data-active:text-chrome data-active:shadow-none";
+
+function ProductList({ products, isLoading }: { products: Product[]; isLoading: boolean }) {
+  if (isLoading) return <LoadingState />;
+  if (products.length === 0) return <EmptyState title="Nenhum produto disponível." />;
+  return (
+    <div className="bg-card mt-2 mx-4 rounded-2xl overflow-hidden border border-border">
+      {products.map((product) => (
+        <ProductRow key={product.id} product={product} />
+      ))}
+    </div>
+  );
+}
 
 function PedidoContent({ tableId, sessionId, tableCode }: { tableId: string; sessionId: string; tableCode: string }) {
   const router = useRouter();
@@ -18,50 +34,37 @@ function PedidoContent({ tableId, sessionId, tableCode }: { tableId: string; ses
   const { totalItems } = useCart();
   const [activeTab, setActiveTab] = useState<Tab>("COMIDA");
 
-  const filtered = products.filter((p) => p.active && p.category === activeTab);
+  const comida = products.filter((p) => p.active && p.category === "COMIDA");
+  const bebida = products.filter((p) => p.active && p.category === "BEBIDA");
 
   return (
-    <div className="h-full flex flex-col bg-cream-50">
+    <div className="h-full flex flex-col bg-background">
       <PageHeader
         title="Cardápio"
         subtitle={`Mesa ${tableCode}`}
         back={{ label: "Mesas", href: "/mesas" }}
       />
 
-      {/* Tabs */}
-      <div className="bg-bordeaux-800 px-4 pb-3 flex gap-2">
-        {(["COMIDA", "BEBIDA"] as Tab[]).map((tab) => (
-          <button
-            key={tab}
-            onClick={() => setActiveTab(tab)}
-            className={cn(
-              "px-4 py-1.5 rounded-full text-xs font-semibold transition-colors",
-              activeTab === tab
-                ? "bg-champagne text-bordeaux-900"
-                : "text-ink-500 hover:text-ink-300"
-            )}
-          >
-            {tab === "COMIDA" ? "Comidas" : "Bebidas"}
-          </button>
-        ))}
-      </div>
+      <Tabs
+        value={activeTab}
+        onValueChange={(v) => setActiveTab(v as Tab)}
+        className="flex-1 min-h-0 flex flex-col gap-0"
+      >
+        <TabsList className="bg-chrome-border h-auto w-fit justify-start gap-2 rounded-none px-4 pb-3">
+          <TabsTrigger value="COMIDA" className={tabTriggerClass}>Comidas</TabsTrigger>
+          <TabsTrigger value="BEBIDA" className={tabTriggerClass}>Bebidas</TabsTrigger>
+        </TabsList>
 
-      <div className="flex-1 overflow-y-auto">
-        {isLoading ? (
-          <p className="text-muted-foreground text-sm text-center py-16 font-mono">Carregando...</p>
-        ) : filtered.length === 0 ? (
-          <p className="text-muted-foreground text-sm text-center py-16">Nenhum produto disponível.</p>
-        ) : (
-          <div className="bg-white mt-2 mx-4 rounded-2xl overflow-hidden border border-border">
-            {filtered.map((product) => (
-              <ProductRow key={product.id} product={product} />
-            ))}
-          </div>
-        )}
-      </div>
+        <TabsContent value="COMIDA" className="flex-1 min-h-0 overflow-y-auto">
+          <ProductList products={comida} isLoading={isLoading} />
+        </TabsContent>
+        <TabsContent value="BEBIDA" className="flex-1 min-h-0 overflow-y-auto">
+          <ProductList products={bebida} isLoading={isLoading} />
+        </TabsContent>
+      </Tabs>
 
       {totalItems > 0 && (
-        <div className="pb-safe px-4 pt-3 bg-cream-50 border-t border-border">
+        <div className="pb-safe px-4 pt-3 bg-background border-t border-border">
           <Button
             onClick={() => router.push(`/mesas/${tableId}/confirmar?sessionId=${sessionId}&code=${encodeURIComponent(tableCode)}`)}
             className="w-full h-12 text-base flex items-center justify-between px-5"

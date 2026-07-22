@@ -4,6 +4,7 @@ import { useEffect, useMemo } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useOrderItems, type KanbanItem } from "@/lib/hooks/useOrderItems";
 import { useSocketEvents } from "@/lib/hooks/useSocket";
+import { cn } from "@/lib/utils";
 
 export default function DisplayPage() {
   const { data: items = [] } = useOrderItems(undefined, "active");
@@ -53,21 +54,21 @@ export default function DisplayPage() {
   }, []);
 
   return (
-    <div className="h-full flex flex-col bg-bordeaux-900 landscape:flex-row">
+    <div className="h-full flex flex-col bg-chrome landscape:flex-row">
       {/* Left: Pronto para entrega */}
       <div className="flex-1 flex flex-col p-4">
         <div className="flex items-center gap-3 mb-4">
-          <span className="w-3 h-3 rounded-full bg-green-400 animate-pulse" />
-          <h2 className="text-sm font-mono text-green-400 uppercase tracking-widest font-semibold">
+          <span className="w-3 h-3 rounded-full bg-status-success-br animate-pulse" />
+          <h2 className="text-sm font-mono text-status-success-br uppercase tracking-widest font-semibold">
             Pronto para entrega
           </h2>
-          <span className="ml-auto font-mono text-xs text-ink-500">{ready.length}</span>
+          <span className="ml-auto font-mono text-xs text-chrome-muted-foreground">{ready.length}</span>
         </div>
 
         <div className="flex flex-col gap-2 flex-1 overflow-y-auto">
           {ready.length === 0 && (
             <div className="flex-1 flex items-center justify-center">
-              <p className="text-ink-700 font-mono text-sm">Nenhum item pronto</p>
+              <p className="text-chrome-muted-foreground/60 font-mono text-sm">Nenhum item pronto</p>
             </div>
           )}
           {ready.map((item) => <DisplayCard key={item.id} item={item} highlight />)}
@@ -75,23 +76,23 @@ export default function DisplayPage() {
       </div>
 
       {/* Divider */}
-      <div className="w-px bg-bordeaux-800 hidden landscape:block" />
-      <div className="h-px bg-bordeaux-800 landscape:hidden" />
+      <div className="w-px bg-chrome-border hidden landscape:block" />
+      <div className="h-px bg-chrome-border landscape:hidden" />
 
       {/* Right: Entregues recentes */}
       <div className="flex-1 flex flex-col p-4 opacity-60">
         <div className="flex items-center gap-3 mb-4">
-          <span className="w-3 h-3 rounded-full bg-ink-500" />
-          <h2 className="text-sm font-mono text-ink-400 uppercase tracking-widest font-semibold">
+          <span className="w-3 h-3 rounded-full bg-chrome-muted-foreground" />
+          <h2 className="text-sm font-mono text-chrome-muted-foreground uppercase tracking-widest font-semibold">
             Entregues · Recentes
           </h2>
-          <span className="ml-auto font-mono text-xs text-ink-600">{recentDelivered.length}</span>
+          <span className="ml-auto font-mono text-xs text-chrome-muted-foreground/70">{recentDelivered.length}</span>
         </div>
 
         <div className="flex flex-col gap-2 flex-1 overflow-y-auto">
           {recentDelivered.length === 0 && (
             <div className="flex-1 flex items-center justify-center">
-              <p className="text-ink-700 font-mono text-sm">Nenhum entregue ainda</p>
+              <p className="text-chrome-muted-foreground/60 font-mono text-sm">Nenhum entregue ainda</p>
             </div>
           )}
           {recentDelivered.map((item) => <DisplayCard key={item.id} item={item} highlight={false} />)}
@@ -107,20 +108,21 @@ function DisplayCard({ item, highlight }: { item: KanbanItem; highlight: boolean
 
   return (
     <div
-      className="rounded-xl p-3 border"
-      style={{
-        backgroundColor: highlight ? "#1A3B1F" : "#1F1A18",
-        borderColor: highlight ? "#22C55E" : "#2E1116",
-      }}
+      className={cn(
+        "rounded-xl p-3 border",
+        highlight
+          ? "bg-status-success-br/15 border-status-success-br"
+          : "bg-chrome-card/40 border-chrome-border"
+      )}
     >
       <div className="flex items-start justify-between gap-2">
         <div>
-          <p className="text-cream-50 font-semibold text-sm">{customer?.name ?? "—"}</p>
-          <p className="text-ink-400 font-mono text-xs">{tableCode}</p>
+          <p className="text-chrome-foreground font-semibold text-sm">{customer?.name ?? "—"}</p>
+          <p className="text-chrome-muted-foreground font-mono text-xs">{tableCode}</p>
         </div>
       </div>
-      <p className="text-cream-100 text-sm mt-1">
-        <span className="font-mono text-champagne mr-1">{item.quantity}×</span>
+      <p className="text-chrome-foreground/90 text-sm mt-1">
+        <span className="font-mono text-chrome-accent mr-1">{item.quantity}×</span>
         {item.product.name}
       </p>
     </div>

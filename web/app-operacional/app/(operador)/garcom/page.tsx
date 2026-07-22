@@ -2,11 +2,16 @@
 
 import { useCallback, useMemo, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
 import { useOrderItems, type KanbanItem, useAdvanceItemStatus } from "@/lib/hooks/useOrderItems";
 import { useSocketEvents } from "@/lib/hooks/useSocket";
 import { useAuth } from "@/lib/hooks/useAuth";
 import { Button } from "@/components/ui/button";
-import { Banner } from "@/components/Banner";
+import { Card, CardContent } from "@/components/ui/card";
+import { Checkbox } from "@/components/ui/checkbox";
+import { OrderOptionBadges } from "@/components/OrderOptionBadge";
+import { EmptyState, LoadingState } from "@/components/EmptyState";
+import { CheckCircle } from "lucide-react";
 
 export default function GarcomPage() {
   const { logout } = useAuth();
@@ -14,7 +19,6 @@ export default function GarcomPage() {
   const advance = useAdvanceItemStatus();
   const qc = useQueryClient();
   const [checked, setChecked] = useState<Record<string, boolean>>({});
-  const [banner, setBanner] = useState<string | null>(null);
   const [deliveringGroups, setDeliveringGroups] = useState<Set<string>>(new Set());
 
   const socketHandlers = useCallback(
@@ -23,7 +27,7 @@ export default function GarcomPage() {
         qc.invalidateQueries({ queryKey: ["order-items"] });
         const d = data as { status?: string; tableCode?: string };
         if (d?.status === "PRONTO") {
-          setBanner(`Novo item pronto · Mesa ${d.tableCode ?? ""}`);
+          toast.info(`Novo item pronto · Mesa ${d.tableCode ?? ""}`);
         }
       },
     }),
@@ -71,103 +75,95 @@ export default function GarcomPage() {
   }
 
   return (
-    <div className="h-full flex flex-col bg-cream-50">
+    <div className="h-full flex flex-col bg-background">
       {/* Header */}
-      <div className="bg-bordeaux-900 px-4 pt-safe pb-5">
-        <p className="text-xs font-mono text-champagne tracking-widest uppercase mb-1">
+      <div className="bg-chrome px-4 pt-safe pb-5">
+        <p className="text-xs font-mono text-chrome-accent tracking-widest uppercase mb-1">
           GreetUp · Garçom
         </p>
-        <h1 className="text-xl font-semibold text-cream-50 tracking-tight">Itens prontos</h1>
+        <h1 className="text-xl font-semibold text-chrome-foreground tracking-tight">Itens prontos</h1>
         <div className="flex items-center justify-between mt-1">
-          <p className="text-xs text-ink-300">
+          <p className="text-xs text-chrome-muted-foreground">
             {byCustomer.length} {byCustomer.length === 1 ? "cliente" : "clientes"} aguardando
           </p>
-          <button onClick={logout} className="text-xs text-ink-500 hover:text-ink-300 transition-colors">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={logout}
+            className="text-xs text-chrome-subtle-foreground hover:text-chrome-muted-foreground hover:bg-white/5 h-auto p-0"
+          >
             Sair
-          </button>
+          </Button>
         </div>
       </div>
-
-      {/* Banner */}
-      <Banner message={banner} onDismiss={() => setBanner(null)} />
 
       {/* Lista */}
       <div className="flex-1 overflow-y-auto p-4">
         {isLoading ? (
-          <p className="text-ink-500 text-sm text-center py-16 font-mono">Carregando...</p>
+          <LoadingState />
         ) : byCustomer.length === 0 ? (
-          <EmptyState />
+          <EmptyState
+            icon={<CheckCircle className="w-7 h-7 text-status-success-fg" />}
+            title="Tudo entregue!"
+            description="Aguardando novos pedidos prontos."
+          />
         ) : (
           <div className="flex flex-col gap-4">
             {byCustomer.map(({ key: groupKey, name, tableCode, attendantName, items: groupItems }) => {
               const allChecked = groupItems.every((i) => checked[i.id]);
               const delivering = deliveringGroups.has(groupKey);
               return (
-                <div key={groupKey} className="bg-white rounded-xl overflow-hidden border border-cream-200">
+                <Card key={groupKey} className="overflow-hidden gap-0 py-0">
                   {/* Group header */}
-                  <div className="bg-cream-100 px-4 py-3 flex items-center justify-between gap-3">
+                  <div className="bg-muted px-4 py-3 flex items-center justify-between gap-3">
                     <div className="min-w-0 flex-1">
-                      <p className="font-semibold text-ink-900 text-sm truncate">{name}</p>
+                      <p className="font-semibold text-foreground text-sm truncate">{name}</p>
                       <div className="flex items-center gap-1.5 mt-0.5 flex-wrap">
-                        <span className="text-[10px] font-mono text-bordeaux-700 uppercase font-semibold tracking-wide">
+                        <span className="text-[10px] font-mono text-primary uppercase font-semibold tracking-wide">
                           Mesa {tableCode}
                         </span>
                         {attendantName && (
                           <>
-                            <span className="text-ink-300 text-[10px]">·</span>
-                            <span className="text-[10px] text-ink-500">{attendantName}</span>
+                            <span className="text-muted-foreground/60 text-[10px]">·</span>
+                            <span className="text-[10px] text-muted-foreground">{attendantName}</span>
                           </>
                         )}
-                        <span className="text-ink-300 text-[10px]">·</span>
-                        <span className="text-[10px] text-ink-500">
+                        <span className="text-muted-foreground/60 text-[10px]">·</span>
+                        <span className="text-[10px] text-muted-foreground">
                           {groupItems.length} {groupItems.length === 1 ? "item" : "itens"}
                         </span>
                       </div>
                     </div>
-                    <span className="text-xs font-mono bg-bordeaux-700 text-cream-50 px-2.5 py-1 rounded-full shrink-0">
+                    <span className="text-xs font-mono bg-primary text-primary-foreground px-2.5 py-1 rounded-full shrink-0">
                       {groupItems.length}
                     </span>
                   </div>
 
                   {/* Items */}
-                  {groupItems.map((item) => (
-                    <div key={item.id} className="flex items-center justify-between px-4 py-3 border-t border-cream-200">
-                      <div className="flex-1">
-                        <p className="text-ink-900 text-sm">
-                          <span className="font-mono text-bordeaux-700 mr-1">{item.quantity}×</span>
-                          {item.product.name}
-                        </p>
-                        {(item.withCheese !== null || item.courtesy || item.order?.toGo) && (
-                          <div className="flex gap-1 flex-wrap mt-1">
-                            {item.withCheese === true  && <GarcomBadge label="COM QUEIJO" bg="#FEF3C7" color="#92400E" />}
-                            {item.withCheese === false && <GarcomBadge label="SEM QUEIJO" bg="#F3F4F6" color="#4B5563" />}
-                            {item.courtesy             && <GarcomBadge label="CORTESIA"   bg="#DCFCE7" color="#166534" />}
-                            {item.order?.toGo          && <GarcomBadge label="LEVAR"      bg="#EFF6FF" color="#1D4ED8" />}
-                          </div>
-                        )}
-                        {item.notes && (
-                          <p className="text-amber-700 text-xs mt-0.5 font-medium">Obs: {item.notes}</p>
-                        )}
+                  <CardContent className="px-0">
+                    {groupItems.map((item) => (
+                      <div key={item.id} className="flex items-center justify-between px-4 py-3 border-t border-border">
+                        <div className="flex-1">
+                          <p className="text-foreground text-sm">
+                            <span className="font-mono text-primary mr-1">{item.quantity}×</span>
+                            {item.product.name}
+                          </p>
+                          <OrderOptionBadges withCheese={item.withCheese} courtesy={item.courtesy} toGo={item.order?.toGo ?? false} />
+                          {item.notes && (
+                            <p className="text-status-warning-fg text-xs mt-0.5 font-medium">Obs: {item.notes}</p>
+                          )}
+                        </div>
+                        <Checkbox
+                          checked={checked[item.id] ?? false}
+                          onCheckedChange={() => toggleCheck(item.id)}
+                          className="ml-3 shrink-0 size-6"
+                        />
                       </div>
-                      <button
-                        onClick={() => toggleCheck(item.id)}
-                        className="w-6 h-6 rounded-md border-2 flex items-center justify-center transition-colors ml-3 shrink-0"
-                        style={{
-                          backgroundColor: checked[item.id] ? "#6B2331" : "white",
-                          borderColor: checked[item.id] ? "#6B2331" : "#B0AAA5",
-                        }}
-                      >
-                        {checked[item.id] && (
-                          <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
-                            <path d="M2 6L5 9L10 3" stroke="white" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
-                          </svg>
-                        )}
-                      </button>
-                    </div>
-                  ))}
+                    ))}
+                  </CardContent>
 
                   {/* Confirm button */}
-                  <div className="px-4 py-3 border-t border-cream-200">
+                  <div className="px-4 py-3 border-t border-border">
                     <Button
                       disabled={!allChecked || delivering}
                       onClick={() => confirmDelivery(groupKey, groupItems)}
@@ -176,34 +172,12 @@ export default function GarcomPage() {
                       {delivering ? "Confirmando..." : "Confirmar entrega"}
                     </Button>
                   </div>
-                </div>
+                </Card>
               );
             })}
           </div>
         )}
       </div>
-    </div>
-  );
-}
-
-function GarcomBadge({ label, bg, color }: { label: string; bg: string; color: string }) {
-  return (
-    <span className="font-mono text-[9px] font-semibold uppercase px-1.5 py-0.5 rounded" style={{ background: bg, color }}>
-      {label}
-    </span>
-  );
-}
-
-function EmptyState() {
-  return (
-    <div className="flex flex-col items-center justify-center py-20 text-center">
-      <div className="w-16 h-16 rounded-full bg-cream-100 flex items-center justify-center mb-4">
-        <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
-          <path d="M5 14L11 20L23 8" stroke="#6B2331" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" />
-        </svg>
-      </div>
-      <p className="text-ink-900 font-semibold text-base">Tudo entregue!</p>
-      <p className="text-ink-500 text-sm mt-1">Aguardando novos pedidos prontos.</p>
     </div>
   );
 }

@@ -27,12 +27,25 @@
   --font-family-mono: var(--font-jetbrains), ui-monospace, monospace;
 }
 
-/* Status badge tokens */
+/* Status tokens — cobrem status de item, status de mesa e badges de opção do pedido */
 :root {
-  --gu-pending-bg:   #FFF8E7;  --gu-pending-tx:   #92610A;  --gu-pending-br:   #D9B58A;
-  --gu-preparing-bg: #EEF2FF;  --gu-preparing-tx: #3730A3;  --gu-preparing-br: #6366F1;
-  --gu-ready-bg:     #F0FDF4;  --gu-ready-tx:     #15803D;  --gu-ready-br:     #22C55E;
-  --gu-delivered-bg: #F5EEDE;  --gu-delivered-tx: #4A423E;  --gu-delivered-br: #B0AAA5;
+  --status-warning-bg:  #FFF8E7;  --status-warning-fg:  #92610A;  --status-warning-br:  #D9B58A;
+  --status-info-bg:     #EEF2FF;  --status-info-fg:     #3730A3;  --status-info-br:     #6366F1;
+  --status-success-bg:  #F0FDF4;  --status-success-fg:  #15803D;  --status-success-br:  #22C55E;
+  --status-muted-bg:    #F5EEDE;  --status-muted-fg:    #4A423E;  --status-muted-br:    #B0AAA5;
+  --status-occupied-bg: #FFF1F2;  --status-occupied-fg: #E11D48;  --status-occupied-br: #FDA4AF;
+
+  /* Chrome — superfície escura fixa da marca, independente de tema: faixa de header em
+     páginas claras (PageHeader, sidebar) e telas 100% escuras (cozinha, display, login) */
+  --chrome: #2E1116;
+  --chrome-foreground: #FBF7EF;
+  --chrome-accent: #D9B58A;
+  --chrome-muted-foreground: #B0AAA5;
+  --chrome-subtle-foreground: #7A736E;
+  --chrome-border: #4A1A24;
+  --chrome-card: #4A1A24;
+  --chrome-card-foreground: #FBF7EF;
+  --chrome-card-border: #6B2331;
 
   /* shadcn CSS vars — mapped to Greetup brand tokens */
   --background: #FBF7EF;
@@ -98,6 +111,33 @@
   --color-border: var(--border);
   --color-input: var(--input);
   --color-ring: var(--ring);
+
+  --color-chrome: var(--chrome);
+  --color-chrome-foreground: var(--chrome-foreground);
+  --color-chrome-accent: var(--chrome-accent);
+  --color-chrome-muted-foreground: var(--chrome-muted-foreground);
+  --color-chrome-subtle-foreground: var(--chrome-subtle-foreground);
+  --color-chrome-border: var(--chrome-border);
+  --color-chrome-card: var(--chrome-card);
+  --color-chrome-card-foreground: var(--chrome-card-foreground);
+  --color-chrome-card-border: var(--chrome-card-border);
+
+  --color-status-warning-bg: var(--status-warning-bg);
+  --color-status-warning-fg: var(--status-warning-fg);
+  --color-status-warning-br: var(--status-warning-br);
+  --color-status-info-bg: var(--status-info-bg);
+  --color-status-info-fg: var(--status-info-fg);
+  --color-status-info-br: var(--status-info-br);
+  --color-status-success-bg: var(--status-success-bg);
+  --color-status-success-fg: var(--status-success-fg);
+  --color-status-success-br: var(--status-success-br);
+  --color-status-muted-bg: var(--status-muted-bg);
+  --color-status-muted-fg: var(--status-muted-fg);
+  --color-status-muted-br: var(--status-muted-br);
+  --color-status-occupied-bg: var(--status-occupied-bg);
+  --color-status-occupied-fg: var(--status-occupied-fg);
+  --color-status-occupied-br: var(--status-occupied-br);
+
   --radius-sm: calc(var(--radius) * 0.6);
   --radius-md: calc(var(--radius) * 0.8);
   --radius-lg: var(--radius);

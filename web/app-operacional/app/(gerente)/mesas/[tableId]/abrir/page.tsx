@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { cn } from "@/lib/utils";
 import { X, UserPlus, Search } from "lucide-react";
 
 type Mode = "search" | "create";
@@ -32,6 +33,7 @@ export default function AbrirSessaoPage() {
   const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [showResults, setShowResults] = useState(false);
+  const [activeIndex, setActiveIndex] = useState(-1);
 
   const [newName, setNewName] = useState("");
   const [newEmployer, setNewEmployer] = useState("");
@@ -40,6 +42,8 @@ export default function AbrirSessaoPage() {
 
   const debouncedQuery = useDebounce(searchQuery, 300);
   const { data: searchResults = [], isFetching } = useCustomerSearch(debouncedQuery);
+  const visibleResults = searchResults.slice(0, 5);
+  const listboxOpen = showResults && searchQuery.length >= 2;
 
   const createCustomer = useCreateCustomer();
   const openSession = useOpenSession();
@@ -54,7 +58,27 @@ export default function AbrirSessaoPage() {
     setSelectedCustomer(customer);
     setSearchQuery("");
     setShowResults(false);
+    setActiveIndex(-1);
   }, []);
+
+  function handleSearchKeyDown(e: React.KeyboardEvent<HTMLInputElement>) {
+    if (!listboxOpen || visibleResults.length === 0) return;
+    if (e.key === "ArrowDown") {
+      e.preventDefault();
+      setActiveIndex((i) => (i + 1) % visibleResults.length);
+    } else if (e.key === "ArrowUp") {
+      e.preventDefault();
+      setActiveIndex((i) => (i <= 0 ? visibleResults.length - 1 : i - 1));
+    } else if (e.key === "Enter") {
+      if (activeIndex >= 0 && activeIndex < visibleResults.length) {
+        e.preventDefault();
+        handleSelectCustomer(visibleResults[activeIndex]);
+      }
+    } else if (e.key === "Escape") {
+      setShowResults(false);
+      setActiveIndex(-1);
+    }
+  }
 
   function switchToCreate() {
     setMode("create");
@@ -105,7 +129,7 @@ export default function AbrirSessaoPage() {
   }
 
   return (
-    <div className="h-full flex flex-col bg-cream-50">
+    <div className="h-full flex flex-col bg-background">
       <PageHeader
         title="Novo atendimento"
         subtitle={`Mesa ${tableCode}`}
@@ -153,25 +177,46 @@ export default function AbrirSessaoPage() {
                   <div className="relative">
                     <Input
                       type="text"
+                      role="combobox"
+                      aria-expanded={listboxOpen}
+                      aria-controls="customer-search-listbox"
+                      aria-autocomplete="list"
+                      aria-activedescendant={
+                        activeIndex >= 0 && visibleResults[activeIndex]
+                          ? `customer-option-${visibleResults[activeIndex].id}`
+                          : undefined
+                      }
                       value={searchQuery}
-                      onChange={(e) => { setSearchQuery(e.target.value); setShowResults(true); }}
+                      onChange={(e) => { setSearchQuery(e.target.value); setShowResults(true); setActiveIndex(-1); }}
                       onFocus={() => setShowResults(true)}
+                      onKeyDown={handleSearchKeyDown}
                       placeholder="Nome ou email..."
                       autoComplete="off"
                     />
-                    {showResults && searchQuery.length >= 2 && (
-                      <div className="absolute top-full left-0 right-0 mt-1 bg-white rounded-xl border border-border shadow-lg z-10 overflow-hidden">
+                    {listboxOpen && (
+                      <div
+                        id="customer-search-listbox"
+                        role="listbox"
+                        className="absolute top-full left-0 right-0 mt-1 bg-popover rounded-xl border border-border shadow-lg z-10 overflow-hidden"
+                      >
                         {isFetching && (
                           <p className="text-xs text-muted-foreground px-4 py-3 font-mono">Buscando...</p>
                         )}
-                        {!isFetching && searchResults.length === 0 && (
+                        {!isFetching && visibleResults.length === 0 && (
                           <p className="text-xs text-muted-foreground px-4 py-3">Nenhum resultado encontrado.</p>
                         )}
-                        {searchResults.slice(0, 5).map((c) => (
+                        {visibleResults.map((c, index) => (
                           <button
                             key={c.id}
+                            id={`customer-option-${c.id}`}
+                            role="option"
+                            aria-selected={index === activeIndex}
                             onClick={() => handleSelectCustomer(c)}
-                            className="w-full text-left px-4 py-3 border-b border-border last:border-0 hover:bg-secondary transition-colors"
+                            onMouseEnter={() => setActiveIndex(index)}
+                            className={cn(
+                              "w-full text-left px-4 py-3 border-b border-border last:border-0 transition-colors",
+                              index === activeIndex ? "bg-secondary" : "hover:bg-secondary"
+                            )}
                           >
                             <p className="text-sm font-medium">{c.name}</p>
                             {c.employer && <p className="text-xs text-muted-foreground">{c.employer}</p>}
@@ -239,7 +284,7 @@ export default function AbrirSessaoPage() {
         )}
       </div>
 
-      <div className="pb-safe px-4 pt-4 bg-cream-50 border-t border-border">
+      <div className="pb-safe px-4 pt-4 bg-background border-t border-border">
         <Button
           onClick={handleSubmit}
           disabled={!canSubmit || loading}

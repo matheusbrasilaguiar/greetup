@@ -6,8 +6,8 @@ import { useQueryClient } from "@tanstack/react-query";
 import { useSessionOrders, useCloseOrder, type OrderItem } from "@/lib/hooks/useOrders";
 import { useCloseSession } from "@/lib/hooks/useSessions";
 import { useSocketEvents } from "@/lib/hooks/useSocket";
+import { toast } from "sonner";
 import { ItemStatusBadge } from "@/components/ItemStatusBadge";
-import { Banner } from "@/components/Banner";
 import { PageHeader } from "@/components/PageHeader";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -43,7 +43,6 @@ export default function ContaPage() {
   const closeOrder = useCloseOrder();
   const closeSession = useCloseSession();
 
-  const [banner, setBanner] = useState<string | null>(null);
   const [showCloseSheet, setShowCloseSheet] = useState(false);
   const [closing, setClosing] = useState(false);
 
@@ -66,7 +65,7 @@ export default function ContaPage() {
         qc.invalidateQueries({ queryKey: ["orders", "session", sessionId] });
         const d = data as { status?: string; productName?: string };
         if (d?.status === "PRONTO" && d?.productName) {
-          setBanner(`${d.productName} pronto para entrega!`);
+          toast.success(`${d.productName} pronto para entrega!`);
         }
       },
       order_created: () => {
@@ -90,7 +89,7 @@ export default function ContaPage() {
   }
 
   return (
-    <div className="h-full flex flex-col bg-cream-50">
+    <div className="h-full flex flex-col bg-background">
       <PageHeader
         title={customerName ?? "Atendimento"}
         subtitle={tableCode ? `Mesa ${tableCode}` : "Conta ativa"}
@@ -98,19 +97,17 @@ export default function ContaPage() {
       />
 
       {/* Duration pill */}
-      <div className="bg-bordeaux-900 px-4 pb-4 -mt-1">
+      <div className="bg-chrome px-4 pb-4 -mt-1">
         <div className="flex items-center gap-2">
           <span className="relative flex h-2 w-2">
-            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-champagne opacity-75" />
-            <span className="relative inline-flex rounded-full h-2 w-2 bg-champagne" />
+            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-chrome-accent opacity-75" />
+            <span className="relative inline-flex rounded-full h-2 w-2 bg-chrome-accent" />
           </span>
-          <p className="text-xs text-ink-300 font-mono">
+          <p className="text-xs text-chrome-muted-foreground font-mono">
             Conta aberta há {durationMin}min
           </p>
         </div>
       </div>
-
-      <Banner message={banner} onDismiss={() => setBanner(null)} />
 
       <div className="flex-1 overflow-y-auto p-4 flex flex-col gap-3">
         {isLoading ? (
@@ -147,7 +144,7 @@ export default function ContaPage() {
         )}
       </div>
 
-      <div className="pb-safe px-4 pt-3 bg-cream-50 border-t border-border flex flex-col gap-2">
+      <div className="pb-safe px-4 pt-3 bg-background border-t border-border flex flex-col gap-2">
         <Button
           variant="outline"
           onClick={() => router.push(`/mesas/${tableId}/pedido?sessionId=${sessionId}&code=${encodeURIComponent(tableCode ?? "")}`)}
