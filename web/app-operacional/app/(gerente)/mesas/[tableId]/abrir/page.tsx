@@ -116,6 +116,16 @@ export default function AbrirSessaoPage() {
 
         {mode === "search" ? (
           <>
+            <div>
+              {selectedCustomer ? (
+                <p className="text-sm text-muted-foreground">Cliente selecionado para este atendimento.</p>
+              ) : (
+                <p className="text-sm text-muted-foreground">
+                  Busque pelo nome ou e-mail do visitante. Caso seja a primeira visita, cadastre um novo abaixo.
+                </p>
+              )}
+            </div>
+
             {selectedCustomer ? (
               /* Cliente selecionado */
               <Card>
@@ -189,13 +199,20 @@ export default function AbrirSessaoPage() {
         ) : (
           <>
             {/* Modo de cadastro */}
-            <button
+            <div>
+              <p className="text-sm text-muted-foreground">
+                Preencha os dados do visitante para abrir o atendimento. Apenas o nome é obrigatório.
+              </p>
+            </div>
+
+            <Button
+              variant="ghost"
               onClick={switchToSearch}
-              className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors font-mono py-1"
+              className="w-full h-10 gap-2 text-sm text-muted-foreground"
             >
-              <Search className="w-3.5 h-3.5" />
+              <Search className="w-4 h-4" />
               Buscar cliente existente
-            </button>
+            </Button>
 
             <Card className="overflow-visible">
               <CardContent className="pt-4 flex flex-col gap-3">
