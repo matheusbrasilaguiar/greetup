@@ -1,7 +1,10 @@
 import type { Metadata, Viewport } from "next";
-import { Sora, JetBrains_Mono } from "next/font/google";
+import { Sora, JetBrains_Mono, Geist } from "next/font/google";
 import "./globals.css";
 import { QueryProvider } from "@/components/QueryProvider";
+import { cn } from "@/lib/utils";
+
+const geist = Geist({subsets:['latin'],variable:'--font-sans'});
 
 const sora = Sora({
   subsets: ["latin"],
@@ -29,7 +32,7 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="pt-BR" className={`${sora.variable} ${jetbrains.variable} h-full`}>
+    <html lang="pt-BR" className={cn("h-full", sora.variable, jetbrains.variable, "font-sans", geist.variable)}>
       <body className="h-full overflow-hidden">
         <QueryProvider>{children}</QueryProvider>
       </body>

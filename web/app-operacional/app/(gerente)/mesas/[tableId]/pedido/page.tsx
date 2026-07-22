@@ -5,10 +5,14 @@ import { useRouter, useParams, useSearchParams } from "next/navigation";
 import { useProducts } from "@/lib/hooks/useProducts";
 import { CartProvider, useCart } from "@/lib/cart-context";
 import { ProductRow } from "@/components/ProductRow";
+import { PageHeader } from "@/components/PageHeader";
+import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
+import { ShoppingCart } from "lucide-react";
 
 type Tab = "COMIDA" | "BEBIDA";
 
-function PedidoContent({ tableId, sessionId }: { tableId: string; sessionId: string }) {
+function PedidoContent({ tableId, sessionId, tableCode }: { tableId: string; sessionId: string; tableCode: string }) {
   const router = useRouter();
   const { data: products = [], isLoading } = useProducts();
   const { totalItems } = useCart();
@@ -18,19 +22,11 @@ function PedidoContent({ tableId, sessionId }: { tableId: string; sessionId: str
 
   return (
     <div className="h-full flex flex-col bg-cream-50">
-      {/* Header */}
-      <div className="bg-bordeaux-900 px-4 pt-10 pb-4">
-        <button
-          onClick={() => router.push("/mesas")}
-          className="text-xs text-ink-400 mb-3 flex items-center gap-1"
-        >
-          ← Mesas
-        </button>
-        <p className="text-xs font-mono text-champagne tracking-widest uppercase mb-1">
-          Cardápio
-        </p>
-        <h1 className="text-xl font-semibold text-cream-50">Selecionar itens</h1>
-      </div>
+      <PageHeader
+        title="Cardápio"
+        subtitle={`Mesa ${tableCode}`}
+        back={{ label: "Mesas", href: "/mesas" }}
+      />
 
       {/* Tabs */}
       <div className="bg-bordeaux-800 px-4 pb-3 flex gap-2">
@@ -38,25 +34,25 @@ function PedidoContent({ tableId, sessionId }: { tableId: string; sessionId: str
           <button
             key={tab}
             onClick={() => setActiveTab(tab)}
-            className="px-4 py-1.5 rounded-full text-xs font-semibold transition-colors"
-            style={{
-              backgroundColor: activeTab === tab ? "#D9B58A" : "transparent",
-              color: activeTab === tab ? "#2E1116" : "#7A736E",
-            }}
+            className={cn(
+              "px-4 py-1.5 rounded-full text-xs font-semibold transition-colors",
+              activeTab === tab
+                ? "bg-champagne text-bordeaux-900"
+                : "text-ink-500 hover:text-ink-300"
+            )}
           >
             {tab === "COMIDA" ? "Comidas" : "Bebidas"}
           </button>
         ))}
       </div>
 
-      {/* Product list */}
       <div className="flex-1 overflow-y-auto">
         {isLoading ? (
-          <p className="text-ink-400 text-sm text-center py-16 font-mono">Carregando...</p>
+          <p className="text-muted-foreground text-sm text-center py-16 font-mono">Carregando...</p>
         ) : filtered.length === 0 ? (
-          <p className="text-ink-400 text-sm text-center py-16">Nenhum produto disponível.</p>
+          <p className="text-muted-foreground text-sm text-center py-16">Nenhum produto disponível.</p>
         ) : (
-          <div className="bg-white mt-2 mx-4 rounded-2xl overflow-hidden border border-cream-200">
+          <div className="bg-white mt-2 mx-4 rounded-2xl overflow-hidden border border-border">
             {filtered.map((product) => (
               <ProductRow key={product.id} product={product} />
             ))}
@@ -64,16 +60,18 @@ function PedidoContent({ tableId, sessionId }: { tableId: string; sessionId: str
         )}
       </div>
 
-      {/* Floating action bar */}
       {totalItems > 0 && (
-        <div className="pb-safe px-4 pt-4 bg-cream-50 border-t border-cream-200">
-          <button
-            onClick={() => router.push(`/mesas/${tableId}/confirmar?sessionId=${sessionId}`)}
-            className="w-full rounded-xl py-4 bg-bordeaux-700 text-cream-50 text-base font-semibold flex items-center justify-between px-5 active:scale-95 transition-transform"
+        <div className="pb-safe px-4 pt-3 bg-cream-50 border-t border-border">
+          <Button
+            onClick={() => router.push(`/mesas/${tableId}/confirmar?sessionId=${sessionId}&code=${encodeURIComponent(tableCode)}`)}
+            className="w-full h-12 text-base flex items-center justify-between px-5"
           >
-            <span className="font-mono text-sm">{totalItems} {totalItems === 1 ? "item" : "itens"}</span>
+            <span className="flex items-center gap-2">
+              <ShoppingCart className="w-4 h-4" />
+              <span className="font-mono text-sm">{totalItems} {totalItems === 1 ? "item" : "itens"}</span>
+            </span>
             <span>Confirmar pedido →</span>
-          </button>
+          </Button>
         </div>
       )}
     </div>
@@ -84,10 +82,11 @@ export default function PedidoPage() {
   const { tableId } = useParams<{ tableId: string }>();
   const searchParams = useSearchParams();
   const sessionId = searchParams.get("sessionId") ?? "";
+  const tableCode = searchParams.get("code") ?? "";
 
   return (
     <CartProvider tableId={tableId}>
-      <PedidoContent tableId={tableId} sessionId={sessionId} />
+      <PedidoContent tableId={tableId} sessionId={sessionId} tableCode={tableCode} />
     </CartProvider>
   );
 }

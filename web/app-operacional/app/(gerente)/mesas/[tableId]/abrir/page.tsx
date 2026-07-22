@@ -4,6 +4,13 @@ import { useState, useRef, useCallback, useEffect } from "react";
 import { useRouter, useParams, useSearchParams } from "next/navigation";
 import { useCustomerSearch, useCreateCustomer, type Customer } from "@/lib/hooks/useCustomers";
 import { useOpenSession } from "@/lib/hooks/useSessions";
+import { PageHeader } from "@/components/PageHeader";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Card, CardContent } from "@/components/ui/card";
+import { Separator } from "@/components/ui/separator";
+import { X } from "lucide-react";
 
 function useDebounce(value: string, ms: number) {
   const [debounced, setDebounced] = useState(value);
@@ -24,7 +31,6 @@ export default function AbrirSessaoPage() {
   const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
   const [showSearch, setShowSearch] = useState(false);
 
-  // New customer form
   const [newName, setNewName] = useState("");
   const [newEmployer, setNewEmployer] = useState("");
   const [newEmail, setNewEmail] = useState("");
@@ -52,10 +58,8 @@ export default function AbrirSessaoPage() {
     submittingRef.current = true;
     setLoading(true);
     setError(null);
-
     try {
       let customerId: string;
-
       if (selectedCustomer) {
         customerId = selectedCustomer.id;
       } else {
@@ -67,9 +71,8 @@ export default function AbrirSessaoPage() {
         });
         customerId = customer.id;
       }
-
       const session = await openSession.mutateAsync({ tableId, customerId });
-      router.push(`/mesas/${tableId}/pedido?sessionId=${session.id}`);
+      router.push(`/mesas/${tableId}/pedido?sessionId=${session.id}&code=${encodeURIComponent(tableCode)}`);
     } catch (err: unknown) {
       const msg =
         (err as { response?: { data?: { message?: string } } })?.response?.data?.message ??
@@ -83,130 +86,118 @@ export default function AbrirSessaoPage() {
 
   return (
     <div className="h-full flex flex-col bg-cream-50">
-      {/* Header */}
-      <div className="bg-bordeaux-900 px-4 pt-10 pb-5">
-        <button
-          onClick={() => router.back()}
-          className="text-xs text-ink-400 mb-3 flex items-center gap-1"
-        >
-          ← Voltar
-        </button>
-        <p className="text-xs font-mono text-champagne tracking-widest uppercase mb-1">
-          Mesa {tableCode}
-        </p>
-        <h1 className="text-xl font-semibold text-cream-50">Novo atendimento</h1>
-      </div>
+      <PageHeader
+        title="Novo atendimento"
+        subtitle={`Mesa ${tableCode}`}
+        back={{ label: "Mesas", href: "/mesas" }}
+      />
 
-      <div className="flex-1 overflow-y-auto p-4 flex flex-col gap-5">
-        {/* Opção A: Buscar cliente */}
-        <div className="bg-white rounded-2xl p-4 border border-cream-200">
-          <p className="text-xs font-mono text-ink-500 uppercase tracking-wider mb-3">
-            Buscar cliente cadastrado
-          </p>
+      <div className="flex-1 overflow-y-auto p-4 flex flex-col gap-4">
+        {/* Buscar cliente */}
+        <Card>
+          <CardContent className="pt-4">
+            <p className="text-xs font-mono text-muted-foreground uppercase tracking-wider mb-3">
+              Buscar cliente cadastrado
+            </p>
 
-          {selectedCustomer ? (
-            <div className="flex items-center justify-between bg-bordeaux-900 rounded-xl px-4 py-3">
-              <div>
-                <p className="text-sm font-semibold text-cream-50">{selectedCustomer.name}</p>
-                {selectedCustomer.employer && (
-                  <p className="text-xs text-ink-300">{selectedCustomer.employer}</p>
+            {selectedCustomer ? (
+              <div className="flex items-center justify-between bg-bordeaux-900 rounded-xl px-4 py-3">
+                <div>
+                  <p className="text-sm font-semibold text-cream-50">{selectedCustomer.name}</p>
+                  {selectedCustomer.employer && (
+                    <p className="text-xs text-ink-300">{selectedCustomer.employer}</p>
+                  )}
+                </div>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => setSelectedCustomer(null)}
+                  className="text-ink-400 hover:text-red-400 hover:bg-transparent h-8 w-8"
+                >
+                  <X className="w-4 h-4" />
+                </Button>
+              </div>
+            ) : (
+              <div className="relative">
+                <Input
+                  type="text"
+                  value={searchQuery}
+                  onChange={(e) => { setSearchQuery(e.target.value); setShowSearch(true); }}
+                  onFocus={() => setShowSearch(true)}
+                  placeholder="Nome ou email..."
+                />
+                {showSearch && searchQuery.length >= 2 && (
+                  <div className="absolute top-full left-0 right-0 mt-1 bg-white rounded-xl border border-border shadow-lg z-10 overflow-hidden">
+                    {isFetching && (
+                      <p className="text-xs text-muted-foreground px-4 py-3 font-mono">Buscando...</p>
+                    )}
+                    {!isFetching && searchResults.length === 0 && (
+                      <p className="text-xs text-muted-foreground px-4 py-3">Nenhum resultado.</p>
+                    )}
+                    {searchResults.slice(0, 5).map((c) => (
+                      <button
+                        key={c.id}
+                        onClick={() => handleSelectCustomer(c)}
+                        className="w-full text-left px-4 py-3 border-b border-border last:border-0 hover:bg-secondary transition-colors"
+                      >
+                        <p className="text-sm font-medium">{c.name}</p>
+                        {c.employer && <p className="text-xs text-muted-foreground">{c.employer}</p>}
+                      </button>
+                    ))}
+                  </div>
                 )}
               </div>
-              <button
-                onClick={() => setSelectedCustomer(null)}
-                className="text-xs text-ink-400 hover:text-red-400 transition-colors"
-              >
-                Remover
-              </button>
-            </div>
-          ) : (
-            <div className="relative">
-              <input
-                type="text"
-                value={searchQuery}
-                onChange={(e) => {
-                  setSearchQuery(e.target.value);
-                  setShowSearch(true);
-                }}
-                onFocus={() => setShowSearch(true)}
-                placeholder="Nome ou email..."
-                className="w-full rounded-lg bg-cream-50 border border-cream-200 px-4 py-3 text-sm text-ink-900 placeholder:text-ink-300 focus:outline-none focus:border-bordeaux-700 transition-colors"
-              />
-              {showSearch && searchQuery.length >= 2 && (
-                <div className="absolute top-full left-0 right-0 mt-1 bg-white rounded-xl border border-cream-200 shadow-lg z-10 overflow-hidden">
-                  {isFetching && (
-                    <p className="text-xs text-ink-400 px-4 py-3 font-mono">Buscando...</p>
-                  )}
-                  {!isFetching && searchResults.length === 0 && (
-                    <p className="text-xs text-ink-400 px-4 py-3">Nenhum resultado.</p>
-                  )}
-                  {searchResults.slice(0, 5).map((c) => (
-                    <button
-                      key={c.id}
-                      onClick={() => handleSelectCustomer(c)}
-                      className="w-full text-left px-4 py-3 border-b border-cream-100 last:border-0 hover:bg-cream-50 transition-colors"
-                    >
-                      <p className="text-sm font-medium text-ink-900">{c.name}</p>
-                      {c.employer && <p className="text-xs text-ink-500">{c.employer}</p>}
-                    </button>
-                  ))}
-                </div>
-              )}
-            </div>
-          )}
-        </div>
+            )}
+          </CardContent>
+        </Card>
 
-        {/* Divisor */}
         <div className="flex items-center gap-3">
-          <div className="flex-1 h-px bg-cream-200" />
-          <span className="text-xs text-ink-400 font-mono uppercase tracking-wider">
+          <Separator className="flex-1" />
+          <span className="text-xs text-muted-foreground font-mono uppercase tracking-wider">
             ou cadastrar novo
           </span>
-          <div className="flex-1 h-px bg-cream-200" />
+          <Separator className="flex-1" />
         </div>
 
-        {/* Opção B: Novo cliente */}
-        <div className="bg-white rounded-2xl p-4 border border-cream-200 flex flex-col gap-3">
-          <p className="text-xs font-mono text-ink-500 uppercase tracking-wider">Novo visitante</p>
+        {/* Novo cliente */}
+        <Card>
+          <CardContent className="pt-4 flex flex-col gap-3">
+            <p className="text-xs font-mono text-muted-foreground uppercase tracking-wider">
+              Novo visitante
+            </p>
 
-          {[
-            { label: "Nome *", value: newName, onChange: setNewName, placeholder: "Nome completo", required: true },
-            { label: "Empresa", value: newEmployer, onChange: setNewEmployer, placeholder: "Empresa ou organização" },
-            { label: "E-mail", value: newEmail, onChange: setNewEmail, placeholder: "email@empresa.com" },
-            { label: "Telefone", value: newPhone, onChange: setNewPhone, placeholder: "(11) 99999-9999" },
-          ].map(({ label, value, onChange, placeholder }) => (
-            <div key={label} className="flex flex-col gap-1">
-              <label className="text-xs text-ink-500 font-mono">{label}</label>
-              <input
-                type="text"
-                value={value}
-                onChange={(e) => onChange(e.target.value)}
-                placeholder={placeholder}
-                disabled={!!selectedCustomer}
-                className="w-full rounded-lg bg-cream-50 border border-cream-200 px-3 py-2.5 text-sm text-ink-900 placeholder:text-ink-300 focus:outline-none focus:border-bordeaux-700 disabled:opacity-40 transition-colors"
-              />
-            </div>
-          ))}
-        </div>
+            {[
+              { label: "Nome *", value: newName, set: setNewName, placeholder: "Nome completo" },
+              { label: "Empresa", value: newEmployer, set: setNewEmployer, placeholder: "Empresa ou organização" },
+              { label: "E-mail", value: newEmail, set: setNewEmail, placeholder: "email@empresa.com" },
+              { label: "Telefone", value: newPhone, set: setNewPhone, placeholder: "(11) 99999-9999" },
+            ].map(({ label, value, set, placeholder }) => (
+              <div key={label} className="flex flex-col gap-1.5">
+                <Label className="text-xs text-muted-foreground font-mono">{label}</Label>
+                <Input
+                  value={value}
+                  onChange={(e) => set(e.target.value)}
+                  placeholder={placeholder}
+                  disabled={!!selectedCustomer}
+                />
+              </div>
+            ))}
+          </CardContent>
+        </Card>
 
         {error && (
-          <p className="text-sm text-red-600 bg-red-50 rounded-xl px-4 py-3">{error}</p>
+          <p className="text-sm text-destructive bg-destructive/10 rounded-xl px-4 py-3">{error}</p>
         )}
       </div>
 
-      {/* Sticky CTA */}
-      <div className="sticky bottom-0 pb-safe px-4 pt-4 bg-cream-50 border-t border-cream-200">
-        <button
+      <div className="pb-safe px-4 pt-4 bg-cream-50 border-t border-border">
+        <Button
           onClick={handleSubmit}
           disabled={!canSubmit || loading}
-          className="w-full rounded-xl py-4 text-base font-semibold transition-colors disabled:cursor-not-allowed"
-          style={{
-            backgroundColor: canSubmit && !loading ? "#6B2331" : "#ECE2CC",
-            color: canSubmit && !loading ? "#FBF7EF" : "#7A736E",
-          }}
+          className="w-full h-12 text-base"
         >
           {loading ? "Abrindo atendimento..." : "Abrir atendimento"}
-        </button>
+        </Button>
       </div>
     </div>
   );

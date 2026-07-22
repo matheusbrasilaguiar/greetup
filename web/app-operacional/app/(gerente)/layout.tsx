@@ -3,10 +3,9 @@
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { getToken, getUser } from "@/lib/auth";
-import { GerenteNav } from "@/components/GerenteNav";
+import { SidebarProvider } from "@/lib/sidebar-context";
+import { AppSidebar } from "@/components/AppSidebar";
 
-// CartProvider is applied per-page where tableId is available from params.
-// This layout only enforces GERENTE role.
 export default function GerenteLayout({ children }: { children: React.ReactNode }) {
   const router = useRouter();
 
@@ -18,7 +17,6 @@ export default function GerenteLayout({ children }: { children: React.ReactNode 
       return;
     }
     if (user.role !== "GERENTE") {
-      // OPERADOR tentando acessar área de Gerente
       if (user.operatorFunction === "COZINHA") router.replace("/cozinha");
       else if (user.operatorFunction === "GARCOM") router.replace("/garcom");
       else router.replace("/display");
@@ -26,9 +24,11 @@ export default function GerenteLayout({ children }: { children: React.ReactNode 
   }, [router]);
 
   return (
-    <div className="h-full flex flex-col">
-      <div className="flex-1 min-h-0">{children}</div>
-      <GerenteNav />
-    </div>
+    <SidebarProvider>
+      <div className="h-full flex flex-col">
+        <AppSidebar />
+        <div className="flex-1 min-h-0">{children}</div>
+      </div>
+    </SidebarProvider>
   );
 }

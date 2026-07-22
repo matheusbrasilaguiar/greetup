@@ -1,6 +1,11 @@
 @import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
+
+@custom-variant dark (&:is(.dark *));
 
 @theme {
+  /* Brand tokens */
   --color-bordeaux-300: #D6A8B0;
   --color-bordeaux-500: #92465A;
   --color-bordeaux-700: #6B2331;
@@ -22,15 +27,89 @@
   --font-family-mono: var(--font-jetbrains), ui-monospace, monospace;
 }
 
+/* Status badge tokens */
 :root {
   --gu-pending-bg:   #FFF8E7;  --gu-pending-tx:   #92610A;  --gu-pending-br:   #D9B58A;
   --gu-preparing-bg: #EEF2FF;  --gu-preparing-tx: #3730A3;  --gu-preparing-br: #6366F1;
   --gu-ready-bg:     #F0FDF4;  --gu-ready-tx:     #15803D;  --gu-ready-br:     #22C55E;
   --gu-delivered-bg: #F5EEDE;  --gu-delivered-tx: #4A423E;  --gu-delivered-br: #B0AAA5;
+
+  /* shadcn CSS vars — mapped to Greetup brand tokens */
+  --background: #FBF7EF;
+  --foreground: #1F1A18;
+  --card: #FFFFFF;
+  --card-foreground: #1F1A18;
+  --popover: #FFFFFF;
+  --popover-foreground: #1F1A18;
+  --primary: #6B2331;
+  --primary-foreground: #FBF7EF;
+  --secondary: #F5EEDE;
+  --secondary-foreground: #4A423E;
+  --muted: #F5EEDE;
+  --muted-foreground: #7A736E;
+  --accent: #ECE2CC;
+  --accent-foreground: #4A423E;
+  --destructive: oklch(0.577 0.245 27.325);
+  --border: #ECE2CC;
+  --input: #ECE2CC;
+  --ring: #6B2331;
+  --radius: 0.75rem;
 }
 
-* {
-  -webkit-tap-highlight-color: transparent;
+.dark {
+  --background: #2E1116;
+  --foreground: #FBF7EF;
+  --card: #4A1A24;
+  --card-foreground: #FBF7EF;
+  --popover: #4A1A24;
+  --popover-foreground: #FBF7EF;
+  --primary: #D9B58A;
+  --primary-foreground: #2E1116;
+  --secondary: #4A1A24;
+  --secondary-foreground: #B0AAA5;
+  --muted: #4A1A24;
+  --muted-foreground: #7A736E;
+  --accent: #4A1A24;
+  --accent-foreground: #B0AAA5;
+  --destructive: oklch(0.704 0.191 22.216);
+  --border: #4A1A24;
+  --input: #4A1A24;
+  --ring: #D9B58A;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --radius-sm: calc(var(--radius) * 0.6);
+  --radius-md: calc(var(--radius) * 0.8);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) * 1.4);
+}
+
+@layer base {
+  * {
+    @apply border-border;
+    -webkit-tap-highlight-color: transparent;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
 }
 
 html {
@@ -44,18 +123,14 @@ body {
   height: 100%;
   overflow: hidden;
   overscroll-behavior: none;
-  background-color: #FBF7EF;
-  color: #1F1A18;
   font-size: 15px;
   line-height: 1.55;
 }
 
-/* Prevent iOS zoom on input focus */
 input, select, textarea {
   font-size: 16px;
 }
 
-/* Safe area for iOS notch */
 .pb-safe {
-  padding-bottom: max(1rem, env(safe-area-inset-bottom));
+  padding-bottom: max(0.75rem, env(safe-area-inset-bottom));
 }

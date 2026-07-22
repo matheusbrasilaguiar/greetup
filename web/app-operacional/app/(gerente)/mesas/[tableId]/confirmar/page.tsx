@@ -4,8 +4,13 @@ import { useRef, useState } from "react";
 import { useRouter, useParams, useSearchParams } from "next/navigation";
 import { CartProvider, useCart } from "@/lib/cart-context";
 import { useCreateOrder } from "@/lib/hooks/useOrders";
+import { PageHeader } from "@/components/PageHeader";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { Separator } from "@/components/ui/separator";
+import { Info } from "lucide-react";
 
-function ConfirmarContent({ tableId, sessionId }: { tableId: string; sessionId: string }) {
+function ConfirmarContent({ tableId, sessionId, tableCode }: { tableId: string; sessionId: string; tableCode: string }) {
   const router = useRouter();
   const { items, totalItems, clear } = useCart();
   const createOrder = useCreateOrder();
@@ -18,7 +23,6 @@ function ConfirmarContent({ tableId, sessionId }: { tableId: string; sessionId: 
     submittingRef.current = true;
     setLoading(true);
     setError(null);
-
     try {
       await createOrder.mutateAsync({
         sessionId,
@@ -40,73 +44,59 @@ function ConfirmarContent({ tableId, sessionId }: { tableId: string; sessionId: 
 
   return (
     <div className="h-full flex flex-col bg-cream-50">
-      {/* Header */}
-      <div className="bg-bordeaux-900 px-4 pt-10 pb-5">
-        <button
-          onClick={() => router.back()}
-          disabled={loading}
-          className="text-xs text-ink-400 mb-3 flex items-center gap-1 disabled:opacity-40"
-        >
-          ← Editar itens
-        </button>
-        <p className="text-xs font-mono text-champagne tracking-widest uppercase mb-1">
-          Confirmar
-        </p>
-        <h1 className="text-xl font-semibold text-cream-50">Revisar pedido</h1>
-      </div>
+      <PageHeader
+        title="Revisar pedido"
+        subtitle={`Mesa ${tableCode}`}
+        back={true}
+      />
 
-      {/* Items list */}
-      <div className="flex-1 overflow-y-auto p-4 flex flex-col gap-3">
-        <div className="bg-white rounded-2xl overflow-hidden border border-cream-200">
-          {items.map((item, i) => (
-            <div
-              key={item.productId}
-              className={`px-4 py-3 ${i < items.length - 1 ? "border-b border-cream-100" : ""}`}
-            >
-              <div className="flex items-center justify-between">
-                <p className="text-sm font-medium text-ink-900">
-                  <span className="font-mono text-bordeaux-700 mr-1">{item.quantity}×</span>
-                  {item.name}
-                </p>
+      <div className="flex-1 overflow-y-auto p-4 flex flex-col gap-4">
+        <Card>
+          <CardContent className="pt-0">
+            {items.map((item, i) => (
+              <div key={item.productId}>
+                <div className="flex items-center justify-between py-3">
+                  <p className="text-sm font-medium text-foreground">
+                    <span className="font-mono text-bordeaux-700 mr-1">{item.quantity}×</span>
+                    {item.name}
+                  </p>
+                </div>
+                {item.notes && (
+                  <p className="text-xs text-muted-foreground -mt-2 pb-2 italic">Obs: {item.notes}</p>
+                )}
+                {i < items.length - 1 && <Separator />}
               </div>
-              {item.notes && (
-                <p className="text-xs text-ink-400 mt-0.5 italic">Obs: {item.notes}</p>
-              )}
+            ))}
+            <Separator />
+            <div className="flex justify-between py-3">
+              <span className="text-xs text-muted-foreground font-mono uppercase tracking-wider">Total</span>
+              <span className="text-sm font-semibold">
+                {totalItems} {totalItems === 1 ? "item" : "itens"}
+              </span>
             </div>
-          ))}
-          <div className="px-4 py-3 bg-cream-50 border-t border-cream-200 flex justify-between">
-            <span className="text-xs text-ink-500 font-mono uppercase tracking-wider">Total</span>
-            <span className="text-sm font-semibold text-ink-900">
-              {totalItems} {totalItems === 1 ? "item" : "itens"}
-            </span>
-          </div>
-        </div>
+          </CardContent>
+        </Card>
 
-        {/* Info box */}
-        <div className="bg-blue-50 border border-blue-200 rounded-xl px-4 py-3">
+        <div className="flex items-start gap-2 bg-blue-50 border border-blue-200 rounded-xl px-4 py-3">
+          <Info className="w-4 h-4 text-blue-500 shrink-0 mt-0.5" />
           <p className="text-xs text-blue-700">
             Os itens serão enviados automaticamente para a cozinha após a confirmação.
           </p>
         </div>
 
         {error && (
-          <p className="text-sm text-red-600 bg-red-50 rounded-xl px-4 py-3">{error}</p>
+          <p className="text-sm text-destructive bg-destructive/10 rounded-xl px-4 py-3">{error}</p>
         )}
       </div>
 
-      {/* CTA */}
-      <div className="p-4 border-t border-cream-200">
-        <button
+      <div className="pb-safe px-4 pt-4 bg-cream-50 border-t border-border">
+        <Button
           onClick={handleConfirm}
           disabled={loading || items.length === 0}
-          className="w-full rounded-xl py-4 text-base font-semibold transition-colors disabled:cursor-not-allowed"
-          style={{
-            backgroundColor: !loading && items.length > 0 ? "#6B2331" : "#ECE2CC",
-            color: !loading && items.length > 0 ? "#FBF7EF" : "#7A736E",
-          }}
+          className="w-full h-12 text-base"
         >
           {loading ? "Enviando para cozinha..." : "Confirmar pedido"}
-        </button>
+        </Button>
       </div>
     </div>
   );
@@ -116,10 +106,11 @@ export default function ConfirmarPage() {
   const { tableId } = useParams<{ tableId: string }>();
   const searchParams = useSearchParams();
   const sessionId = searchParams.get("sessionId") ?? "";
+  const tableCode = searchParams.get("code") ?? "";
 
   return (
     <CartProvider tableId={tableId}>
-      <ConfirmarContent tableId={tableId} sessionId={sessionId} />
+      <ConfirmarContent tableId={tableId} sessionId={sessionId} tableCode={tableCode} />
     </CartProvider>
   );
 }
