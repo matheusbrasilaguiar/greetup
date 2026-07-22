@@ -15,6 +15,7 @@ import { Separator } from "@/components/ui/separator";
 import {
   Sheet,
   SheetContent,
+  SheetFooter,
   SheetHeader,
   SheetTitle,
 } from "@/components/ui/sheet";
@@ -164,18 +165,17 @@ export default function ContaPage() {
       </div>
 
       <Sheet open={showCloseSheet} onOpenChange={setShowCloseSheet}>
-        <SheetContent side="bottom" className="rounded-t-2xl pb-safe">
-          <SheetHeader className="mb-4">
+        <SheetContent side="bottom" className="rounded-t-2xl pb-safe max-h-[85vh] overflow-y-auto">
+          <SheetHeader>
             <SheetTitle>Fechar conta</SheetTitle>
           </SheetHeader>
 
-          <div className="flex flex-col gap-4">
+          <div className="px-4 flex flex-col gap-3">
             <Card>
               <CardContent className="pt-3 pb-1">
                 {[
                   { label: "Cliente", value: customerName ?? "—" },
-                  { label: "Itens entregues", value: `${deliveredCount}` },
-                  { label: "Total de itens", value: `${flatItems.length}` },
+                  { label: "Itens entregues", value: `${deliveredCount} de ${flatItems.length}` },
                   { label: "Duração", value: `${durationMin}min` },
                 ].map(({ label, value }, i, arr) => (
                   <div key={label}>
@@ -197,24 +197,24 @@ export default function ContaPage() {
                 </p>
               </div>
             )}
+          </div>
 
+          <SheetFooter className="flex-col gap-2">
             <Button
               onClick={handleCloseAccount}
               disabled={closing}
-              variant="destructive"
               className="w-full h-12 text-base"
             >
               {closing ? "Fechando..." : "Confirmar fechamento"}
             </Button>
-
             <Button
               variant="ghost"
               onClick={() => setShowCloseSheet(false)}
-              className="w-full"
+              className="w-full text-muted-foreground"
             >
               Cancelar
             </Button>
-          </div>
+          </SheetFooter>
         </SheetContent>
       </Sheet>
     </div>
