@@ -3,38 +3,20 @@
 import { useState } from "react";
 import { Panel } from "@/components/ui/Panel";
 import { PageHead } from "@/components/ui/PageHead";
+import { Input } from "@/components/ui/input";
+import { Skeleton } from "@/components/ui/skeleton";
+import { TableRowsSkeleton } from "@/components/TableRowsSkeleton";
+import { Avatar } from "@/components/Avatar";
+import { cn } from "@/lib/utils";
 import { useClients, useClientById } from "@/lib/hooks/useClients";
-
-function Avatar({ name, size = 36 }: { name: string; size?: number }) {
-  const initials = name
-    .split(" ")
-    .slice(0, 2)
-    .map((n) => n[0])
-    .join("")
-    .toUpperCase();
-  return (
-    <span
-      className="rounded-full flex items-center justify-center font-medium flex-shrink-0"
-      style={{
-        width: size,
-        height: size,
-        fontSize: size > 40 ? 20 : 13,
-        background: "var(--gu-cream-100)",
-        color: "var(--gu-bordeaux-700)",
-      }}
-    >
-      {initials}
-    </span>
-  );
-}
 
 function DetailRow({ label, value }: { label: string; value?: string | null }) {
   return (
     <div className="grid gap-3.5 py-[5px]" style={{ gridTemplateColumns: "120px 1fr" }}>
-      <span className="font-mono text-[10px] tracking-widest uppercase" style={{ color: "var(--gu-ink-500)" }}>
+      <span className="font-mono text-[10px] tracking-widest uppercase text-muted-foreground">
         {label}
       </span>
-      <span className="text-sm" style={{ color: value ? "var(--gu-ink-700)" : "var(--gu-ink-300)" }}>
+      <span className={cn("text-sm", value ? "text-muted-foreground" : "text-muted-foreground/50")}>
         {value ?? "—"}
       </span>
     </div>
@@ -45,7 +27,7 @@ export default function ClientsPage() {
   const { data: clients = [], isLoading } = useClients();
   const [search, setSearch] = useState("");
   const [selectedId, setSelectedId] = useState<string | null>(null);
-  const { data: detail } = useClientById(selectedId);
+  const { data: detail, isLoading: loadingDetail } = useClientById(selectedId);
 
   const filtered = clients.filter(
     (c) =>
@@ -55,116 +37,128 @@ export default function ClientsPage() {
 
   return (
     <div className="flex flex-col gap-[18px]">
-    <PageHead eyebrow="Evento ao vivo · Clientes" title="Clientes" sub="Histórico de visitantes cadastrados" />
-    <div className="grid grid-cols-1 lg:grid-cols-[1.55fr_0.85fr] gap-[18px] lg:h-[calc(100vh-14rem)]">
-      {/* Lista */}
-      <Panel title="Clientes" className="flex flex-col overflow-hidden">
-        {/* Search */}
-        <div className="px-4 py-3" style={{ borderBottom: "1px solid var(--gu-cream-200)" }}>
-          <input
-            className="w-full px-3 py-2 rounded-lg border text-sm outline-none transition focus:ring-1 focus:ring-bordeaux-500 focus:border-bordeaux-500"
-            style={{
-              background: "var(--gu-cream-50)",
-              border: "1px solid var(--gu-cream-200)",
-              color: "var(--gu-ink-900)",
-            }}
-            placeholder="Buscar por nome ou empresa…"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-          />
-        </div>
+      <PageHead eyebrow="Evento ao vivo · Clientes" title="Clientes" sub="Histórico de visitantes cadastrados" />
+      <div className="grid grid-cols-1 lg:grid-cols-[1.55fr_0.85fr] gap-[18px] lg:h-[calc(100vh-14rem)]">
+        {/* Lista */}
+        <Panel title="Clientes" className="flex flex-col overflow-hidden">
+          {/* Search */}
+          <div className="px-4 py-3 border-b border-border">
+            <Input
+              placeholder="Buscar por nome ou empresa…"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+            />
+          </div>
 
-        {/* Tabela */}
-        <div className="flex-1 overflow-y-auto">
-          <table className="w-full">
-            <thead className="sticky top-0 bg-white">
-              <tr style={{ borderBottom: "1px solid var(--gu-cream-200)" }}>
-                {["Nome", "Empresa", "E-mail"].map((h) => (
-                  <th key={h} className="font-mono text-[10px] tracking-widest uppercase text-left px-5 py-3" style={{ color: "var(--gu-ink-300)" }}>
-                    {h}
-                  </th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {isLoading && (
-                <tr><td colSpan={3} className="text-center text-sm py-10" style={{ color: "var(--gu-ink-300)" }}>Carregando…</td></tr>
-              )}
-              {filtered.map((client) => (
-                <tr
-                  key={client.id}
-                  onClick={() => setSelectedId(client.id)}
-                  className="cursor-pointer transition-colors"
-                  style={{
-                    borderBottom: "1px solid var(--gu-cream-100)",
-                    background: selectedId === client.id ? "var(--gu-cream-100)" : undefined,
-                  }}
-                  onMouseEnter={(e) => {
-                    if (selectedId !== client.id)
-                      (e.currentTarget as HTMLElement).style.background = "var(--gu-cream-50)";
-                  }}
-                  onMouseLeave={(e) => {
-                    if (selectedId !== client.id)
-                      (e.currentTarget as HTMLElement).style.background = "";
-                  }}
-                >
-                  <td className="px-5 py-3">
-                    <div className="flex items-center gap-2.5">
-                      <Avatar name={client.name} />
-                      <span className="text-sm font-medium" style={{ color: "var(--gu-ink-900)" }}>{client.name}</span>
-                    </div>
-                  </td>
-                  <td className="px-5 py-3 text-sm" style={{ color: "var(--gu-ink-500)" }}>{client.employer ?? "—"}</td>
-                  <td className="px-5 py-3 font-mono text-xs" style={{ color: "var(--gu-ink-500)" }}>{client.email ?? "—"}</td>
+          {/* Tabela */}
+          <div className="flex-1 overflow-y-auto">
+            <table className="w-full">
+              <thead className="sticky top-0 bg-card">
+                <tr className="border-b border-border">
+                  {[
+                    { label: "Nome" },
+                    { label: "Empresa", hide: "hidden sm:table-cell" },
+                    { label: "E-mail", hide: "hidden md:table-cell" },
+                  ].map(({ label, hide }) => (
+                    <th key={label} className={`font-mono text-[10px] tracking-widest uppercase text-left px-5 py-3 text-muted-foreground/70 ${hide ?? ""}`}>
+                      {label}
+                    </th>
+                  ))}
                 </tr>
-              ))}
-              {!isLoading && filtered.length === 0 && (
-                <tr><td colSpan={3} className="text-center text-sm py-10" style={{ color: "var(--gu-ink-300)" }}>Nenhum cliente encontrado</td></tr>
-              )}
-            </tbody>
-          </table>
-        </div>
-      </Panel>
-
-      {/* Detalhe */}
-      {!detail ? (
-        <Panel className="flex items-center justify-center">
-          <p className="text-sm" style={{ color: "var(--gu-ink-300)" }}>Selecione um cliente</p>
-        </Panel>
-      ) : (
-        <Panel title="Dados do cliente" className="overflow-y-auto">
-          <div className="p-5 flex flex-col gap-5">
-            {/* Header */}
-            <div className="flex items-center gap-3.5 pb-3.5" style={{ borderBottom: "1px solid var(--gu-cream-200)" }}>
-              <Avatar name={detail.name} size={54} />
-              <div>
-                <h3 className="text-base font-semibold" style={{ color: "var(--gu-ink-900)" }}>
-                  {detail.name}
-                </h3>
-                {detail.employer && (
-                  <p className="text-sm" style={{ color: "var(--gu-ink-500)" }}>
-                    {detail.employer}
-                  </p>
+              </thead>
+              <tbody>
+                {isLoading && (
+                  <TableRowsSkeleton
+                    columns={[
+                      {},
+                      { hide: "hidden sm:table-cell" },
+                      { hide: "hidden md:table-cell" },
+                    ]}
+                  />
                 )}
-              </div>
-            </div>
-
-            {/* Campos */}
-            <div>
-              <DetailRow label="E-mail" value={detail.email} />
-              <DetailRow label="Telefone" value={detail.phone} />
-              <DetailRow label="Empresa" value={detail.employer} />
-              <DetailRow
-                label="Cadastrado"
-                value={new Date(detail.createdAt).toLocaleDateString("pt-BR", {
-                  day: "2-digit", month: "short", year: "numeric",
-                })}
-              />
-            </div>
+                {!isLoading && filtered.map((client) => (
+                  <tr
+                    key={client.id}
+                    onClick={() => setSelectedId(client.id)}
+                    className={cn(
+                      "cursor-pointer transition-colors border-b border-border/60",
+                      selectedId === client.id ? "bg-muted" : "hover:bg-muted/50"
+                    )}
+                  >
+                    <td className="px-5 py-3">
+                      <div className="flex items-center gap-2.5">
+                        <Avatar name={client.name} />
+                        <span className="text-sm font-medium text-foreground">{client.name}</span>
+                      </div>
+                    </td>
+                    <td className="hidden sm:table-cell px-5 py-3 text-sm text-muted-foreground">{client.employer ?? "—"}</td>
+                    <td className="hidden md:table-cell px-5 py-3 font-mono text-xs text-muted-foreground">{client.email ?? "—"}</td>
+                  </tr>
+                ))}
+                {!isLoading && filtered.length === 0 && (
+                  <tr><td colSpan={3} className="text-center text-sm text-muted-foreground/70 py-10">Nenhum cliente encontrado</td></tr>
+                )}
+              </tbody>
+            </table>
           </div>
         </Panel>
-      )}
-    </div>
+
+        {/* Detalhe */}
+        {loadingDetail ? (
+          <Panel title="Dados do cliente" className="overflow-y-auto">
+            <div className="p-5 flex flex-col gap-5">
+              <div className="flex items-center gap-3.5 pb-3.5 border-b border-border">
+                <Skeleton className="size-[54px] rounded-full shrink-0" />
+                <div className="flex flex-col gap-2">
+                  <Skeleton className="h-4 w-32" />
+                  <Skeleton className="h-3 w-24" />
+                </div>
+              </div>
+              <div className="flex flex-col gap-3">
+                {Array.from({ length: 4 }, (_, i) => (
+                  <Skeleton key={i} className="h-3.5 w-full" />
+                ))}
+              </div>
+            </div>
+          </Panel>
+        ) : !detail ? (
+          <Panel className="flex items-center justify-center">
+            <p className="text-sm text-muted-foreground/70">Selecione um cliente</p>
+          </Panel>
+        ) : (
+          <Panel title="Dados do cliente" className="overflow-y-auto">
+            <div className="p-5 flex flex-col gap-5">
+              {/* Header */}
+              <div className="flex items-center gap-3.5 pb-3.5 border-b border-border">
+                <Avatar name={detail.name} size={54} />
+                <div>
+                  <h3 className="text-base font-semibold text-foreground">
+                    {detail.name}
+                  </h3>
+                  {detail.employer && (
+                    <p className="text-sm text-muted-foreground">
+                      {detail.employer}
+                    </p>
+                  )}
+                </div>
+              </div>
+
+              {/* Campos */}
+              <div>
+                <DetailRow label="E-mail" value={detail.email} />
+                <DetailRow label="Telefone" value={detail.phone} />
+                <DetailRow label="Empresa" value={detail.employer} />
+                <DetailRow
+                  label="Cadastrado"
+                  value={new Date(detail.createdAt).toLocaleDateString("pt-BR", {
+                    day: "2-digit", month: "short", year: "numeric",
+                  })}
+                />
+              </div>
+            </div>
+          </Panel>
+        )}
+      </div>
     </div>
   );
 }

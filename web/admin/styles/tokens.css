@@ -1,39 +1,72 @@
 /* ============================================================
    GreetUp Design Tokens — Web Admin
    Fonte de verdade: docs/design/assets/tokens/palette.css
+   Valores em HSL (H S% L%, sem função hsl()) para suportar
+   modificadores de opacidade do Tailwind (bg-primary/10 etc).
    ============================================================ */
 
 :root {
-  /* ── Bordeaux ─────────────────────────────────────────── */
-  --gu-bordeaux-300: #D6A8B0;
-  --gu-bordeaux-500: #92465A;
-  --gu-bordeaux-700: #6B2331;
-  --gu-bordeaux-800: #4A1A24;
-  --gu-bordeaux-900: #2E1116;
+  /* ── Brand scale (marca, uso direto: bordeaux-*, cream-*, ink-*, champagne) ── */
+  --gu-bordeaux-300: 350 36% 75%;
+  --gu-bordeaux-500: 344 35% 42%;
+  --gu-bordeaux-700: 348 51% 28%;
+  --gu-bordeaux-800: 348 48% 20%;
+  --gu-bordeaux-900: 350 46% 12%;
 
-  /* ── Cream ───────────────────────────────────────────── */
-  --gu-cream-50:  #FBF7EF;
-  --gu-cream-100: #F5EEDE;
-  --gu-cream-200: #ECE2CC;
+  --gu-cream-50:  40 60% 96%;
+  --gu-cream-100: 42 53% 92%;
+  --gu-cream-200: 41 46% 86%;
 
-  /* ── Ink ─────────────────────────────────────────────── */
-  --gu-ink-900: #1F1A18;
-  --gu-ink-700: #4A423E;
-  --gu-ink-500: #7A736E;
-  --gu-ink-300: #B0AAA5;
+  --gu-ink-900: 17 13% 11%;
+  --gu-ink-700: 20 9% 27%;
+  --gu-ink-500: 25 5% 45%;
+  --gu-ink-300: 27 7% 67%;
 
-  /* ── Champagne ───────────────────────────────────────── */
-  --gu-champagne: #D9B58A;
+  --gu-champagne: 33 51% 70%;
 
-  /* ── Status operacionais ─────────────────────────────── */
-  --gu-pending-bg:   #FFF8E7;  --gu-pending-tx:   #92610A;  --gu-pending-br:   #D9B58A;
-  --gu-preparing-bg: #EEF2FF;  --gu-preparing-tx: #3730A3;  --gu-preparing-br: #6366F1;
-  --gu-ready-bg:     #F0FDF4;  --gu-ready-tx:     #15803D;  --gu-ready-br:     #22C55E;
-  --gu-delivered-bg: #F5EEDE;  --gu-delivered-tx: #4A423E;  --gu-delivered-br: #B0AAA5;
-  --gu-canceled-bg:  #FEF2F2;  --gu-canceled-tx:  #B91C1C;  --gu-canceled-br:  #EF4444;
+  /* ── Status tokens — cobrem status de item, mesa, pedido e evento ── */
+  --status-warning-bg: 42 100% 95%;   --status-warning-fg: 38 87% 31%;   --status-warning-br: 33 51% 70%;
+  --status-info-bg:    226 100% 97%;  --status-info-fg:    244 55% 41%;  --status-info-br:    239 84% 67%;
+  --status-success-bg: 138 76% 97%;   --status-success-fg: 142 72% 29%;  --status-success-br: 142 71% 45%;
+  --status-muted-bg:   42 53% 92%;    --status-muted-fg:   20 9% 27%;    --status-muted-br:   27 7% 67%;
+  --status-canceled-bg: 0 86% 97%;    --status-canceled-fg: 0 74% 42%;   --status-canceled-br: 0 84% 60%;
+  --status-busy-bg:    351 64% 98%;   --status-busy-fg:    348 51% 28%;  --status-busy-br:    350 36% 75%;
+
+  /* ── Chrome — superfície escura fixa (Sidebar), independente de tema ── */
+  --chrome: 350 46% 12%;
+  --chrome-foreground: 40 60% 96%;
+  --chrome-accent: 33 51% 70%;
+  --chrome-muted-foreground: 27 7% 67%;
+  --chrome-subtle-foreground: 350 36% 75%;
+  --chrome-border: 348 48% 20%;
+  --chrome-card: 348 48% 20%;
+  --chrome-card-foreground: 40 60% 96%;
+  --chrome-card-border: 348 51% 28%;
+
+  /* ── shadcn — camada semântica, mapeada para a marca ── */
+  --background: 40 60% 96%;
+  --foreground: 17 13% 11%;
+  --card: 0 0% 100%;
+  --card-foreground: 17 13% 11%;
+  --popover: 0 0% 100%;
+  --popover-foreground: 17 13% 11%;
+  --primary: 348 51% 28%;
+  --primary-foreground: 40 60% 96%;
+  --secondary: 42 53% 92%;
+  --secondary-foreground: 20 9% 27%;
+  --muted: 42 53% 92%;
+  --muted-foreground: 25 5% 45%;
+  --accent: 41 46% 86%;
+  --accent-foreground: 20 9% 27%;
+  --destructive: 0 74% 42%;
+  --destructive-foreground: 0 0% 100%;
+  --border: 41 46% 86%;
+  --input: 41 46% 86%;
+  --ring: 348 51% 28%;
+  --radius: 0.75rem;
 
   /* ── Tipografia — aliases canônicos do Design System ──── */
-  --gu-font-text:     var(--font-sora),      system-ui, sans-serif;
-  --gu-font-mono:     var(--font-jetbrains), ui-monospace, monospace;
-  --gu-font-editorial:var(--font-cormorant), Georgia, serif;
+  --gu-font-text:      var(--font-sora),      system-ui, sans-serif;
+  --gu-font-mono:      var(--font-jetbrains), ui-monospace, monospace;
+  --gu-font-editorial: var(--font-cormorant), Georgia, serif;
 }

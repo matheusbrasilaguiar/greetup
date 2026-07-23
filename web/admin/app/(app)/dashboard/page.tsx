@@ -5,7 +5,10 @@ import { useQueryClient } from "@tanstack/react-query";
 import { KpiCard } from "@/components/ui/KpiCard";
 import { PageHead } from "@/components/ui/PageHead";
 import { Panel } from "@/components/ui/Panel";
-import { Badge, itemStatusToBadge } from "@/components/ui/Badge";
+import { Badge } from "@/components/ui/badge";
+import { KpiCardSkeleton } from "@/components/KpiCardSkeleton";
+import { TableRowsSkeleton } from "@/components/TableRowsSkeleton";
+import { itemStatusMeta } from "@/lib/statusBadge";
 import { useTables } from "@/lib/hooks/useTables";
 import { useOrders, useOrderItems } from "@/lib/hooks/useOrders";
 import { useSocketEvents } from "@/lib/hooks/useSocketEvents";
@@ -15,7 +18,7 @@ import { NoActiveEvent } from "@/components/ui/NoActiveEvent";
 interface FeedItem {
   id: string;
   ts: Date;
-  dotColor: string;
+  dotClassName: string;
   text: string;
 }
 
@@ -24,26 +27,22 @@ function makeFeedId() {
   return `feed-${++feedCounter}`;
 }
 
-function FeedDot({ color }: { color: string }) {
-  return (
-    <span
-      className="w-1.5 h-1.5 rounded-full flex-shrink-0 mt-[5px]"
-      style={{ background: color }}
-    />
-  );
+function FeedDot({ className }: { className: string }) {
+  return <span className={`w-1.5 h-1.5 rounded-full shrink-0 mt-[5px] ${className}`} />;
 }
 
 export default function DashboardPage() {
   const qc = useQueryClient();
   const { data: activeEvent, isLoading: loadingEvent } = useActiveEvent();
-  const { data: tables = [] } = useTables();
-  const { data: orders = [] } = useOrders("active");
-  const { data: items = [] } = useOrderItems("active");
+  const { data: tables = [], isLoading: loadingTables } = useTables();
+  const { data: orders = [], isLoading: loadingOrders } = useOrders("active");
+  const { data: items = [], isLoading: loadingItems } = useOrderItems("active");
+  const isLoading = loadingTables || loadingOrders || loadingItems;
   const [feed, setFeed] = useState<FeedItem[]>([]);
 
-  const addFeed = useCallback((text: string, dotColor: string) => {
+  const addFeed = useCallback((text: string, dotClassName: string) => {
     setFeed((prev) =>
-      [{ id: makeFeedId(), ts: new Date(), dotColor, text }, ...prev].slice(0, 30)
+      [{ id: makeFeedId(), ts: new Date(), dotClassName, text }, ...prev].slice(0, 30)
     );
   }, []);
 
@@ -53,7 +52,7 @@ export default function DashboardPage() {
         const d = data as { tableCode: string; customerName?: string; attendantName: string };
         addFeed(
           `Mesa ${d.tableCode} aberta · ${d.customerName ?? "sem cliente"} · ${d.attendantName}`,
-          "var(--gu-bordeaux-700)"
+          "bg-primary"
         );
         qc.invalidateQueries({ queryKey: ["tables"] });
         qc.invalidateQueries({ queryKey: ["orders"] });
@@ -63,7 +62,7 @@ export default function DashboardPage() {
     table_session_closed: useCallback(
       (data: unknown) => {
         const d = data as { tableCode: string };
-        addFeed(`Mesa ${d.tableCode} encerrada`, "var(--gu-ink-300)");
+        addFeed(`Mesa ${d.tableCode} encerrada`, "bg-muted-foreground");
         qc.invalidateQueries({ queryKey: ["tables"] });
       },
       [addFeed, qc]
@@ -73,7 +72,7 @@ export default function DashboardPage() {
         const d = data as { tableCode: string; items: { productName: string }[] };
         addFeed(
           `Novo pedido · Mesa ${d.tableCode} · ${d.items.length} iten(s)`,
-          "#22C55E"
+          "bg-status-success-br"
         );
         qc.invalidateQueries({ queryKey: ["orders"] });
         qc.invalidateQueries({ queryKey: ["order-items"] });
@@ -83,7 +82,7 @@ export default function DashboardPage() {
     order_item_status_changed: useCallback(
       (data: unknown) => {
         const d = data as { productName: string; status: string };
-        addFeed(`${d.productName} → ${d.status}`, "#6366F1");
+        addFeed(`${d.productName} → ${d.status}`, "bg-status-info-br");
         qc.invalidateQueries({ queryKey: ["orders"] });
         qc.invalidateQueries({ queryKey: ["order-items"] });
       },
@@ -92,7 +91,7 @@ export default function DashboardPage() {
     order_closed: useCallback(
       (data: unknown) => {
         const d = data as { tableCode: string };
-        addFeed(`Pedido fechado · Mesa ${d.tableCode}`, "var(--gu-champagne)");
+        addFeed(`Pedido fechado · Mesa ${d.tableCode}`, "bg-champagne");
         qc.invalidateQueries({ queryKey: ["orders"] });
       },
       [addFeed, qc]
@@ -122,29 +121,35 @@ export default function DashboardPage() {
 
       {/* KPIs */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <KpiCard
-          label="Mesas ocupadas"
-          value={occupied}
-          sub="sessões abertas agora"
-          valueColor="var(--gu-bordeaux-700)"
-        />
-        <KpiCard
-          label="Pedidos em aberto"
-          value={openOrders}
-          sub="aguardando encerramento"
-          valueColor="var(--gu-pending-tx)"
-        />
-        <KpiCard
-          label="Aguardando entrega"
-          value={awaitingDelivery}
-          sub="itens com status PRONTO"
-          valueColor="var(--gu-ready-tx)"
-        />
-        <KpiCard
-          label="Total de pedidos"
-          value={orders.length}
-          sub="no evento ativo"
-        />
+        {isLoading ? (
+          Array.from({ length: 4 }, (_, i) => <KpiCardSkeleton key={i} />)
+        ) : (
+          <>
+            <KpiCard
+              label="Mesas ocupadas"
+              value={occupied}
+              sub="sessões abertas agora"
+              valueClassName="text-primary"
+            />
+            <KpiCard
+              label="Pedidos em aberto"
+              value={openOrders}
+              sub="aguardando encerramento"
+              valueClassName="text-status-warning-fg"
+            />
+            <KpiCard
+              label="Aguardando entrega"
+              value={awaitingDelivery}
+              sub="itens com status PRONTO"
+              valueClassName="text-status-success-fg"
+            />
+            <KpiCard
+              label="Total de pedidos"
+              value={orders.length}
+              sub="no evento ativo"
+            />
+          </>
+        )}
       </div>
 
       {/* Corpo: tabela + feed */}
@@ -154,63 +159,60 @@ export default function DashboardPage() {
           <div className="overflow-x-auto">
             <table className="min-w-full">
               <thead>
-                <tr style={{ borderBottom: "1px solid var(--gu-cream-200)" }}>
-                  {["Mesa", "Gerente", "Itens", "Status", "Horário"].map((h) => (
-                    <th
-                      key={h}
-                      className="font-mono text-[10px] tracking-widest uppercase text-left px-5 py-3"
-                      style={{ color: "var(--gu-ink-300)" }}
-                    >
-                      {h}
+                <tr className="border-b border-border">
+                  {[
+                    { label: "Mesa" },
+                    { label: "Gerente", hide: "hidden sm:table-cell" },
+                    { label: "Itens", hide: "hidden md:table-cell" },
+                    { label: "Status" },
+                    { label: "Horário", hide: "hidden lg:table-cell" },
+                  ].map(({ label, hide }) => (
+                    <th key={label} className={`font-mono text-[10px] tracking-widest uppercase text-left px-5 py-3 text-muted-foreground/70 ${hide ?? ""}`}>
+                      {label}
                     </th>
                   ))}
                 </tr>
               </thead>
               <tbody>
-                {recentOrders.length === 0 && (
+                {isLoading && (
+                  <TableRowsSkeleton
+                    columns={[
+                      { width: "w-10" },
+                      { hide: "hidden sm:table-cell" },
+                      { hide: "hidden md:table-cell", width: "w-6" },
+                      { width: "w-16" },
+                      { hide: "hidden lg:table-cell", width: "w-10" },
+                    ]}
+                  />
+                )}
+                {!isLoading && recentOrders.length === 0 && (
                   <tr>
-                    <td
-                      colSpan={5}
-                      className="text-center text-sm py-10"
-                      style={{ color: "var(--gu-ink-300)" }}
-                    >
+                    <td colSpan={5} className="text-center text-sm text-muted-foreground/70 py-10">
                       Nenhum pedido ainda
                     </td>
                   </tr>
                 )}
                 {recentOrders.map((order) => (
-                  <tr
-                    key={order.id}
-                    className="transition-colors"
-                    style={{ borderBottom: "1px solid var(--gu-cream-100)" }}
-                    onMouseEnter={(e) =>
-                      ((e.currentTarget as HTMLElement).style.background =
-                        "var(--gu-cream-50)")
-                    }
-                    onMouseLeave={(e) =>
-                      ((e.currentTarget as HTMLElement).style.background = "")
-                    }
-                  >
-                    <td className="px-5 py-3 font-mono text-sm" style={{ color: "var(--gu-ink-900)" }}>
+                  <tr key={order.id} className="border-b border-border/60 hover:bg-muted/50 transition-colors">
+                    <td className="px-5 py-3 font-mono text-sm text-foreground">
                       {order.session.table.code}
                     </td>
-                    <td className="px-5 py-3 text-sm" style={{ color: "var(--gu-ink-700)" }}>
+                    <td className="hidden sm:table-cell px-5 py-3 text-sm text-muted-foreground">
                       {order.session.attendant?.name ?? "—"}
                     </td>
-                    <td className="px-5 py-3 text-sm" style={{ color: "var(--gu-ink-700)" }}>
+                    <td className="hidden md:table-cell px-5 py-3 text-sm text-muted-foreground">
                       {order.items.length}
                     </td>
                     <td className="px-5 py-3">
                       {order.items.length > 0 ? (
-                        <Badge
-                          variant={itemStatusToBadge(order.items[order.items.length - 1].status)}
-                          label={order.items[order.items.length - 1].status}
-                        />
+                        <Badge variant={itemStatusMeta(order.items[order.items.length - 1].status).variant}>
+                          {order.items[order.items.length - 1].status}
+                        </Badge>
                       ) : (
-                        <Badge variant="pending" label="PENDENTE" />
+                        <Badge variant="warning">PENDENTE</Badge>
                       )}
                     </td>
-                    <td className="px-5 py-3 font-mono text-xs" style={{ color: "var(--gu-ink-300)" }}>
+                    <td className="hidden lg:table-cell px-5 py-3 font-mono text-xs text-muted-foreground/70">
                       {new Date(order.createdAt).toLocaleTimeString("pt-BR", {
                         hour: "2-digit",
                         minute: "2-digit",
@@ -224,33 +226,28 @@ export default function DashboardPage() {
         </Panel>
 
         {/* Feed de atividade */}
-        <Panel title="Atividade recente" action={
-          <span
-            className="flex items-center gap-1 font-mono text-[9.5px] tracking-widest uppercase px-2 py-0.5 rounded-full"
-            style={{ color: "#15803D", background: "#F0FDF4", border: "1px solid #22C55E" }}
-          >
-            <span className="w-1.5 h-1.5 rounded-full" style={{ background: "#22C55E", animation: "pulse 2s ease-in-out infinite" }} />
-            ao vivo
-          </span>
-        }>
-          <div className="overflow-y-auto" style={{ maxHeight: 420 }}>
+        <Panel
+          title="Atividade recente"
+          action={
+            <Badge variant="success" dot className="animate-pulse">
+              ao vivo
+            </Badge>
+          }
+        >
+          <div className="overflow-y-auto max-h-[420px]">
             {feed.length === 0 ? (
-              <p className="text-sm text-center py-10" style={{ color: "var(--gu-ink-300)" }}>
+              <p className="text-sm text-center text-muted-foreground/70 py-10">
                 Aguardando eventos…
               </p>
             ) : (
               feed.map((item) => (
-                <div
-                  key={item.id}
-                  className="flex gap-3 px-5 py-3"
-                  style={{ borderTop: "1px solid var(--gu-cream-200)" }}
-                >
-                  <FeedDot color={item.dotColor} />
+                <div key={item.id} className="flex gap-3 px-5 py-3 border-t border-border">
+                  <FeedDot className={item.dotClassName} />
                   <div className="flex flex-col gap-0.5">
-                    <span className="font-mono text-[10px]" style={{ color: "var(--gu-ink-300)" }}>
+                    <span className="font-mono text-[10px] text-muted-foreground/70">
                       {item.ts.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit", second: "2-digit" })}
                     </span>
-                    <span className="text-[12.5px] leading-snug" style={{ color: "var(--gu-ink-700)" }}>
+                    <span className="text-[12.5px] leading-snug text-muted-foreground">
                       {item.text}
                     </span>
                   </div>
@@ -258,9 +255,6 @@ export default function DashboardPage() {
               ))
             )}
           </div>
-          <style jsx>{`
-            @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.3} }
-          `}</style>
         </Panel>
       </div>
     </div>

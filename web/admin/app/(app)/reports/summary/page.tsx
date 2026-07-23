@@ -2,9 +2,11 @@
 
 import { useState } from "react";
 import { KpiCard } from "@/components/ui/KpiCard";
+import { KpiCardSkeleton } from "@/components/KpiCardSkeleton";
 import { Panel } from "@/components/ui/Panel";
 import { PageHead } from "@/components/ui/PageHead";
 import { EventSelector } from "@/components/ui/EventSelector";
+import { Skeleton } from "@/components/ui/skeleton";
 import { useTables } from "@/lib/hooks/useTables";
 import { useOrders, useOrderItems } from "@/lib/hooks/useOrders";
 import { useClients } from "@/lib/hooks/useClients";
@@ -14,11 +16,12 @@ export default function SummaryReportPage() {
   const [selectedEventId, setSelectedEventId] = useState<string | null>(null);
   const eventId = selectedEventId ?? undefined;
 
-  const { data: tables = [] } = useTables();
-  const { data: orders = [] } = useOrders(eventId);
-  const { data: items = [] } = useOrderItems(eventId);
-  const { data: clients = [] } = useClients();
-  const { data: users = [] } = useUsers();
+  const { data: tables = [], isLoading: loadingTables } = useTables();
+  const { data: orders = [], isLoading: loadingOrders } = useOrders(eventId);
+  const { data: items = [], isLoading: loadingItems } = useOrderItems(eventId);
+  const { data: clients = [], isLoading: loadingClients } = useClients();
+  const { data: users = [], isLoading: loadingUsers } = useUsers();
+  const isLoading = loadingTables || loadingOrders || loadingItems || loadingClients || loadingUsers;
 
   const delivered = items.filter((i) => i.status === "ENTREGUE");
   const totalQty = delivered.reduce((s, i) => s + i.quantity, 0);
@@ -49,46 +52,72 @@ export default function SummaryReportPage() {
       </div>
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <KpiCard label="Mesas" value={tables.length} />
-        <KpiCard label="Clientes atendidos" value={clients.length} />
-        <KpiCard label="Pedidos realizados" value={orders.length} />
-        <KpiCard label="Itens entregues" value={totalQty} />
+        {isLoading ? (
+          Array.from({ length: 4 }, (_, i) => <KpiCardSkeleton key={i} />)
+        ) : (
+          <>
+            <KpiCard label="Mesas" value={tables.length} />
+            <KpiCard label="Clientes atendidos" value={clients.length} />
+            <KpiCard label="Pedidos realizados" value={orders.length} />
+            <KpiCard label="Itens entregues" value={totalQty} />
+          </>
+        )}
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Equipe */}
         <Panel title="Equipe">
           <div className="p-5 flex flex-col gap-3">
-            {[
-              { label: "Gerentes", value: managers.length },
-              { label: "Operadores", value: operators.length },
-              { label: "Total", value: users.length },
-            ].map(({ label, value }) => (
-              <div key={label} className="flex items-center justify-between">
-                <span className="text-sm text-ink-700">{label}</span>
-                <span className="font-mono text-sm font-medium text-ink-900">{value}</span>
-              </div>
-            ))}
+            {isLoading ? (
+              Array.from({ length: 3 }, (_, i) => (
+                <div key={i} className="flex items-center justify-between">
+                  <Skeleton className="h-3.5 w-20" />
+                  <Skeleton className="h-3.5 w-8" />
+                </div>
+              ))
+            ) : (
+              [
+                { label: "Gerentes", value: managers.length },
+                { label: "Operadores", value: operators.length },
+                { label: "Total", value: users.length },
+              ].map(({ label, value }) => (
+                <div key={label} className="flex items-center justify-between">
+                  <span className="text-sm text-muted-foreground">{label}</span>
+                  <span className="font-mono text-sm font-medium text-foreground">{value}</span>
+                </div>
+              ))
+            )}
           </div>
         </Panel>
 
         {/* Top 5 produtos */}
         <Panel title="Top 5 produtos mais pedidos">
           <div className="p-5 flex flex-col gap-3">
-            {topProducts.length === 0 && (
-              <p className="text-sm text-ink-300">Nenhum item entregue ainda</p>
+            {isLoading && (
+              Array.from({ length: 5 }, (_, i) => (
+                <div key={i} className="flex items-center gap-3">
+                  <Skeleton className="h-3 w-3" />
+                  <div className="flex-1 flex flex-col gap-1.5">
+                    <Skeleton className="h-3.5 w-2/3" />
+                    <Skeleton className="h-1 w-full rounded-full" />
+                  </div>
+                </div>
+              ))
             )}
-            {topProducts.map((p, i) => (
+            {!isLoading && topProducts.length === 0 && (
+              <p className="text-sm text-muted-foreground/70">Nenhum item entregue ainda</p>
+            )}
+            {!isLoading && topProducts.map((p, i) => (
               <div key={p.name} className="flex items-center gap-3">
-                <span className="font-mono text-xs text-ink-300 w-4">{i + 1}</span>
+                <span className="font-mono text-xs text-muted-foreground/70 w-4">{i + 1}</span>
                 <div className="flex-1">
                   <div className="flex items-center justify-between mb-1">
-                    <span className="text-sm text-ink-700">{p.name}</span>
-                    <span className="font-mono text-xs text-ink-500">{p.qty}×</span>
+                    <span className="text-sm text-muted-foreground">{p.name}</span>
+                    <span className="font-mono text-xs text-muted-foreground">{p.qty}×</span>
                   </div>
-                  <div className="h-1 rounded-full bg-cream-200 overflow-hidden">
+                  <div className="h-1 rounded-full bg-muted overflow-hidden">
                     <div
-                      className="h-full rounded-full bg-bordeaux-700"
+                      className="h-full rounded-full bg-primary"
                       style={{ width: `${(p.qty / maxQty) * 100}%` }}
                     />
                   </div>

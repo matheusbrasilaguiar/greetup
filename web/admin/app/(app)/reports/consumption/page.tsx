@@ -3,8 +3,10 @@
 import { useState } from "react";
 import { Panel } from "@/components/ui/Panel";
 import { KpiCard } from "@/components/ui/KpiCard";
+import { KpiCardSkeleton } from "@/components/KpiCardSkeleton";
 import { PageHead } from "@/components/ui/PageHead";
 import { EventSelector } from "@/components/ui/EventSelector";
+import { TableRowsSkeleton } from "@/components/TableRowsSkeleton";
 import { useOrderItems } from "@/lib/hooks/useOrders";
 
 export default function ConsumptionReportPage() {
@@ -46,54 +48,70 @@ export default function ConsumptionReportPage() {
       </div>
 
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-        <KpiCard label="Itens entregues" value={total} valueColor="var(--gu-ready-tx)" />
-        <KpiCard label="Produtos distintos" value={ranked.length} />
-        <KpiCard label="Cortesias" value={courtesyCount} sub="não contam no ranking" />
-        <KpiCard label="Mais pedido" value={top?.name ?? "—"} sub={top ? `${top.qty}× pedido` : undefined} />
+        {isLoading ? (
+          Array.from({ length: 4 }, (_, i) => <KpiCardSkeleton key={i} />)
+        ) : (
+          <>
+            <KpiCard label="Itens entregues" value={total} valueClassName="text-status-success-fg" />
+            <KpiCard label="Produtos distintos" value={ranked.length} />
+            <KpiCard label="Cortesias" value={courtesyCount} sub="não contam no ranking" />
+            <KpiCard label="Mais pedido" value={top?.name ?? "—"} sub={top ? `${top.qty}× pedido` : undefined} />
+          </>
+        )}
       </div>
 
       <Panel title="Ranking de consumo">
         <div className="overflow-x-auto">
           <table className="min-w-full">
             <thead>
-              <tr className="border-b border-cream-200">
-                {["#", "Produto", "Categoria", "Quantidade"].map((h) => (
+              <tr className="border-b border-border">
+                {[
+                  { label: "#" },
+                  { label: "Produto" },
+                  { label: "Categoria", hide: "hidden sm:table-cell" },
+                  { label: "Quantidade" },
+                ].map(({ label, hide }) => (
                   <th
-                    key={h}
-                    className="font-mono text-[10px] tracking-widest text-ink-300 uppercase text-left px-5 py-3"
+                    key={label}
+                    className={`font-mono text-[10px] tracking-widest text-muted-foreground/70 uppercase text-left px-5 py-3 ${hide ?? ""}`}
                   >
-                    {h}
+                    {label}
                   </th>
                 ))}
               </tr>
             </thead>
             <tbody>
               {isLoading && (
-                <tr>
-                  <td colSpan={4} className="text-center text-sm text-ink-300 py-10">Carregando…</td>
-                </tr>
+                <TableRowsSkeleton
+                  columns={[
+                    { width: "w-4" },
+                    {},
+                    { hide: "hidden sm:table-cell" },
+                    {},
+                  ]}
+                />
               )}
-              {ranked.map((row, i) => (
-                <tr key={row.name} className="border-b border-cream-100 hover:bg-cream-50 transition">
-                  <td className="px-5 py-3 font-mono text-xs text-ink-300">{i + 1}</td>
-                  <td className="px-5 py-3 text-sm font-medium text-ink-900">{row.name}</td>
-                  <td className="px-5 py-3 font-mono text-xs text-ink-500">{row.category}</td>
+              {!isLoading && ranked.map((row, i) => (
+                <tr key={row.name} className="border-b border-border/60 hover:bg-muted/50 transition-colors">
+                  <td className="px-5 py-3 font-mono text-xs text-muted-foreground/70">{i + 1}</td>
+                  <td className="px-5 py-3 text-sm font-medium text-foreground">{row.name}</td>
+                  <td className="hidden sm:table-cell px-5 py-3 font-mono text-xs text-muted-foreground">{row.category}</td>
                   <td className="px-5 py-3">
                     <div className="flex items-center gap-3">
-                      <div className="flex-1 h-1.5 rounded-full bg-cream-200 overflow-hidden">
+                      <div className="flex-1 h-1.5 rounded-full bg-muted overflow-hidden">
                         <div
-                          className="h-full rounded-full bg-bordeaux-700"
+                          className="h-full rounded-full bg-primary"
                           style={{ width: `${total > 0 ? (row.qty / top.qty) * 100 : 0}%` }}
                         />
                       </div>
-                      <span className="font-mono text-xs text-ink-700 w-6 text-right">{row.qty}</span>
+                      <span className="font-mono text-xs text-muted-foreground w-6 text-right">{row.qty}</span>
                     </div>
                   </td>
                 </tr>
               ))}
               {!isLoading && ranked.length === 0 && (
                 <tr>
-                  <td colSpan={4} className="text-center text-sm text-ink-300 py-10">
+                  <td colSpan={4} className="text-center text-sm text-muted-foreground/70 py-10">
                     Nenhum item entregue ainda
                   </td>
                 </tr>

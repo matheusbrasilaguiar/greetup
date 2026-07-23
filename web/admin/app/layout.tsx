@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Sora, Cormorant_Garamond, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 import { QueryProvider } from "@/components/providers/QueryProvider";
+import { cn } from "@/lib/utils";
 
 const sora = Sora({
   subsets: ["latin"],
@@ -36,7 +37,7 @@ export default function RootLayout({
   return (
     <html
       lang="pt-BR"
-      className={`${sora.variable} ${cormorant.variable} ${jetbrains.variable}`}
+      className={cn(sora.variable, cormorant.variable, jetbrains.variable, "font-sans")}
     >
       <body className="antialiased">
         <QueryProvider>{children}</QueryProvider>

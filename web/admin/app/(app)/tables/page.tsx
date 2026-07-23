@@ -3,11 +3,15 @@
 import { useEffect, useState, useCallback } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { KpiCard } from "@/components/ui/KpiCard";
+import { KpiCardSkeleton } from "@/components/KpiCardSkeleton";
 import { PageHead } from "@/components/ui/PageHead";
+import { Badge } from "@/components/ui/badge";
+import { Skeleton } from "@/components/ui/skeleton";
 import { useTables } from "@/lib/hooks/useTables";
 import { useSocketEvents } from "@/lib/hooks/useSocketEvents";
 import { useActiveEvent } from "@/lib/hooks/useActiveEvent";
 import { NoActiveEvent } from "@/components/ui/NoActiveEvent";
+import { cn } from "@/lib/utils";
 
 function ElapsedBadge({ openedAt }: { openedAt: string }) {
   const calc = () =>
@@ -20,35 +24,7 @@ function ElapsedBadge({ openedAt }: { openedAt: string }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [openedAt]);
 
-  return (
-    <span
-      className="flex items-center gap-1 font-mono text-[10px] tracking-widest uppercase px-2 py-0.5 rounded border"
-      style={{
-        background: "#fbeef0",
-        color: "var(--gu-bordeaux-800)",
-        borderColor: "var(--gu-bordeaux-300)",
-      }}
-    >
-      <span className="w-1.5 h-1.5 rounded-full" style={{ background: "var(--gu-bordeaux-700)" }} />
-      {mins} min
-    </span>
-  );
-}
-
-function FreeBadge() {
-  return (
-    <span
-      className="flex items-center gap-1 font-mono text-[10px] tracking-widest uppercase px-2 py-0.5 rounded border"
-      style={{
-        background: "#F7FDF8",
-        color: "#15803D",
-        borderColor: "#bfe8c9",
-      }}
-    >
-      <span className="w-1.5 h-1.5 rounded-full" style={{ background: "#22C55E" }} />
-      Livre
-    </span>
-  );
+  return <Badge variant="busy" dot>{mins} min</Badge>;
 }
 
 export default function TablesLivePage() {
@@ -83,14 +59,31 @@ export default function TablesLivePage() {
       <PageHead eyebrow={`Evento ao vivo · ${activeEvent?.name ?? ""}`} title="Mapa de mesas" sub="Visualize o estado de cada mesa em tempo real" />
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <KpiCard label="Total de mesas" value={tables.length} />
-        <KpiCard label="Ocupadas" value={occupied} valueColor="var(--gu-bordeaux-700)" />
-        <KpiCard label="Livres" value={free} valueColor="var(--gu-ready-tx)" />
-        <KpiCard label="Desativadas" value={closed} />
+        {isLoading ? (
+          Array.from({ length: 4 }, (_, i) => <KpiCardSkeleton key={i} />)
+        ) : (
+          <>
+            <KpiCard label="Total de mesas" value={tables.length} />
+            <KpiCard label="Ocupadas" value={occupied} valueClassName="text-primary" />
+            <KpiCard label="Livres" value={free} valueClassName="text-status-success-fg" />
+            <KpiCard label="Desativadas" value={closed} />
+          </>
+        )}
       </div>
 
       {isLoading ? (
-        <p className="text-sm" style={{ color: "var(--gu-ink-300)" }}>Carregando mesas…</p>
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3">
+          {Array.from({ length: 12 }, (_, i) => (
+            <div key={i} className="rounded-[10px] border-[1.5px] border-border p-3 sm:p-4 min-h-[110px] flex flex-col gap-2">
+              <div className="flex items-center justify-between">
+                <Skeleton className="h-4 w-10" />
+                <Skeleton className="h-5 w-12 rounded-full" />
+              </div>
+              <Skeleton className="h-3 w-3/4 mt-1" />
+              <Skeleton className="h-3 w-1/2" />
+            </div>
+          ))}
+        </div>
       ) : (
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3">
           {tables.map((table) => {
@@ -102,62 +95,61 @@ export default function TablesLivePage() {
             return (
               <div
                 key={table.id}
-                className="rounded-[10px] flex flex-col gap-1.5 p-3 sm:p-4 transition-all"
-                style={{
-                  minHeight: 110,
-                  border: busy
-                    ? "1.5px solid var(--gu-bordeaux-300)"
-                    : inactive
-                    ? "1.5px solid var(--gu-cream-200)"
-                    : "1.5px solid #bfe8c9",
-                  background: busy ? "#fdf6f7" : inactive ? "var(--gu-cream-50)" : "#F7FDF8",
-                  opacity: inactive ? 0.5 : 1,
-                }}
+                className={cn(
+                  "rounded-[10px] flex flex-col gap-1.5 p-3 sm:p-4 min-h-[110px] transition-all border-[1.5px]",
+                  busy && "bg-status-busy-bg border-status-busy-br",
+                  inactive && "bg-muted border-border opacity-50",
+                  !busy && !inactive && "bg-status-success-bg border-status-success-br"
+                )}
               >
                 {/* Header */}
                 <div className="flex items-center justify-between gap-1">
                   <span
-                    className="font-mono text-sm font-medium"
-                    style={{ color: busy ? "var(--gu-bordeaux-700)" : inactive ? "var(--gu-ink-300)" : "#15803D" }}
+                    className={cn(
+                      "font-mono text-sm font-medium",
+                      busy && "text-primary",
+                      inactive && "text-muted-foreground/70",
+                      !busy && !inactive && "text-status-success-fg"
+                    )}
                   >
                     {table.code}
                   </span>
                   {busy && session ? (
                     <ElapsedBadge openedAt={session.openedAt} />
                   ) : inactive ? (
-                    <span className="font-mono text-[9px] uppercase tracking-widest" style={{ color: "var(--gu-ink-300)" }}>
+                    <span className="font-mono text-[9px] uppercase tracking-widest text-muted-foreground/70">
                       Fechada
                     </span>
                   ) : (
-                    <FreeBadge />
+                    <Badge variant="success" dot>Livre</Badge>
                   )}
                 </div>
 
                 {/* Body */}
                 {busy && session ? (
                   <div className="flex flex-col gap-0.5 mt-1">
-                    <p className="text-xs font-medium truncate" style={{ color: "var(--gu-ink-900)" }}>
+                    <p className="text-xs font-medium truncate text-foreground">
                       {session.customer?.name ?? "—"}
                     </p>
                     {session.customer?.employer && (
-                      <p className="text-[11px] truncate" style={{ color: "var(--gu-ink-500)" }}>
+                      <p className="text-[11px] truncate text-muted-foreground">
                         {session.customer.employer}
                       </p>
                     )}
                     <div className="flex items-center justify-between mt-1">
-                      <p className="text-[10px] truncate" style={{ color: "var(--gu-ink-300)" }}>
+                      <p className="text-[10px] truncate text-muted-foreground/70">
                         {session.attendant
                           ? session.attendant.name.split(" ")[0]
                           : "—"}
                       </p>
-                      <p className="font-mono text-[10px]" style={{ color: "var(--gu-ink-300)" }}>
+                      <p className="font-mono text-[10px] text-muted-foreground/70">
                         {orderCount} pedido{orderCount !== 1 ? "s" : ""}
                       </p>
                     </div>
                   </div>
                 ) : (
                   !inactive && (
-                    <p className="text-[11px] mt-1" style={{ color: "var(--gu-ink-300)" }}>
+                    <p className="text-[11px] mt-1 text-muted-foreground/70">
                       Disponível · {table.capacity} lugares
                     </p>
                   )

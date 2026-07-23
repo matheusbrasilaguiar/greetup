@@ -19,9 +19,9 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         />
       )}
 
-      <div className="flex-1 ml-0 lg:ml-60 flex flex-col min-h-screen">
+      <div className="flex-1 min-w-0 ml-0 lg:ml-60 flex flex-col min-h-screen">
         <Topbar onMenuToggle={() => setSidebarOpen((o) => !o)} />
-        <main className="flex-1 p-4 lg:p-6 bg-cream-50">{children}</main>
+        <main className="flex-1 min-w-0 p-4 lg:p-6 bg-background overflow-x-hidden">{children}</main>
       </div>
     </div>
   );

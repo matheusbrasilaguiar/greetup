@@ -2,7 +2,9 @@
 
 import { Panel } from "@/components/ui/Panel";
 import { KpiCard } from "@/components/ui/KpiCard";
+import { KpiCardSkeleton } from "@/components/KpiCardSkeleton";
 import { PageHead } from "@/components/ui/PageHead";
+import { TableRowsSkeleton } from "@/components/TableRowsSkeleton";
 import { useTables } from "@/lib/hooks/useTables";
 import { useQuery } from "@tanstack/react-query";
 import api from "@/lib/api";
@@ -63,19 +65,28 @@ export default function ManagersReportPage() {
       <PageHead eyebrow="Relatórios · Gerentes" title="Performance dos gerentes" sub="Atendimentos e tempo médio por gerente" />
 
       <div className="grid grid-cols-2 gap-4">
-        <KpiCard label="Gerentes com atendimentos" value={ranked.length} />
-        <KpiCard label="Total de sessões" value={sessions.length} />
+        {isLoading ? (
+          <>
+            <KpiCardSkeleton />
+            <KpiCardSkeleton />
+          </>
+        ) : (
+          <>
+            <KpiCard label="Gerentes com atendimentos" value={ranked.length} />
+            <KpiCard label="Total de sessões" value={sessions.length} />
+          </>
+        )}
       </div>
 
       <Panel title="Performance dos gerentes">
         <div className="overflow-x-auto">
           <table className="min-w-full">
             <thead>
-              <tr className="border-b border-cream-200">
+              <tr className="border-b border-border">
                 {["Gerente", "Atendimentos", "Tempo médio (min)"].map((h) => (
                   <th
                     key={h}
-                    className="font-mono text-[10px] tracking-widest text-ink-300 uppercase text-left px-5 py-3"
+                    className="font-mono text-[10px] tracking-widest text-muted-foreground/70 uppercase text-left px-5 py-3"
                   >
                     {h}
                   </th>
@@ -84,32 +95,30 @@ export default function ManagersReportPage() {
             </thead>
             <tbody>
               {isLoading && (
-                <tr>
-                  <td colSpan={3} className="text-center text-sm text-ink-300 py-10">Carregando…</td>
-                </tr>
+                <TableRowsSkeleton columns={[{}, { width: "w-28" }, { width: "w-10" }]} />
               )}
-              {ranked.map((row) => (
-                <tr key={row.name} className="border-b border-cream-100 hover:bg-cream-50 transition">
-                  <td className="px-5 py-3 text-sm font-medium text-ink-900">{row.name}</td>
+              {!isLoading && ranked.map((row) => (
+                <tr key={row.name} className="border-b border-border/60 hover:bg-muted/50 transition-colors">
+                  <td className="px-5 py-3 text-sm font-medium text-foreground">{row.name}</td>
                   <td className="px-5 py-3">
                     <div className="flex items-center gap-3">
-                      <div className="w-24 h-1.5 rounded-full bg-cream-200 overflow-hidden">
+                      <div className="w-24 h-1.5 rounded-full bg-muted overflow-hidden">
                         <div
-                          className="h-full rounded-full bg-bordeaux-700"
+                          className="h-full rounded-full bg-primary"
                           style={{ width: `${(row.count / maxCount) * 100}%` }}
                         />
                       </div>
-                      <span className="font-mono text-xs text-ink-700">{row.count}</span>
+                      <span className="font-mono text-xs text-muted-foreground">{row.count}</span>
                     </div>
                   </td>
-                  <td className="px-5 py-3 font-mono text-xs text-ink-700">
+                  <td className="px-5 py-3 font-mono text-xs text-muted-foreground">
                     {row.count > 0 ? Math.round(row.totalMinutes / row.count) : "—"}
                   </td>
                 </tr>
               ))}
               {!isLoading && ranked.length === 0 && (
                 <tr>
-                  <td colSpan={3} className="text-center text-sm text-ink-300 py-10">
+                  <td colSpan={3} className="text-center text-sm text-muted-foreground/70 py-10">
                     Nenhum atendimento registrado
                   </td>
                 </tr>

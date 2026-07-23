@@ -1,7 +1,7 @@
 "use client";
 
 import { usePathname } from "next/navigation";
-import { Menu, Search } from "lucide-react";
+import { Menu } from "lucide-react";
 import { useEffect, useState } from "react";
 
 interface BreadcrumbDef {
@@ -46,18 +46,11 @@ export function Topbar({ onMenuToggle }: { onMenuToggle?: () => void }) {
   const crumb = BREADCRUMBS[pathname] ?? { section: "Admin", page: "" };
 
   return (
-    <header
-      className="sticky top-0 z-10 flex items-center px-4 lg:px-8 gap-3 lg:gap-4 bg-white"
-      style={{
-        height: 60,
-        borderBottom: "1px solid var(--gu-cream-200)",
-      }}
-    >
+    <header className="sticky top-0 z-10 flex items-center h-[60px] px-4 lg:px-8 gap-3 lg:gap-4 bg-card border-b border-border">
       {/* Hamburger (mobile only) */}
       <button
         onClick={onMenuToggle}
-        className="lg:hidden flex items-center justify-center flex-shrink-0 rounded transition-colors p-1.5"
-        style={{ color: "var(--gu-ink-500)" }}
+        className="lg:hidden flex items-center justify-center shrink-0 rounded transition-colors p-1.5 text-muted-foreground hover:bg-muted"
         aria-label="Abrir menu"
       >
         <Menu size={20} strokeWidth={1.6} />
@@ -65,74 +58,21 @@ export function Topbar({ onMenuToggle }: { onMenuToggle?: () => void }) {
 
       {/* Breadcrumb */}
       <div className="flex items-center gap-2 font-mono text-[10.5px] tracking-[0.14em] uppercase flex-1 min-w-0">
-        <span style={{ color: "var(--gu-ink-500)" }}>Greetup</span>
-        <span style={{ color: "var(--gu-ink-300)" }}>›</span>
-        <span style={{ color: "var(--gu-ink-500)" }}>{crumb.section}</span>
+        <span className="text-muted-foreground">Greetup</span>
+        <span className="text-muted-foreground/50">›</span>
+        <span className="text-muted-foreground">{crumb.section}</span>
         {crumb.page && (
           <>
-            <span style={{ color: "var(--gu-ink-300)" }}>›</span>
-            <span style={{ color: "var(--gu-bordeaux-700)" }}>{crumb.page}</span>
+            <span className="text-muted-foreground/50">›</span>
+            <span className="text-primary">{crumb.page}</span>
           </>
         )}
       </div>
 
-      {/* Search (hidden on mobile) */}
-      <div
-        className="hidden md:flex items-center gap-2 rounded-md px-2.5 py-[7px]"
-        style={{
-          background: "var(--gu-cream-50)",
-          border: "1px solid var(--gu-cream-200)",
-          width: 240,
-        }}
-      >
-        <Search size={13} strokeWidth={1.6} style={{ color: "var(--gu-ink-300)", flexShrink: 0 }} />
-        <input
-          className="flex-1 bg-transparent border-none outline-none text-[13px]"
-          style={{ color: "var(--gu-ink-900)" }}
-          placeholder="Buscar cliente, mesa, pedido…"
-        />
-        <span
-          className="font-mono text-[10px] px-1 rounded"
-          style={{
-            color: "var(--gu-ink-500)",
-            border: "1px solid var(--gu-cream-200)",
-          }}
-        >
-          ⌘K
-        </span>
-      </div>
-
-      {/* Event info (hidden on small screens) */}
-      <div className="hidden sm:flex items-center gap-3 flex-shrink-0">
-        <span className="font-mono text-[10.5px] tracking-[0.1em]" style={{ color: "var(--gu-ink-500)" }}>
-          Estande · <LiveClock />
-        </span>
-        <span
-          className="flex items-center gap-1.5 font-mono text-[10px] tracking-[0.14em] uppercase px-2.5 py-1 rounded-full"
-          style={{
-            color: "#15803D",
-            background: "#F0FDF4",
-            border: "1px solid #22C55E",
-          }}
-        >
-          <span
-            className="w-1.5 h-1.5 rounded-full"
-            style={{
-              background: "#22C55E",
-              animation: "pulse 2s ease-in-out infinite",
-            }}
-          />
-          ao vivo
-        </span>
-      </div>
-
-      <style jsx>{`
-        @keyframes pulse {
-          0%, 100% { opacity: 1; }
-          50% { opacity: 0.3; }
-        }
-        input::placeholder { color: var(--gu-ink-300); }
-      `}</style>
+      {/* Relógio */}
+      <span className="hidden sm:inline font-mono text-[10.5px] tracking-[0.1em] text-muted-foreground shrink-0">
+        Estande · <LiveClock />
+      </span>
     </header>
   );
 }

@@ -1,11 +1,31 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { Panel } from "@/components/ui/Panel";
-import { Button } from "@/components/ui/Button";
-import { Switch } from "@/components/ui/Switch";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Switch } from "@/components/ui/switch";
 import { PageHead } from "@/components/ui/PageHead";
 import { FiltersBar, SearchField, SelectField } from "@/components/ui/FiltersBar";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { TableRowsSkeleton } from "@/components/TableRowsSkeleton";
+import { CATEGORY_META } from "@/lib/statusBadge";
 import {
   useProducts,
   useCreateProduct,
@@ -14,80 +34,54 @@ import {
   type ProductPayload,
 } from "@/lib/hooks/useProducts";
 import { useOrders } from "@/lib/hooks/useOrders";
+import { Pencil } from "lucide-react";
 
 const CATEGORIES = ["COMIDA", "BEBIDA"] as const;
-const CAT_LABEL: Record<string, string> = { COMIDA: "Comidas", BEBIDA: "Bebidas" };
 const SUBCATEGORIES_BY_CAT: Record<string, string[]> = { COMIDA: ["MASSA"] };
-
-const inputClass =
-  "w-full px-3 py-2 rounded-lg border text-sm outline-none transition" +
-  " focus:ring-1 focus:ring-bordeaux-500 focus:border-bordeaux-500" +
-  " bg-cream-50 border-cream-200 text-ink-900";
-const labelClass = "font-mono text-[10px] tracking-widest text-ink-500 uppercase";
 
 // ─── CategoryBadge ─────────────────────────────────────────────────────────
 
-const CAT_STYLE: Record<string, { border: string; background: string; color: string }> = {
-  COMIDA: { border: "var(--gu-delivered-br)", background: "var(--gu-delivered-bg)", color: "var(--gu-delivered-tx)" },
-  BEBIDA: { border: "var(--gu-pending-br)",   background: "var(--gu-pending-bg)",   color: "var(--gu-pending-tx)"   },
-};
-
 function CategoryBadge({ category, subcategory }: { category: string; subcategory?: string | null }) {
-  const style = CAT_STYLE[category] ?? CAT_STYLE.COMIDA;
+  const meta = CATEGORY_META[category] ?? CATEGORY_META.COMIDA;
   return (
     <span className="inline-flex items-center gap-1">
-      <span
-        style={{
-          display: "inline-flex",
-          fontFamily: "var(--font-jetbrains)",
-          fontSize: 10,
-          letterSpacing: "0.12em",
-          textTransform: "uppercase",
-          padding: "3px 9px",
-          borderRadius: 99,
-          border: `1px solid ${style.border}`,
-          background: style.background,
-          color: style.color,
-        }}
-      >
-        {CAT_LABEL[category] ?? category}
-      </span>
+      <Badge variant={meta.variant}>{meta.label}</Badge>
       {subcategory && (
-        <span
-          style={{
-            display: "inline-flex",
-            fontFamily: "var(--font-jetbrains)",
-            fontSize: 10,
-            letterSpacing: "0.12em",
-            textTransform: "uppercase",
-            padding: "3px 9px",
-            borderRadius: 99,
-            border: "1px solid #C49A6C",
-            background: "#FEF3E2",
-            color: "#7C4A1E",
-          }}
-        >
+        <Badge variant="outline" className="font-mono text-[10px] tracking-widest uppercase border-champagne text-ink-700 bg-cream-100">
           {subcategory}
-        </span>
+        </Badge>
       )}
     </span>
   );
 }
 
-// ─── ProductModal ───────────────────────────────────────────────────────────
+// ─── ProductDialog ───────────────────────────────────────────────────────────
 
-function ProductModal({ initial, onClose }: { initial?: Product; onClose: () => void }) {
+function ProductDialog({ initial, open, onOpenChange }: { initial?: Product; open: boolean; onOpenChange: (o: boolean) => void }) {
   const { mutateAsync: create, isPending: creating } = useCreateProduct();
   const { mutateAsync: update, isPending: updating } = useUpdateProduct();
   const [form, setForm] = useState<ProductPayload>({
-    name: initial?.name ?? "",
-    description: initial?.description ?? "",
-    category: initial?.category ?? "COMIDA",
-    subcategory: initial?.subcategory ?? null,
-    price: initial?.price ?? null,
+    name: "",
+    description: "",
+    category: "COMIDA",
+    subcategory: null,
+    price: null,
   });
   const [error, setError] = useState<string | null>(null);
   const isPending = creating || updating;
+
+  useEffect(() => {
+    if (open) {
+      setForm({
+        name: initial?.name ?? "",
+        description: initial?.description ?? "",
+        category: initial?.category ?? "COMIDA",
+        subcategory: initial?.subcategory ?? null,
+        price: initial?.price ?? null,
+      });
+      setError(null);
+    }
+  }, [open, initial]);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -98,7 +92,7 @@ function ProductModal({ initial, onClose }: { initial?: Product; onClose: () => 
       } else {
         await create(form);
       }
-      onClose();
+      onOpenChange(false);
     } catch (err: unknown) {
       setError(
         (err as { response?: { data?: { message?: string } } })?.response?.data?.message ??
@@ -108,63 +102,64 @@ function ProductModal({ initial, onClose }: { initial?: Product; onClose: () => 
   }
 
   return (
-    <div className="fixed inset-0 bg-black/30 flex items-center justify-center z-50">
-      <div className="bg-white rounded-xl w-full max-w-md p-6 shadow-xl" style={{ border: "1px solid var(--gu-cream-200)" }}>
-        <h3 className="text-base font-semibold mb-5" style={{ color: "var(--gu-ink-900)" }}>
-          {initial ? "Editar produto" : "Novo produto"}
-        </h3>
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>{initial ? "Editar produto" : "Novo produto"}</DialogTitle>
+        </DialogHeader>
         <form onSubmit={handleSubmit} className="flex flex-col gap-4">
           <div className="flex flex-col gap-1.5">
-            <label className={labelClass}>Nome</label>
-            <input className={inputClass} value={form.name} onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))} required />
+            <Label className="font-mono text-[10px] tracking-widest text-muted-foreground uppercase">Nome</Label>
+            <Input value={form.name} onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))} required />
           </div>
           <div className="flex flex-col gap-1.5">
-            <label className={labelClass}>Descrição</label>
-            <input className={inputClass} value={form.description ?? ""} onChange={(e) => setForm((f) => ({ ...f, description: e.target.value }))} />
+            <Label className="font-mono text-[10px] tracking-widest text-muted-foreground uppercase">Descrição</Label>
+            <Input value={form.description ?? ""} onChange={(e) => setForm((f) => ({ ...f, description: e.target.value }))} />
           </div>
           <div className="flex flex-col gap-1.5">
-            <label className={labelClass}>Categoria</label>
-            <select className={inputClass} value={form.category} onChange={(e) => setForm((f) => ({ ...f, category: e.target.value, subcategory: null }))}>
-              {CATEGORIES.map((c) => <option key={c} value={c}>{CAT_LABEL[c]}</option>)}
-            </select>
+            <Label className="font-mono text-[10px] tracking-widest text-muted-foreground uppercase">Categoria</Label>
+            <Select value={form.category} onValueChange={(v) => setForm((f) => ({ ...f, category: v, subcategory: null }))}>
+              <SelectTrigger className="w-full"><SelectValue /></SelectTrigger>
+              <SelectContent>
+                {CATEGORIES.map((c) => <SelectItem key={c} value={c}>{CATEGORY_META[c].label}</SelectItem>)}
+              </SelectContent>
+            </Select>
           </div>
           {SUBCATEGORIES_BY_CAT[form.category]?.length > 0 && (
             <div className="flex flex-col gap-1.5">
-              <label className={labelClass}>Subcategoria</label>
-              <select
-                className={inputClass}
-                value={form.subcategory ?? ""}
-                onChange={(e) => setForm((f) => ({ ...f, subcategory: e.target.value || null }))}
-              >
-                <option value="">Nenhuma</option>
-                {SUBCATEGORIES_BY_CAT[form.category].map((s) => (
-                  <option key={s} value={s}>{s.charAt(0) + s.slice(1).toLowerCase()}</option>
-                ))}
-              </select>
+              <Label className="font-mono text-[10px] tracking-widest text-muted-foreground uppercase">Subcategoria</Label>
+              <Select value={form.subcategory ?? "NONE"} onValueChange={(v) => setForm((f) => ({ ...f, subcategory: v === "NONE" ? null : v }))}>
+                <SelectTrigger className="w-full"><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="NONE">Nenhuma</SelectItem>
+                  {SUBCATEGORIES_BY_CAT[form.category].map((s) => (
+                    <SelectItem key={s} value={s}>{s.charAt(0) + s.slice(1).toLowerCase()}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
           )}
           <div className="flex flex-col gap-1.5">
-            <label className={labelClass}>Preço base (R$)</label>
-            <input
+            <Label className="font-mono text-[10px] tracking-widest text-muted-foreground uppercase">Preço base (R$)</Label>
+            <Input
               type="number"
               step="0.01"
               min="0"
-              className={inputClass}
               placeholder="0,00"
               value={form.price ?? ""}
               onChange={(e) => setForm((f) => ({ ...f, price: e.target.value ? Number(e.target.value) : null }))}
             />
           </div>
           {error && (
-            <p className="text-sm rounded-lg px-4 py-2" style={{ color: "var(--gu-canceled-tx)", background: "var(--gu-canceled-bg)", border: "1px solid var(--gu-canceled-br)" }}>{error}</p>
+            <p className="text-sm text-status-canceled-fg bg-status-canceled-bg border border-status-canceled-br rounded-lg px-4 py-2">{error}</p>
           )}
-          <div className="flex gap-3 justify-end mt-1">
-            <Button variant="secondary" type="button" onClick={onClose}>Cancelar</Button>
+          <DialogFooter>
+            <Button variant="secondary" type="button" onClick={() => onOpenChange(false)}>Cancelar</Button>
             <Button type="submit" loading={isPending}>{initial ? "Salvar" : "Criar"}</Button>
-          </div>
+          </DialogFooter>
         </form>
-      </div>
-    </div>
+      </DialogContent>
+    </Dialog>
   );
 }
 
@@ -174,12 +169,6 @@ const STATUS_OPTIONS = [
   { value: "TODOS", label: "Todos os status" },
   { value: "ATIVO", label: "Ativos" },
   { value: "INATIVO", label: "Inativos" },
-];
-
-const CAT_OPTIONS = [
-  { value: "TODOS", label: "Todas categorias" },
-  { value: "COMIDA", label: "Comidas" },
-  { value: "BEBIDA", label: "Bebidas" },
 ];
 
 function fmt(price: number | null): string {
@@ -194,7 +183,6 @@ export default function ProductsPage() {
   const [activeTab, setActiveTab] = useState<"COMIDA" | "BEBIDA">("COMIDA");
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("TODOS");
-  const [catFilter, setCatFilter] = useState("TODOS");
   const [editing, setEditing] = useState<Product | undefined>();
   const [showCreate, setShowCreate] = useState(false);
 
@@ -216,7 +204,6 @@ export default function ProductsPage() {
     if (search && !p.name.toLowerCase().includes(search.toLowerCase())) return false;
     if (statusFilter === "ATIVO" && !p.active) return false;
     if (statusFilter === "INATIVO" && p.active) return false;
-    if (catFilter !== "TODOS" && p.category !== catFilter) return false;
     return true;
   });
 
@@ -225,7 +212,7 @@ export default function ProductsPage() {
     return acc;
   }, {});
 
-  const colHead = "font-mono text-[10px] tracking-widest uppercase text-left px-5 py-3";
+  const colHead = "font-mono text-[10px] tracking-widest uppercase text-left px-5 py-3 text-muted-foreground/70";
 
   return (
     <>
@@ -237,94 +224,86 @@ export default function ProductsPage() {
       />
 
       <Panel>
-        {/* Tabs */}
-        <div className="flex gap-6 px-5" style={{ borderBottom: "1px solid var(--gu-cream-200)" }}>
-          {CATEGORIES.map((cat) => {
-            const active = activeTab === cat;
-            return (
-              <button
+        <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as "COMIDA" | "BEBIDA")}>
+          <TabsList variant="line" className="w-full !h-auto justify-start gap-6 rounded-none border-b border-border bg-transparent px-5">
+            {CATEGORIES.map((cat) => (
+              <TabsTrigger
                 key={cat}
-                onClick={() => setActiveTab(cat)}
-                className="relative pb-3 pt-3 flex items-center gap-2 text-sm font-medium transition-colors"
-                style={{ color: active ? "var(--gu-bordeaux-700)" : "var(--gu-ink-500)" }}
+                value={cat}
+                className="group/tab after:hidden h-auto flex-none gap-2 rounded-none border-x-0 border-t-0 border-b-2 border-transparent px-0 py-3 text-sm font-medium text-muted-foreground data-[state=active]:bg-transparent data-[state=active]:text-primary data-[state=active]:border-b-primary dark:data-[state=active]:bg-transparent"
               >
-                {CAT_LABEL[cat]}
-                <span
-                  className="font-mono text-[10px] px-1.5 py-0.5 rounded-full"
-                  style={{
-                    background: active ? "var(--gu-bordeaux-700)" : "var(--gu-cream-100)",
-                    color: active ? "#fff" : "var(--gu-ink-500)",
-                  }}
-                >
+                {CATEGORY_META[cat].label}
+                <span className="rounded-full bg-muted px-1.5 py-0.5 font-mono text-[10px] text-muted-foreground group-data-[state=active]/tab:bg-primary group-data-[state=active]/tab:text-primary-foreground">
                   {countByCategory[cat] ?? 0}
                 </span>
-                {active && (
-                  <span className="absolute bottom-0 inset-x-0 h-0.5 rounded-t" style={{ background: "var(--gu-bordeaux-700)" }} />
-                )}
-              </button>
-            );
-          })}
-        </div>
+              </TabsTrigger>
+            ))}
+          </TabsList>
+        </Tabs>
 
         <FiltersBar count={{ value: filtered.length, label: filtered.length === 1 ? "produto" : "produtos" }}>
           <SearchField value={search} onChange={setSearch} placeholder="Buscar por nome…" />
-          <SelectField value={catFilter} onChange={setCatFilter} options={CAT_OPTIONS} />
           <SelectField value={statusFilter} onChange={setStatusFilter} options={STATUS_OPTIONS} />
         </FiltersBar>
 
         <div className="overflow-x-auto">
           <table className="min-w-full">
             <thead>
-              <tr style={{ borderBottom: "1px solid var(--gu-cream-200)" }}>
-                {["Produto", "Categoria", "Descrição", "Preço base", "Servidos · evento", "Status", ""].map((h, i) => (
-                  <th key={i} className={colHead} style={{ color: "var(--gu-ink-300)" }}>{h}</th>
+              <tr className="border-b border-border">
+                {[
+                  { label: "Produto" },
+                  { label: "Categoria" },
+                  { label: "Descrição", hide: "hidden lg:table-cell" },
+                  { label: "Preço base", hide: "hidden sm:table-cell" },
+                  { label: "Servidos · evento", hide: "hidden md:table-cell" },
+                  { label: "Status" },
+                  { label: "" },
+                ].map(({ label, hide }, i) => (
+                  <th key={i} className={`${colHead} ${hide ?? ""}`}>{label}</th>
                 ))}
               </tr>
             </thead>
             <tbody>
               {isLoading && (
-                <tr><td colSpan={7} className="text-center text-sm py-10" style={{ color: "var(--gu-ink-300)" }}>Carregando…</td></tr>
+                <TableRowsSkeleton
+                  columns={[
+                    {},
+                    { width: "w-16" },
+                    { hide: "hidden lg:table-cell" },
+                    { hide: "hidden sm:table-cell", width: "w-14" },
+                    { hide: "hidden md:table-cell", width: "w-8" },
+                    { width: "w-9" },
+                    { width: "w-7" },
+                  ]}
+                />
               )}
               {!isLoading && filtered.length === 0 && (
-                <tr><td colSpan={7} className="text-center text-sm py-10" style={{ color: "var(--gu-ink-300)" }}>Nenhum produto encontrado</td></tr>
+                <tr><td colSpan={7} className="text-center text-sm text-muted-foreground/70 py-10">Nenhum produto encontrado</td></tr>
               )}
               {filtered.map((product) => (
-                <tr
-                  key={product.id}
-                  className="transition-colors"
-                  style={{ borderBottom: "1px solid var(--gu-cream-100)" }}
-                  onMouseEnter={(e) => ((e.currentTarget as HTMLElement).style.background = "var(--gu-cream-50)")}
-                  onMouseLeave={(e) => ((e.currentTarget as HTMLElement).style.background = "")}
-                >
-                  <td className="px-5 py-3 text-sm font-medium" style={{ color: "var(--gu-ink-900)" }}>
+                <tr key={product.id} className="border-b border-border/60 hover:bg-muted/50 transition-colors">
+                  <td className="px-5 py-3 text-sm font-medium text-foreground">
                     {product.name}
                   </td>
                   <td className="px-5 py-3">
                     <CategoryBadge category={product.category} subcategory={product.subcategory} />
                   </td>
-                  <td className="px-5 py-3 text-[13px]" style={{ color: "var(--gu-ink-700)" }}>
+                  <td className="hidden lg:table-cell px-5 py-3 text-[13px] text-muted-foreground">
                     {product.description ?? "—"}
                   </td>
-                  <td className="px-5 py-3" style={{ fontFamily: "var(--font-jetbrains)", fontSize: 14, fontWeight: 500, color: "var(--gu-bordeaux-700)" }}>
+                  <td className="hidden sm:table-cell px-5 py-3 font-mono text-sm font-medium text-primary">
                     {fmt(product.price)}
                   </td>
-                  <td className="px-5 py-3" style={{ fontFamily: "var(--font-jetbrains)", fontSize: 12.5, color: "var(--gu-ink-500)" }}>
+                  <td className="hidden md:table-cell px-5 py-3 font-mono text-[12.5px] text-muted-foreground">
                     {servedMap[product.id] ?? 0}
                   </td>
                   <td className="px-5 py-3">
-                    <Switch checked={product.active} onChange={(checked) => update({ id: product.id, active: checked })} />
+                    <Switch checked={product.active} onCheckedChange={(checked) => update({ id: product.id, active: checked })} />
                   </td>
                   <td className="px-5 py-3">
-                    <button
-                      onClick={() => setEditing(product)}
-                      className="flex items-center justify-center rounded transition-colors"
-                      style={{ width: 28, height: 28, color: "var(--gu-ink-500)" }}
-                      onMouseEnter={(e) => ((e.currentTarget as HTMLElement).style.background = "var(--gu-cream-100)")}
-                      onMouseLeave={(e) => ((e.currentTarget as HTMLElement).style.background = "transparent")}
-                      title="Editar produto"
-                    >
-                      ⋯
-                    </button>
+                    <Button variant="ghost" size="icon" className="size-7" onClick={() => setEditing(product)} title="Editar produto">
+                      <Pencil className="size-3.5" />
+                    </Button>
                   </td>
                 </tr>
               ))}
@@ -333,8 +312,8 @@ export default function ProductsPage() {
         </div>
       </Panel>
 
-      {showCreate && <ProductModal onClose={() => setShowCreate(false)} />}
-      {editing && <ProductModal initial={editing} onClose={() => setEditing(undefined)} />}
+      <ProductDialog open={showCreate} onOpenChange={setShowCreate} />
+      <ProductDialog initial={editing} open={!!editing} onOpenChange={(o) => !o && setEditing(undefined)} />
     </>
   );
 }
